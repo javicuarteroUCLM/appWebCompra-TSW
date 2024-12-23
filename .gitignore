@@ -1,0 +1,16 @@
+node_modules/
+.vscode/
+target/
+
+# Configuración local
+application.properties
+application.yml
+logs/
+*.log
+# Docker
+docker-compose.override.yml
+*.env
+
+# Archivos temporales
+*.swp
+*.swo
