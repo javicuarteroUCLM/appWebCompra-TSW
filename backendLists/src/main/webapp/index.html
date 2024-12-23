@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios ofrecidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .service {
+            background-color: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .service h2 {
+            color: #4CAF50;
+        }
+        .service p {
+            margin: 5px 0;
+        }
+        .method {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Servicios ofrecidos por el controlador de usuarios</h1>
+    
+    <p>
+    	Este sistema expone un controlador denominado "users" que ofrece servicios falsos de registro, identificación y eliminación de cuentas de usuario.
+    </p>
+    
+    <p>
+    	Toda la información se mantiene en memoria. Las cuentas de usuario se eliminan automáticamente entre 10 y 20 minutos después de haber sido creadas.
+    </p>
+    
+
+    <div class="service">
+        <h2>Registro de Usuario (Método 1)</h2>
+        <p class="method">POST /users/registrar1</p>
+        <p>Descripción: Permite registrar un usuario enviando un objeto JSON en el cuerpo de la petición con el email y las contraseñas.</p>
+        <p>Parámetros:</p>
+        <ul>
+            <li><strong>email</strong>: Correo electrónico del usuario.</li>
+            <li><strong>pwd1</strong>: Contraseña del usuario.</li>
+            <li><strong>pwd2</strong>: Confirmación de la contraseña.</li>
+        </ul>
+    </div>
+
+    <div class="service">
+        <h2>Registro de Usuario (Método 2)</h2>
+        <p class="method">GET /users/registrar2?email=pepe@pepe.com&pwd1=Pepe1234&pwd2=Pepe1234</p>
+        <p>Descripción: Permite registrar un usuario utilizando parámetros en la URL.</p>
+        <p>Parámetros:</p>
+        <ul>
+            <li><strong>email</strong>: Correo electrónico del usuario.</li>
+            <li><strong>pwd1</strong>: Contraseña del usuario.</li>
+            <li><strong>pwd2</strong>: Confirmación de la contraseña.</li>
+        </ul>
+    </div>
+
+    <div class="service">
+        <h2>Iniciar Sesión (Método 1)</h2>
+        <p class="method">PUT /users/login1</p>
+        <p>Descripción: Permite iniciar sesión enviando un objeto JSON en el cuerpo de la petición con los campos email y pwd.<br>
+         Retorna un token de autenticación en el cuerpo de la respuesta. Este token debe usarse para eliminar la cuenta.</p>
+    </div>
+
+    <div class="service">
+        <h2>Iniciar Sesión (Método 2)</h2>
+        <p class="method">GET /users/login2?email=pepe@pepe.com&pwd=Pepe1234</p>
+        <p>Descripción: Permite iniciar sesión utilizando parámetros en la URL. Devuelve el usuario y un token en el encabezado de la respuesta. Este token debe usarse para eliminar la cuenta.</p>
+    </div>
+
+    <div class="service">
+        <h2>Iniciar Sesión (Método 3)</h2>
+        <p class="method">GET /users/login3/pepe@pepe.com?pwd=Pepe1234</p>
+        <p>Descripción: Permite iniciar sesión pasando el email como parte de la URL. La contraseña va en un parámetro pwd. Devuelve el usuario y un token en el encabezado de la respuesta. Este token debe usarse para eliminar la cuenta.</p>
+    </div>
+
+    <div class="service">
+        <h2>Obtener todos los Usuarios</h2>
+        <p class="method">GET /users/getAllUsers</p>
+        <p>Descripción: Devuelve una lista de todos los usuarios registrados.</p>
+    </div>
+
+    <div class="service">
+        <h2>Eliminar Usuario</h2>
+        <p class="method">DELETE /users/delete?email=pepe@pepe.com&pwd=Pepe1234</p>
+        <p>Descripción: Elimina un usuario si se proporciona el email y la contraseña correctos, y si el token enviado en la cabecera "token" es válido.</p>
+    </div>
+
+    <div class="service">
+        <h2>Eliminar Todos los Usuarios</h2>
+        <p class="method">DELETE /users/clearAll</p>
+        <p>Descripción: Elimina todos los usuarios del sistema. Debe llevar una cabecera "prime" con un nº primo de 3 cifras.</p>
+    </div>
+</body>
+</html>

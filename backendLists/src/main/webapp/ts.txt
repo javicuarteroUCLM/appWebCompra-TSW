@@ -1,0 +1,5 @@
+todo lo que nos genera angular de browser en el frontend lo traemos a esta carpeta
+
+
+Para despliegue:
+- run as maven install te genera un war esto lo desplegamos subiendo en el tomcat(v:9.0) el archivo war dentro de webapps
