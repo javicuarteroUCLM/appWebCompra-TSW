@@ -17,7 +17,7 @@ public class User {
 	private String pwd;
 
 	@JsonIgnore
-	@Column(length = 36)
+	@Column(length = 60)
 	// @Transient: no se guarda en la base de datos
 	private String token;
 
@@ -49,7 +49,7 @@ public class User {
 	}
 
 	public String getToken() {
-		return token;
+		return this.token;
 	}
 
 	public void setToken(String token) {

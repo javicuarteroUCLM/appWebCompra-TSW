@@ -84,8 +84,8 @@ public class UserController {
 			response.addCookie(cookie);
 
 			user.setCookie(fakeUserId);
-			this.userDao.save(user);
 			user.setToken(UUID.randomUUID().toString());
+			this.userDao.save(user);
 		} else {
 			user = this.userDao.findByCookie(fakeUserId);
 			if (user != null)

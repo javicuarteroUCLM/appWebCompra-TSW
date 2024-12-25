@@ -6,4 +6,6 @@ import edu.uclm.esi.fakeaccountsbe.model.User;
 public interface UserDao extends JpaRepository<User, String> {
 
     User findByCookie(String fakeUserId);
+
+    User findByToken(String token);
 }

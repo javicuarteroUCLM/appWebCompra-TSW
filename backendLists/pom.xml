@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>edu.uclm.esi</groupId>
-	<artifactId>flistaCompra</artifactId>
+	<artifactId>backendLists</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
