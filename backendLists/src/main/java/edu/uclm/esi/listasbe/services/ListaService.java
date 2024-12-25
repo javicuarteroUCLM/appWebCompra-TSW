@@ -1,5 +1,6 @@
 package edu.uclm.esi.listasbe.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,11 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import edu.uclm.esi.listasbe.dao.ListaDao;
+import edu.uclm.esi.listasbe.dao.ProductoDao;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.ws.WSListas;
-import edu.uclm.esi.listasbe.dao.ListaDao;
-import edu.uclm.esi.listasbe.dao.ProductoDao;
+
+
 
 @Service
 public class ListaService {
@@ -28,8 +31,8 @@ public class ListaService {
 
 	public List<Lista> getListas(String email) {
 		List<Lista> result = new ArrayList<>();
-		List<Lista> ids = this.listaDao.getListasDe(email);
-		for (Lista id : ids) {
+		List<String> ids = this.listaDao.getListasDe(email);
+		for (String id : ids) {
 			result.add(this.listaDao.findById(id).get());
 		}
 		return result;

@@ -1,12 +1,14 @@
 package edu.uclm.esi.fakeaccountsbe.http;
 
-import java.util.Collection;
-import java.util.UUID;
-
+import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
+import edu.uclm.esi.fakeaccountsbe.model.CredencialesRegistro;
+import edu.uclm.esi.fakeaccountsbe.model.User;
+import edu.uclm.esi.fakeaccountsbe.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.util.Collection;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,10 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
-import edu.uclm.esi.fakeaccountsbe.model.CredencialesRegistro;
-import edu.uclm.esi.fakeaccountsbe.model.User;
-import edu.uclm.esi.fakeaccountsbe.services.UserService;
+
+
+
 
 @RestController
 @RequestMapping("users")
@@ -84,8 +85,8 @@ public class UserController {
 			response.addCookie(cookie);
 
 			user.setCookie(fakeUserId);
-			this.userDao.save(user);
 			user.setToken(UUID.randomUUID().toString());
+			this.userDao.save(user);
 		} else {
 			user = this.userDao.findByCookie(fakeUserId);
 			if (user != null)

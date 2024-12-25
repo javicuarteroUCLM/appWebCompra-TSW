@@ -1,12 +1,13 @@
 package edu.uclm.esi.fakeaccountsbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "usuario")
@@ -17,7 +18,7 @@ public class User {
 	private String pwd;
 
 	@JsonIgnore
-	@Column(length = 36)
+	@Column(length = 60)
 	// @Transient: no se guarda en la base de datos
 	private String token;
 
@@ -49,7 +50,7 @@ public class User {
 	}
 
 	public String getToken() {
-		return token;
+		return this.token;
 	}
 
 	public void setToken(String token) {
