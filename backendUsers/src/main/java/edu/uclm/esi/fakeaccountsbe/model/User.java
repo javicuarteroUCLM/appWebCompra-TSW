@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -31,6 +32,12 @@ public class User {
 
 	@Column(length = 36)
 	private String cookie;
+
+	@Column(nullable = false)
+	private boolean esPagado;
+
+	@Column
+	private LocalDateTime fechaPago;
 
 	public String getEmail() {
 		return email;
@@ -80,8 +87,19 @@ public class User {
 		return this.cookie;
 	}
 
-	public static User findByToken(String token2) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
+	public boolean isEsPagado() {
+		return esPagado;
+	}
+
+	public void setEsPagado(boolean esPagado) {
+		this.esPagado = esPagado;
+	}
+
+	public LocalDateTime getFechaPago() {
+		return fechaPago;
+	}
+
+	public void setFechaPago(LocalDateTime fechaPago) {
+		this.fechaPago = fechaPago;
 	}
 }
