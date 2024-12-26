@@ -2,7 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Importa algunos iconos para los botones
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
+//import { FaShoppingCart, FaUser } from 'react-icons/fa';
+import { FaUser, FaShoppingCart } from 'react-icons/fa';
+
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ const LandingPage = () => {
   const handleLogin = () => {
     navigate('/login');
   };
-
+  
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -30,12 +32,12 @@ const LandingPage = () => {
           <FaUser style={styles.icon} /> Registrarse
         </button>
       </div>
-
+      
       <div style={styles.footer}>
         <img src="https://img.icons8.com/ios/452/shopping-cart.png" alt="supermarket" style={styles.cartImage} />
       </div>
     </div>
-  );
+  ); 
 };
 
 const styles = {

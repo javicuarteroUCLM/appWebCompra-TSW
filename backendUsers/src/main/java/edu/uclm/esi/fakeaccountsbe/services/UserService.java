@@ -1,18 +1,20 @@
 package edu.uclm.esi.fakeaccountsbe.services;
 
+import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
+import edu.uclm.esi.fakeaccountsbe.model.User;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import edu.uclm.esi.fakeaccountsbe.model.User;
-import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
+
+
+
 
 @Service
 public class UserService {
@@ -68,19 +70,26 @@ public class UserService {
 		List<User> allUsers = this.userDao.findAll();
 		for (User user : allUsers) {
 			this.users.put(user.getEmail(), user);
-			List<User> usersByIpList = this.usersByIp.get(user.getIp());
-			if (usersByIpList == null) {
-				usersByIpList = new ArrayList<>();
-				this.usersByIp.put(user.getIp(), usersByIpList);
+			String userIp = user.getIp();
+			if (userIp != null) {
+				List<User> usersByIpList = this.usersByIp.get(userIp);
+				if (usersByIpList == null) {
+					usersByIpList = new ArrayList<>();
+					this.usersByIp.put(userIp, usersByIpList);
+				}
+				usersByIpList.add(user);
+			} else {
+				// Manejo del caso cuando user.getIp() es null
+				// Por ejemplo, puedes registrar un mensaje de advertencia
+				System.out.println("Advertencia: El usuario " + user.getEmail() + " tiene una IP nula.");
 			}
-			usersByIpList.add(user);
 		}
 		return allUsers;
 	}
 
 	public User find(String email, String pwd) {
 		this.getAllUsers();
-		pwd = org.apache.commons.codec.digest.DigestUtils.sha512Hex(pwd);
+		//pwd = org.apache.commons.codec.digest.DigestUtils.sha512Hex(pwd);
 		User user = this.users.get(email);
 		if (user == null || !user.getPwd().equals(pwd))
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credenciales incorrectas");
