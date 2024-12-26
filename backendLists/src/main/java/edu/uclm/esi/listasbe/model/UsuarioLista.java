@@ -1,5 +1,6 @@
 package edu.uclm.esi.listasbe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,33 +10,38 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+
+
 @Entity
 @Table(name = "usuarios_listas")
 public class UsuarioLista {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // IDENTITY para sincronizar con el autoincremento de MySQL
     private Long id;
 
     @Column(name = "usuario_id", nullable = false, length = 60)
-    private String usuarioId; // Almacena únicamente el identificador del usuario (email o id)
+    private String usuarioId; // email del usuario como referencia
 
     @ManyToOne
     @JoinColumn(name = "lista_id", nullable = false)
+    @JsonIgnore
     private Lista lista;
 
-    @Column(nullable = false)
+    @Column(name = "es_propietario", nullable = false)
     private boolean esPropietario;
 
     public UsuarioLista() {
     }
 
+    // Constructor con parámetros
     public UsuarioLista(String usuarioId, Lista lista, boolean esPropietario) {
         this.usuarioId = usuarioId;
         this.lista = lista;
         this.esPropietario = esPropietario;
     }
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -73,7 +79,7 @@ public class UsuarioLista {
         return "UsuarioLista{" +
                 "id=" + id +
                 ", usuarioId='" + usuarioId + '\'' +
-                ", lista=" + lista +
+                ", lista=" + (lista != null ? lista.getId() : "null") +
                 ", esPropietario=" + esPropietario +
                 '}';
     }

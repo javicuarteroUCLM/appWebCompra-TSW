@@ -3,6 +3,7 @@ package edu.uclm.esi.listasbe.http;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.services.ListaService;
+import edu.uclm.esi.listasbe.services.ProxyBEU;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
+
+
+
 @RestController
 @RequestMapping("listas")
 @CrossOrigin //(origins = "*", allowCredentials = "true")
@@ -31,12 +36,22 @@ public class ListaController {
     @Autowired
     private ListaService listaService;
 
+    @Autowired
+    private ProxyBEU proxy;
+
     @GetMapping("/getLista")
     public List<Lista> getLista(@RequestHeader("token") String token) {
+
+		System.out.println("Token recibido en /getLista: " + token);
+		String email = this.proxy.obtenerEmailDesdeToken(token);
+    	System.out.println("Email recuperado: " + email);
         if (token == null || token.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
         }
-        return this.listaService.getListas(token);
+        List<Lista> listas = this.listaService.getListas(email);
+    	System.out.println("Listas recuperadas: " + listas);
+    
+    	return listas;
     }
 
     @PostMapping("/crearLista")

@@ -40,20 +40,24 @@ public class ProxyBEU {
      * Obtener el email del usuario asociado a un token.
      */
     public String obtenerEmailDesdeToken(String token) {
-        // Simula una llamada al servicio de validación de tokens
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet("http://localhost:9000/tokens/obtenerEmail?token=" + token);
     
-            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+            try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 if (response.getCode() == 200) {
+                    // Extrae el email del cuerpo de la respuesta
                     return EntityUtils.toString(response.getEntity());
+                } else {
+                    System.err.println("Error en la validación del token: " + response.getCode());
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    
         return null;
     }
+    
     
 
     public boolean verificarUsuarioPagado(String email) {
@@ -64,7 +68,7 @@ public class ProxyBEU {
     
             try (CloseableHttpResponse response = httpclient.execute(httpGet, context)) {
                 System.out.println("Response status: " + response.getCode());
-                return response.getCode() == 200; // HTTP 200 indica que el usuario ha pagado
+                return response.getCode() == 200;
             }
     
         } catch (Exception e) {

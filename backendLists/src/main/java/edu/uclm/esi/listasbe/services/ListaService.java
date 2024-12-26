@@ -20,13 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
-
-
-
-
-
-
-
 @Service
 public class ListaService {
 
@@ -54,13 +47,16 @@ public class ListaService {
      * Obtener las listas asociadas a un usuario
      */
     public List<Lista> getListas(String email) {
-        List<Lista> result = new ArrayList<>();
         List<UsuarioLista> relaciones = usuarioListaRepository.findByUsuarioId(email);
-        for (UsuarioLista relacion : relaciones) {
-            result.add(relacion.getLista());
-        }
-        return result;
-    }
+		List<Lista> listas = new ArrayList<>();
+		
+		// Extraer las listas asociadas
+		for (UsuarioLista relacion : relaciones) {
+			listas.add(relacion.getLista());
+		}
+		
+		return listas;
+	}
 
     /**
      * Crear una lista nueva y asociarla al usuario que la creó.
@@ -68,10 +64,9 @@ public class ListaService {
     public Lista crearLista(String nombre, String token) {
 		// Validar el token y obtener el email
 		String email = this.proxy.obtenerEmailDesdeToken(token);
-		System.out.println("Token recibido: " + token);
-		System.out.println("Email recuperado: " + email);
+		//System.out.println("Token recibido: " + token);
+		//System.out.println("Email recuperado: " + email);
 
-	
 		if (email == null || email.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
 		}
@@ -96,6 +91,7 @@ public class ListaService {
 		lista.setMaxUsuarios(1); // Configuración por defecto
 	
 		this.listaDao.save(lista);
+		System.out.println("Lista guardada: " + lista);
 	
 		// Asociar la lista al usuario en UsuarioLista
 		UsuarioLista usuarioLista = new UsuarioLista(email, lista, true);
@@ -139,12 +135,4 @@ public class ListaService {
 		return lista;
 	}
 	
-
-    /**
-     * Obtener el email del usuario asociado al token (simulación de decodificación de token)
-     */
-    private String obtenerEmailDesdeToken(String token) {
-        // Implementación simplificada para obtener el email desde el token
-        return this.proxy.obtenerEmailDesdeToken(token);
-    }
 }
