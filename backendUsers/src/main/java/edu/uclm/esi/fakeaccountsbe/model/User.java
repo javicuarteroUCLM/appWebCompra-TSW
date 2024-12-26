@@ -18,7 +18,7 @@ public class User {
 	private String pwd;
 
 	@JsonIgnore
-	@Column(length = 60)
+	@Column(length = 36)
 	// @Transient: no se guarda en la base de datos
 	private String token;
 
@@ -27,7 +27,7 @@ public class User {
 	private long creationTime;
 
 	// @JsonIgnore
-	@Transient
+	// @Transient
 	private String ip;
 
 	@Column(length = 36)

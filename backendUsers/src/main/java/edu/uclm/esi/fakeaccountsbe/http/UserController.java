@@ -23,14 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
-
-
 @RestController
 @RequestMapping("users")
 // @CrossOrigin("*")
@@ -74,7 +66,7 @@ public class UserController {
 
 	@PutMapping("/login1")
 	public String login1(HttpServletResponse response, HttpServletRequest request,
-						@RequestBody(required = false) User user) {
+			@RequestBody(required = false) User user) {
 
 		// Validar las credenciales del usuario primero
 		if (user == null || user.getEmail() == null || user.getPwd() == null) {
@@ -115,15 +107,16 @@ public class UserController {
 		return newToken;
 	}
 
-
-
 	@GetMapping("/checkCookie")
 	public String checkCookie(HttpServletRequest request) {
 		String fakeUserId = this.findCookie(request, "fakeUserId");
 		if (fakeUserId != null) {
 			User user = this.userDao.findByCookie(fakeUserId);
 			if (user != null) {
+				System.out.println("Usuario encontrado: " + user.getEmail() + ", Token: " + user.getToken());
 				user.setToken(UUID.randomUUID().toString());
+				// Persistir los cambios en la base de datos
+				this.userDao.save(user);
 				return user.getToken();
 			}
 		}
@@ -182,14 +175,14 @@ public class UserController {
 	}
 
 	@GetMapping("/esPagado")
-    public void verificarPago(@RequestParam String email) {
-        User user = userDao.findById(email).orElseThrow(() -> 
-            new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+	public void verificarPago(@RequestParam String email) {
+		User user = userDao.findById(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        if (!user.isEsPagado()) {
-            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "El usuario no ha pagado");
-        }
-    }
+		if (!user.isEsPagado()) {
+			throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "El usuario no ha pagado");
+		}
+	}
 
 	private boolean isPrime(int n) {
 		if (n <= 1)

@@ -24,17 +24,23 @@ public class UserService {
 	private Map<String, List<User>> usersByIp = new ConcurrentHashMap<>();
 
 	public void registrar(String ip, User user) {
-		if (this.users.get(user.getEmail()) != null)
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ya existe un usuario con ese correo electrónico");
+		this.getAllUsers();
 
+		if (this.users.get(user.getEmail()) != null) {
+			System.out.println("Ya existe un usuario con ese correo electrónico");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ya existe un usuario con ese correo electrónico");
+		}
 		List<User> users = this.usersByIp.get(ip);
 		if (users == null)
 			users = new ArrayList<>();
 
-		if (users.size() > 10)
+		if (users.size() > 10) {
+			System.out.println("No puedes crear más de 10 usuarios");
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes crear más de 10 usuarios");
-
+		}
 		user.setIp(ip);
+		user.setEsPagado(false);
+		user.setFechaPago(null);
 		users.add(user);
 
 		this.usersByIp.put(ip, users);
@@ -48,16 +54,33 @@ public class UserService {
 	}
 
 	public void clearAll() {
+		this.limpiarListas();
+		this.userDao.deleteAll();
+	}
+
+	public void limpiarListas() {
 		this.usersByIp.clear();
 		this.users.clear();
 	}
 
 	public Collection<User> getAllUsers() {
-		// return this.users.values();
-		return this.userDao.findAll();
+		this.limpiarListas();
+		List<User> allUsers = this.userDao.findAll();
+		for (User user : allUsers) {
+			this.users.put(user.getEmail(), user);
+			List<User> usersByIpList = this.usersByIp.get(user.getIp());
+			if (usersByIpList == null) {
+				usersByIpList = new ArrayList<>();
+				this.usersByIp.put(user.getIp(), usersByIpList);
+			}
+			usersByIpList.add(user);
+		}
+		return allUsers;
 	}
 
 	public User find(String email, String pwd) {
+		this.getAllUsers();
+
 		User user = this.users.get(email);
 		if (user == null || !user.getPwd().equals(pwd))
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credenciales incorrectas");
