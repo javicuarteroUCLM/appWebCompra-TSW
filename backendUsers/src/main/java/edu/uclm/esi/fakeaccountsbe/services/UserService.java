@@ -80,7 +80,7 @@ public class UserService {
 
 	public User find(String email, String pwd) {
 		this.getAllUsers();
-
+		pwd = org.apache.commons.codec.digest.DigestUtils.sha512Hex(pwd);
 		User user = this.users.get(email);
 		if (user == null || !user.getPwd().equals(pwd))
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credenciales incorrectas");
@@ -88,11 +88,10 @@ public class UserService {
 	}
 
 	public void delete(String email) {
-		User user = this.users.remove(email);
-		List<User> users = this.usersByIp.get(user.getIp());
-		users.remove(user);
-		if (users.isEmpty())
-			this.usersByIp.remove(user.getIp());
+		// Elimino del backend el usuario por el email
+		this.userDao.deleteById(email);
+		// Recargo los usuarios desde la base de datos
+		this.getAllUsers();
 	}
 
 	public synchronized void clearOld() {
