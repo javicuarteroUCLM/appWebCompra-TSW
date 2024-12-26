@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import userService from '../services/userService';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,6 +17,8 @@ const LoginForm = () => {
       setMessage('Inicio de sesión exitoso');
       // Guarda el token en el almacenamiento local o cookies
       localStorage.setItem('authToken', token);
+      navigate('/dashboard');
+      
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || 'Credenciales inválidas'}`);
     }
