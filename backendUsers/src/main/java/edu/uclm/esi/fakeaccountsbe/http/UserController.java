@@ -1,12 +1,14 @@
 package edu.uclm.esi.fakeaccountsbe.http;
 
-import java.util.Collection;
-import java.util.UUID;
-
+import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
+import edu.uclm.esi.fakeaccountsbe.model.CredencialesRegistro;
+import edu.uclm.esi.fakeaccountsbe.model.User;
+import edu.uclm.esi.fakeaccountsbe.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.util.Collection;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,10 +23,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
-import edu.uclm.esi.fakeaccountsbe.model.CredencialesRegistro;
-import edu.uclm.esi.fakeaccountsbe.model.User;
-import edu.uclm.esi.fakeaccountsbe.services.UserService;
+
+
+
+
+
+
+
 
 @RestController
 @RequestMapping("users")
@@ -69,33 +74,48 @@ public class UserController {
 
 	@PutMapping("/login1")
 	public String login1(HttpServletResponse response, HttpServletRequest request,
-			@RequestBody(required = false) User user) {
+						@RequestBody(required = false) User user) {
 
+		// Validar las credenciales del usuario primero
+		if (user == null || user.getEmail() == null || user.getPwd() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email y contraseña son obligatorios");
+		}
+
+		// Buscar el usuario por email y contraseña
+		User existingUser = this.userService.find(user.getEmail(), user.getPwd());
+		if (existingUser == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
+		}
+
+		// Buscar la cookie
 		String fakeUserId = this.findCookie(request, "fakeUserId");
-
 		if (fakeUserId == null) {
-			user = this.userService.find(user.getEmail(), user.getPwd());
+			// Si no hay cookie, crear una nueva
 			fakeUserId = UUID.randomUUID().toString();
 			Cookie cookie = new Cookie("fakeUserId", fakeUserId);
-			cookie.setMaxAge(3600 * 24 * 365);
+			cookie.setMaxAge(3600 * 24 * 365); // 1 año
 			cookie.setPath("/");
 			cookie.setAttribute("SameSite", "None");
 			cookie.setSecure(true);
 			response.addCookie(cookie);
-
-			user.setCookie(fakeUserId);
-			user.setToken(UUID.randomUUID().toString());
-			this.userDao.save(user);
-		} else {
-			user = this.userDao.findByCookie(fakeUserId);
-			if (user != null)
-				user.setToken(UUID.randomUUID().toString());
-			else {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cookie caducada");
-			}
 		}
-		return user.getToken();
+
+		// Asignar la cookie y generar un nuevo token para el usuario logueado
+		existingUser.setCookie(fakeUserId);
+		String newToken = UUID.randomUUID().toString();
+		existingUser.setToken(newToken);
+
+		// Persistir los cambios en la base de datos
+		this.userDao.save(existingUser);
+
+		// Registrar en logs para debug
+		System.out.println("Usuario actualizado: " + existingUser.getEmail() + ", Token: " + existingUser.getToken());
+
+		// Devolver el token generado
+		return newToken;
 	}
+
+
 
 	@GetMapping("/checkCookie")
 	public String checkCookie(HttpServletRequest request) {
@@ -160,6 +180,16 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El nº primo debe tener tres cifras");
 		this.userService.clearAll();
 	}
+
+	@GetMapping("/esPagado")
+    public void verificarPago(@RequestParam String email) {
+        User user = userDao.findById(email).orElseThrow(() -> 
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        if (!user.isEsPagado()) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "El usuario no ha pagado");
+        }
+    }
 
 	private boolean isPrime(int n) {
 		if (n <= 1)

@@ -1,5 +1,11 @@
 package edu.uclm.esi.listasbe.http;
 
+import edu.uclm.esi.listasbe.model.Lista;
+import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.services.ListaService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -7,65 +13,83 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Map;
 
-import edu.uclm.esi.listasbe.model.Lista;
-import edu.uclm.esi.listasbe.model.Producto;
-import edu.uclm.esi.listasbe.services.ListaService;
-import jakarta.servlet.http.HttpServletRequest;
+
+
+
+
 
 @RestController
 @RequestMapping("listas")
-@CrossOrigin("*") // origins = "localhost:Portserver" allow credentials = "true"
+@CrossOrigin //(origins = "*", allowCredentials = "true")
 public class ListaController {
-	@Autowired
-	private ListaService listaService;
+    @Autowired
+    private ListaService listaService;
 
-	@GetMapping("/getLista")
-	public List<Lista> getLista(@RequestParam String email) {
-		return null;
-	}
+    @GetMapping("/getLista")
+    public List<Lista> getLista(@RequestHeader("token") String token) {
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+        return this.listaService.getListas(token);
+    }
 
-	@PostMapping("/crearLista")
-	public Lista crearLista(@RequestBody String nombre) {
-		nombre = nombre.trim();
-		if (nombre.isEmpty())
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista no puede ser vacío");
+    @PostMapping("/crearLista")
+    public Lista crearLista(@RequestBody Map<String, String> requestBody, @RequestHeader("token") String token) {
+        String nombre = requestBody.get("nombre");
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista no puede ser vacío");
+        }
+        if (nombre.length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre de la lista no puede tener más de 80 caracteres");
+        }
 
-		if (nombre.length() > 80)
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"El nombre de la lista no puede tener más de 80 caracteres");
+        return this.listaService.crearLista(nombre, token);
+    }
 
-		return this.listaService.crearLista(nombre, "1234");
-	}
+    @PostMapping("/addProducto")
+    public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
+        if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
+        }
+        if (producto.getNombre().length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del producto no puede tener más de 80 caracteres");
+        }
 
-	@PostMapping("/addProducto")
-	public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
+        String idLista = request.getHeader("idLista");
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+        }
 
-		if (producto.getNombre().isEmpty())
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
+        // Solo pasamos `idLista` y `producto`, ya que el token no se maneja aquí
+        return this.listaService.addProducto(idLista, producto);
+    }
 
-		if (producto.getNombre().length() > 80)
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"El nombre del producto no puede tener más de 80 caracteres");
+    @PutMapping("/comprar")
+    public Producto comprar(@RequestBody Map<String, Object> compra) {
+        if (!compra.containsKey("idProducto") || !compra.containsKey("udsCompradas")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La petición debe incluir idProducto y udsCompradas");
+        }
 
-		String idLista = request.getHeader("idLista");
+        String idProducto = compra.get("idProducto").toString();
+        float udsCompradas;
+        try {
+            udsCompradas = Float.parseFloat(compra.get("udsCompradas").toString());
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "udsCompradas debe ser un número válido");
+        }
 
-		return this.listaService.addProducto(idLista, producto);
-	}
+        // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja aquí
+        return this.listaService.comprar(idProducto, udsCompradas);
+    }
 
-	@PutMapping("/comprar")
-	public Producto comprar(@RequestBody Map<String, Object> compra) {
 
-		String idProducto = compra.get("idProducto").toString();
-		float udsCompradas = (float) compra.get("udsCompradas");
-
-		return this.listaService.comprar(idProducto, udsCompradas);
-	}
 }

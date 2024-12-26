@@ -15,14 +15,14 @@ public class RestriccionUsuario {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
-    private String usuarioId; // FK para la tabla de usuarios
+    @Column(name = "usuario_id", nullable = false, length = 60)
+    private String usuarioId; // Identificador del usuario (email o ID)
 
     @Column(nullable = false)
-    private int numListasActuales;
+    private int numListasActuales; // Número de listas creadas actualmente
 
     @Column(nullable = false)
-    private int numProductosPorLista;
+    private int numProductosPorLista; // Límite de productos por lista
 
     public RestriccionUsuario() {
     }
@@ -63,5 +63,15 @@ public class RestriccionUsuario {
 
     public void setNumProductosPorLista(int numProductosPorLista) {
         this.numProductosPorLista = numProductosPorLista;
+    }
+
+    @Override
+    public String toString() {
+        return "RestriccionUsuario{" +
+                "id=" + id +
+                ", usuarioId='" + usuarioId + '\'' +
+                ", numListasActuales=" + numListasActuales +
+                ", numProductosPorLista=" + numProductosPorLista +
+                '}';
     }
 }

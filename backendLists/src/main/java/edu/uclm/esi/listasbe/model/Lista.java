@@ -1,44 +1,49 @@
 package edu.uclm.esi.listasbe.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
+@Table(name = "listas")
 public class Lista {
     @Id
     @Column(length = 36)
     private String id;
 
-    @Column(length = 80)
+    @Column(length = 80, nullable = false)
     private String nombre;
 
     @Column(nullable = false)
     private boolean compartida;
 
-    @Column(length = 255)
+    @Column(length = 255, unique = true)
     private String urlInvitacion;
 
     @Column(nullable = false)
     private int maxUsuarios;
 
-    @OneToMany(mappedBy = "lista")
+    @OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Producto> productos;
 
-    @ElementCollection
-    private List<String> emailsUsuarios;
+    @OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UsuarioLista> usuarios;
 
     public Lista() {
         this.id = java.util.UUID.randomUUID().toString();
         this.productos = new ArrayList<>();
+        this.usuarios = new ArrayList<>();
         this.compartida = false;
-        this.maxUsuarios = 1; // Por defecto para usuarios no registrados
+        this.maxUsuarios = 1; // Valor por defecto para usuarios no registrados
     }
+
+    // Getters y setters
 
     public String getId() {
         return id;
@@ -89,14 +94,30 @@ public class Lista {
     }
 
     public void addProducto(Producto producto) {
+        producto.setLista(this); // Configura la relación bidireccional
         this.productos.add(producto);
     }
 
-    public List<String> getEmailsUsuarios() {
-        return emailsUsuarios;
+    public void removeProducto(Producto producto) {
+        producto.setLista(null); // Rompe la relación bidireccional
+        this.productos.remove(producto);
     }
 
-    public void setEmailsUsuarios(List<String> emailsUsuarios) {
-        this.emailsUsuarios = emailsUsuarios;
+    public List<UsuarioLista> getUsuarios() {
+        return usuarios;
+    }
+
+    public void setUsuarios(List<UsuarioLista> usuarios) {
+        this.usuarios = usuarios;
+    }
+
+    public void addUsuario(UsuarioLista usuarioLista) {
+        usuarioLista.setLista(this); // Configura la relación bidireccional
+        this.usuarios.add(usuarioLista);
+    }
+
+    public void removeUsuario(UsuarioLista usuarioLista) {
+        usuarioLista.setLista(null); // Rompe la relación bidireccional
+        this.usuarios.remove(usuarioLista);
     }
 }

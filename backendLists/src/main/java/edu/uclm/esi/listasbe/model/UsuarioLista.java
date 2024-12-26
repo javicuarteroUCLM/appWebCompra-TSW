@@ -17,9 +17,8 @@ public class UsuarioLista {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private String usuario; // Esto habra será el id en nuestro caso el email del usuario
+    @Column(name = "usuario_id", nullable = false, length = 60)
+    private String usuarioId; // Almacena únicamente el identificador del usuario (email o id)
 
     @ManyToOne
     @JoinColumn(name = "lista_id", nullable = false)
@@ -31,8 +30,8 @@ public class UsuarioLista {
     public UsuarioLista() {
     }
 
-    public UsuarioLista(String usuario, Lista lista, boolean esPropietario) {
-        this.usuario = usuario;
+    public UsuarioLista(String usuarioId, Lista lista, boolean esPropietario) {
+        this.usuarioId = usuarioId;
         this.lista = lista;
         this.esPropietario = esPropietario;
     }
@@ -45,12 +44,12 @@ public class UsuarioLista {
         this.id = id;
     }
 
-    public String getUsuario() {
-        return usuario;
+    public String getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public Lista getLista() {
@@ -67,5 +66,15 @@ public class UsuarioLista {
 
     public void setEsPropietario(boolean esPropietario) {
         this.esPropietario = esPropietario;
+    }
+
+    @Override
+    public String toString() {
+        return "UsuarioLista{" +
+                "id=" + id +
+                ", usuarioId='" + usuarioId + '\'' +
+                ", lista=" + lista +
+                ", esPropietario=" + esPropietario +
+                '}';
     }
 }
