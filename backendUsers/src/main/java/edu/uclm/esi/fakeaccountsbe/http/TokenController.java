@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
 @RestController
 @RequestMapping("tokens")
 @CrossOrigin("*")
@@ -26,15 +23,11 @@ public class TokenController {
 
 	@PutMapping("/validar")
 	public void validar(@RequestBody String token) {
-        User user = userDao.findByToken(token);
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
-        }
-		/* 
-        if (!user.isEsPagado()) {
-            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "El usuario no ha pagado");
-        } */
-    }
+		User user = userDao.findByToken(token);
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
+		}
+	}
 
 	@GetMapping("/obtenerEmail")
 	public String obtenerEmail(@RequestParam String token) {

@@ -10,7 +10,7 @@ import edu.uclm.esi.fakeaccountsbe.services.PagosService;
 
 @RestController
 @RequestMapping("pagos")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 
 public class PagosController {
 
@@ -21,6 +21,7 @@ public class PagosController {
 	// el backend?
 	@PutMapping("/prepararTransaccion")
 	public String prepararTransaccion(@RequestBody float importe) {
+		System.out.println("Importe: " + importe * 100);
 		return this.service.prepararTransaccion((long) (importe * 100));
 	}
 

@@ -185,6 +185,16 @@ public class UserController {
 		}
 	}
 
+	@GetMapping("/pagar")
+	public void pagar(@RequestParam String email) {
+		User user = userDao.findById(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+		user.setEsPagado(true);
+		user.setFechaPago(java.time.LocalDateTime.now());
+		userDao.save(user);
+	}
+
 	private boolean isPrime(int n) {
 		if (n <= 1)
 			return false;
