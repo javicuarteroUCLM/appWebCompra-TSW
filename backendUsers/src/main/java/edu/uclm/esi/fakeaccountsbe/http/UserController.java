@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,6 +44,7 @@ public class UserController {
 		this.userService.registrar(req.getRemoteAddr(), user);
 	}
 
+	// Este metodo no se utilizara
 	@GetMapping("/registrar2")
 	public void registrar2(HttpServletRequest req, @RequestParam String email, @RequestParam String pwd1,
 			@RequestParam String pwd2) {
@@ -134,6 +136,7 @@ public class UserController {
 		return null;
 	}
 
+	// Este metodo no se utilizara
 	@GetMapping("/login2")
 	public User login2(HttpServletResponse response, @RequestParam String email, @RequestParam String pwd) {
 		User user = this.userService.find(email, pwd);
@@ -142,6 +145,7 @@ public class UserController {
 		return user;
 	}
 
+	// Este metodo no se utilizara
 	@GetMapping("/login3/{email}")
 	public User login3(HttpServletResponse response, @PathVariable String email, @RequestParam String pwd) {
 		return this.login2(response, email, pwd);

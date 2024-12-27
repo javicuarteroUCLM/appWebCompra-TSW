@@ -1,13 +1,21 @@
-import React from 'react';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import RegisterForm from './components/RegisterForm';
-import LoginForm from './components/LoginForm';
-import UserDashboard from './components/UserDashboard';
+/** @format */
 
-const stripePromise = loadStripe('pk_test_51Q7a5l1FZhFh3pfsdQHD46vushsIqyxsKtiWJQm85vYXs0uBFu3ZCl7BOoP3o54b0eswWFR3ApITMbPPOSN8d66a00Ecx2pqtn'); // Usamos la variable de entorno para la clave pública
+import React from "react";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./components/LandingPage";
+import RegisterForm from "./components/RegisterForm";
+import LoginForm from "./components/LoginForm";
+import UserDashboard from "./components/UserDashboard";
+
+const fetchStripeKey = async () => {
+  const response = await fetch("http://localhost:9000/pagos/stripeKey");
+  const stripeKey = await response.text();
+  return loadStripe(stripeKey);
+};
+
+const stripePromise = fetchStripeKey();
 
 const App = () => {
   return (

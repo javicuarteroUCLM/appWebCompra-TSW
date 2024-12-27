@@ -3,6 +3,7 @@ package edu.uclm.esi.fakeaccountsbe.http;
 import edu.uclm.esi.fakeaccountsbe.services.PagosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,4 +27,9 @@ public class PagosController {
 		return this.service.prepararTransaccion((long) (importe * 100));
 	}
 
+
+	@GetMapping("/stripeKey")
+	public String getStripeKey() {
+		return this.service.getStripeKey();
+	}
 }

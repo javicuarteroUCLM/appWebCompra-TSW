@@ -7,7 +7,6 @@ import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class PagosService {
     // Pregunta de examen para que sirve la clave publica y privada de stripe
@@ -20,31 +19,13 @@ public class PagosService {
         Stripe.apiKey = manager.getConfiguration().getJSONObject("stripe").getString("clavePrivadaStripe");
     }
 
-    /*
-    public String prepararTransaccion(long importe) {
-        PaymentIntentCreateParams params = new PaymentIntentCreateParams.Builder()
-                .setCurrency("eur")
-                .setAmount(importe)
-                .build();
-
-        PaymentIntent intent;
-
-        try {
-            intent = PaymentIntent.create(params);
-            return intent.getClientSecret();
-        } catch (StripeException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error creating payment intent", e);
-        }
-    } */
-
     public String prepararTransaccion(long importe) {
         try {
-            PaymentIntentCreateParams params =
-                PaymentIntentCreateParams.builder()
+            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                     .setAmount(importe)
                     .setCurrency("eur")
                     .build();
-    
+
             PaymentIntent paymentIntent = PaymentIntent.create(params);
             return paymentIntent.getClientSecret(); // Debe devolver el client secret o URL correcta
         } catch (StripeException e) {
@@ -52,5 +33,9 @@ public class PagosService {
             throw new RuntimeException("Error al preparar la transacción en Stripe", e);
         }
     }
-    
+
+    public String getStripeKey() {
+        return this.manager.getConfiguration().getJSONObject("stripe").getString("clavePublicaStripe");
+    }
+
 }
