@@ -154,6 +154,7 @@ public class UserController {
 
 	@DeleteMapping("/delete")
 	public void delete(HttpServletRequest request, @RequestParam String email, @RequestParam String pwd) {
+		pwd = org.apache.commons.codec.digest.DigestUtils.sha512Hex(pwd);
 		User user = this.userService.find(email, pwd);
 
 		String token = request.getHeader("token");

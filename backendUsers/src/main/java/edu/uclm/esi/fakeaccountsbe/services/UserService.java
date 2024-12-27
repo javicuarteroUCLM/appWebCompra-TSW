@@ -12,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
 @Service
 public class UserService {
 
@@ -89,7 +85,6 @@ public class UserService {
 
 	public User find(String email, String pwd) {
 		this.getAllUsers();
-		//pwd = org.apache.commons.codec.digest.DigestUtils.sha512Hex(pwd);
 		User user = this.users.get(email);
 		if (user == null || !user.getPwd().equals(pwd))
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credenciales incorrectas");
