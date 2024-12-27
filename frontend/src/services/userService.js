@@ -34,11 +34,30 @@ const getUserDetails = async () => {
   const response = await axios.get(`http://localhost:9000/tokens/obtenerEmail`, {
     params: { token },
   });
-  return { email: response.data, esPagado: false };
+  return response.data;
 };
+
+const prepararTransaccion = async (importe) => {
+  const response = await axios.put(`http://localhost:9000/pagos/prepararTransaccion`, importe, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  console.log('Client secret recibido:', response.data);
+  return response.data; //client secret
+};
+
+const marcarUsuarioComoPagado = async (email) => {
+  const response = await axios.get(`${API_URL}/pagar`, {
+    params: { email },
+  });
+  return response.data;
+};
+
+ 
 
 export default {
   register,
   login,
   getUserDetails,
+  prepararTransaccion,
+  marcarUsuarioComoPagado,
 };
