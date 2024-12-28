@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import userService from '../services/userService';
+import listService from '../services/listService';
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
+  const [lists, setLists] = useState([]);
+  const [newListName, setNewListName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showPaymentForm, setShowPaymentForm] = useState(false); // Nuevo estado
+  const [showPaymentForm, setShowPaymentForm] = useState(false); // si se ha clicado en Hazte Premium, muestra el formulario de pago
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -18,14 +21,36 @@ const UserDashboard = () => {
         const response = await userService.getUserDetails();
         setUser(response);
         console.log('User info:', response);
+
+        const userLists = await listService.getUserLists();
+        setLists(userLists);
+        console.log('User lists:', userLists);
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error('Error fetching user info or lists:', error);
         navigate('/login');
       }
     };
 
     fetchUserInfo();
   }, [navigate]);
+
+  const handleCreateList = async () => {
+    const trimmedName = newListName.trim();
+    if (!trimmedName) {
+      setError('El nombre de la lista no puede estar vacío.');
+      return;
+    }
+
+    try {
+      console.log('Creando lista:', trimmedName);
+      const createdList = await listService.createList(trimmedName);
+      setLists([...lists, createdList]);
+      setNewListName('');
+    } catch (error) {
+      console.error('Error creating list:', error);
+      setError('No se pudo crear la lista.');
+    }
+  };
 
   const handleGoPremium = () => {
     setShowPaymentForm(true); 
@@ -46,14 +71,13 @@ const UserDashboard = () => {
     try {
       const cardElement = elements.getElement(CardElement);
 
-      // Obtener el clientSecret desde el backend
       const clientSecret = await userService.prepararTransaccion(3);
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
           billing_details: {
-            name: user.email, // Puedes reemplazar con el nombre del usuario si lo tienes
+            name: user.email, //obtiene el email del usuario para que aparezca en las transacciones de stripe
           },
         },
       });
@@ -64,8 +88,7 @@ const UserDashboard = () => {
         return;
       }
 
-      if (paymentIntent.status === 'succeeded') {
-        // Pago exitoso: llama al backend para marcar al usuario como premium
+      if (paymentIntent.status === 'succeeded') { //si pago OK
         await userService.marcarUsuarioComoPagado(user.email);
         alert('¡Pago procesado con éxito! Ahora eres un usuario premium.');
         window.location.reload();
@@ -108,6 +131,25 @@ const UserDashboard = () => {
           )}
         </>
       )}
+
+      <h2>Mis Listas</h2>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <div>
+              <input
+                type="text"
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value)}
+                placeholder="Nombre de la nueva lista"
+              />
+              <button onClick={handleCreateList} style={{ marginLeft: '10px' }}>
+                Crear Lista
+              </button>
+            </div>
+            <ul style={{ marginTop: '20px' }}>
+              {lists.map((list) => (
+                <li key={list.id}>{list.nombre}</li>
+              ))}
+            </ul>
     </div>
   );
 };
