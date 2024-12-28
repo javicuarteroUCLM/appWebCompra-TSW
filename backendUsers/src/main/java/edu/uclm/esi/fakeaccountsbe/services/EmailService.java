@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
 @Service
 public class EmailService {
 
@@ -28,40 +27,7 @@ public class EmailService {
         this.manager = manager;
     }
 
-    public void sendCredentialsEmail(String recipientEmail) throws org.json.JSONException {
-        // Obtener las credenciales del usuario desde el DAO
-        User user = this.userDao.findByEmail(recipientEmail);
-
-        if (user == null) {
-            System.err.println("Error: No user found with email " + recipientEmail);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "No existe un usuario con ese correo electrónico");
-        }
-
-        String credentials = "Usuario: " + user.getEmail() + ", Contraseña: " + user.getPwd();
-
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setApiKey(this.manager.getConfiguration().getJSONObject("brevo").getString("apiKey"));
-
-        TransactionalEmailsApi apiInstance = new TransactionalEmailsApi(defaultClient);
-
-        // Configurar el correo
-        SendSmtpEmail email = new SendSmtpEmail()
-                .to(java.util.List.of(new SendSmtpEmailTo().email(recipientEmail))) // Destinatario
-                .sender(new SendSmtpEmailSender().email("gonzidlreyes02s@gmail.com")
-                        .name("Gonzalo De Los Reyes Sánchez")) // Remitente
-                .subject("Recuperar Credenciales de acceso")
-                .htmlContent("<p>Sus credenciales son: " + credentials + "</p>");
-
-        try {
-            apiInstance.sendTransacEmail(email);
-            System.out.println("Correo enviado correctamente a " + recipientEmail);
-        } catch (ApiException e) {
-            System.err.println("Error al enviar el correo: " + e.getResponseBody());
-        }
-    }
-
-    public void sendTestEmail(String destinatario) throws org.json.JSONException {
+    public void sendCredentialsEmail(String destinatario) throws org.json.JSONException {
         // Obtener las credenciales del usuario desde el DAO
         User user = this.userDao.findByEmail(destinatario);
 
@@ -87,21 +53,24 @@ public class EmailService {
 
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setApiKey(this.manager.getConfiguration().getJSONObject("brevo").getString("apiKey"));
-
+        String sender = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender")
+                .getString("email");
+        String name = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender").getString("name");
         TransactionalEmailsApi apiInstance = new TransactionalEmailsApi(defaultClient);
 
         // Configurar el correo
         SendSmtpEmail email = new SendSmtpEmail()
                 .to(java.util.List.of(new SendSmtpEmailTo().email(destinatario).name("Javier"))) // Destinatario
-                .sender(new SendSmtpEmailSender().email("gonzidlreyes02s@gmail.com").name("Gonzalo")) // Remitente
+                .sender(new SendSmtpEmailSender().email(sender).name(name)) // Remitente
                 .subject("Recuperar Credenciales de acceso")
-                .htmlContent("<p>Sus credenciales son: " + credentials + "</p>");
+                .htmlContent("<p>Sus credenciales temporales ahora son: " + credentials + "</p>"
+                        + "<p>Por favor, cambie su contraseña lo antes posible</p>");
 
         try {
             apiInstance.sendTransacEmail(email);
-            System.out.println("Correo de prueba enviado correctamente a gonzidlreyes02s@gmail.com");
+            System.out.println("Correo de prueba enviado correctamente a " + destinatario);
         } catch (ApiException e) {
-            System.err.println("Error al enviar el correo de prueba: " + e.getResponseBody());
+            System.err.println("Error al enviar el correo: " + e.getResponseBody());
         }
     }
 }

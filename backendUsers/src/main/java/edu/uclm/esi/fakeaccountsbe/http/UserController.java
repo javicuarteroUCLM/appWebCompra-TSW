@@ -199,6 +199,22 @@ public class UserController {
 		userDao.save(user);
 	}
 
+	@GetMapping("/esPremium")
+	public boolean esPremium(@RequestParam String email) {
+		User user = userDao.findById(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+		if (user.isEsPagado()) {
+			java.time.LocalDateTime fechaPago = user.getFechaPago();
+			java.time.LocalDateTime fechaActual = java.time.LocalDateTime.now();
+			java.time.Duration diff = java.time.Duration.between(fechaPago, fechaActual);
+			if (diff.toDays() < 365) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean isPrime(int n) {
 		if (n <= 1)
 			return false;

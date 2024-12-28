@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
 @Service
 public class UserService {
 
@@ -99,14 +97,12 @@ public class UserService {
 		// Recargo los usuarios desde la base de datos
 		this.getAllUsers();
 	}
-	/* 
-	public synchronized void clearOld() {
-		long time = System.currentTimeMillis();
-		for (User user : this.users.values())
-			if (time > 600_000 + user.getCreationTime())
-				this.delete(user.getEmail());
-	} */
-
-	
-
+	/*
+	 * public synchronized void clearOld() {
+	 * long time = System.currentTimeMillis();
+	 * for (User user : this.users.values())
+	 * if (time > 600_000 + user.getCreationTime())
+	 * this.delete(user.getEmail());
+	 * }
+	 */
 }
