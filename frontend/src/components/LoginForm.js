@@ -147,4 +147,3 @@ const styles = {
 };
 
 export default LoginForm;
-
