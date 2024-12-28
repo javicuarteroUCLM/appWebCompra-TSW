@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,19 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
-
-
-
-
 @RestController
 @RequestMapping("listas")
-@CrossOrigin //(origins = "*", allowCredentials = "true")
+@CrossOrigin // (origins = "*", allowCredentials = "true")
 public class ListaController {
     @Autowired
     private ListaService listaService;
@@ -42,16 +33,16 @@ public class ListaController {
     @GetMapping("/getLista")
     public List<Lista> getLista(@RequestHeader("token") String token) {
 
-		System.out.println("Token recibido en /getLista: " + token);
-		String email = this.proxy.obtenerEmailDesdeToken(token);
-    	System.out.println("Email recuperado: " + email);
+        System.out.println("Token recibido en /getLista: " + token);
+        String email = this.proxy.obtenerEmailDesdeToken(token);
+        System.out.println("Email recuperado: " + email);
         if (token == null || token.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
         }
         List<Lista> listas = this.listaService.getListas(email);
-    	System.out.println("Listas recuperadas: " + listas);
-    
-    	return listas;
+        System.out.println("Listas recuperadas: " + listas);
+
+        return listas;
     }
 
     @PostMapping("/crearLista")
@@ -66,6 +57,19 @@ public class ListaController {
         }
 
         return this.listaService.crearLista(nombre, token);
+    }
+
+    @DeleteMapping("/borrarLista")
+    public void borrarLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token) {
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+        }
+
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+
+        this.listaService.borrarLista(idLista, token);
     }
 
     @PostMapping("/addProducto")
@@ -105,6 +109,4 @@ public class ListaController {
         // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja aquí
         return this.listaService.comprar(idProducto, udsCompradas);
     }
-
-
 }

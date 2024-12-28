@@ -67,8 +67,8 @@ public class UserController {
 	}
 
 	@PutMapping("/login1")
-	public String login1(HttpServletResponse response, HttpServletRequest request,
-			@RequestBody(required = false) User user) {
+		public String login1(HttpServletResponse response, HttpServletRequest request,
+				@RequestBody(required = false) User user) {
 
 		// Validar las credenciales del usuario primero
 		if (user == null || user.getEmail() == null || user.getPwd() == null) {
@@ -213,6 +213,21 @@ public class UserController {
 			}
 		}
 		return false;
+	}
+
+	@PutMapping("/actualizarPwd")
+	public void actualizarContraseña(@RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
+		User user = userDao.findById(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+		CredencialesRegistro cr = new CredencialesRegistro();
+		cr.setEmail(email);
+		cr.setPwd1(pwd1);
+		cr.setPwd2(pwd2);
+		cr.comprobar();
+
+		user.setPwd(pwd1);
+		this.userDao.save(user);
 	}
 
 	private boolean isPrime(int n) {

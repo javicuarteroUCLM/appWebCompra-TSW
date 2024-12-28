@@ -5,8 +5,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-
-
 @Repository
 public interface UsuarioListaRepository extends JpaRepository<UsuarioLista, Long> {
 
@@ -18,4 +16,7 @@ public interface UsuarioListaRepository extends JpaRepository<UsuarioLista, Long
 
     // Buscar el propietario de una lista específica
     UsuarioLista findByListaIdAndEsPropietarioTrue(String listaId);
+
+    // Buscar una relación entre un usuario y una lista específica
+    UsuarioLista findByUsuarioIdAndListaId(String usuarioId, String listaId);
 }
