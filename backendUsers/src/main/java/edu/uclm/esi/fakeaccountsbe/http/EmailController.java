@@ -17,6 +17,6 @@ public class EmailController {
 
     @GetMapping("/recoverEmail")
     public void recoverCredentialsByEmail(@RequestBody String email) {
-        this.emailService.sendCredentialsEmail(email);
+        this.emailService.sendTestEmail(email);
     }
 }
