@@ -27,6 +27,9 @@ const createList = async (listName) => {
     }
     catch (error) {
         console.error('Error creating list:', error.response?.data || error.message);
+        if (error.response && error.response.status === 402) {
+          throw new Error('Debes pagar para crear más de 2 listas.');
+      }
         throw new Error('No se pudo crear la lista');
     }
 };

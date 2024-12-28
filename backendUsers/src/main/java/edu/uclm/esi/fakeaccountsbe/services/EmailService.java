@@ -1,10 +1,5 @@
 package edu.uclm.esi.fakeaccountsbe.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import brevo.ApiClient;
 import brevo.ApiException;
 import brevo.Configuration;
@@ -14,6 +9,11 @@ import brevoModel.SendSmtpEmailSender;
 import brevoModel.SendSmtpEmailTo;
 import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
 import edu.uclm.esi.fakeaccountsbe.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
 public class EmailService {
@@ -28,7 +28,7 @@ public class EmailService {
         this.manager = manager;
     }
 
-    public void sendCredentialsEmail(String recipientEmail) {
+    public void sendCredentialsEmail(String recipientEmail) throws org.json.JSONException {
         // Obtener las credenciales del usuario desde el DAO
         User user = this.userDao.findByEmail(recipientEmail);
 
@@ -61,7 +61,7 @@ public class EmailService {
         }
     }
 
-    public void sendTestEmail(String destinatario) {
+    public void sendTestEmail(String destinatario) throws org.json.JSONException {
         // Obtener las credenciales del usuario desde el DAO
         User user = this.userDao.findByEmail(destinatario);
 

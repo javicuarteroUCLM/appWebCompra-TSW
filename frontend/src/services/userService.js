@@ -25,6 +25,10 @@ const login = async (email, password) => {
   return token; // Retorna el token para confirmación
 };
 
+const logout = async () => {
+  localStorage.removeItem('authToken');
+}
+
 // Obtener detalles del usuario logueado
 const getUserDetails = async () => {
   const token = localStorage.getItem('authToken');
@@ -60,4 +64,5 @@ export default {
   getUserDetails,
   prepararTransaccion,
   marcarUsuarioComoPagado,
+  logout,
 };

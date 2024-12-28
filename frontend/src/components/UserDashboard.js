@@ -34,6 +34,11 @@ const UserDashboard = () => {
     fetchUserInfo();
   }, [navigate]);
 
+  const handleLogout = async () => {
+    await userService.logout();
+    navigate('/');
+  };
+
   const handleCreateList = async () => {
     const trimmedName = newListName.trim();
     if (!trimmedName) {
@@ -47,8 +52,14 @@ const UserDashboard = () => {
       setLists([...lists, createdList]);
       setNewListName('');
     } catch (error) {
-      console.error('Error creating list:', error);
-      setError('No se pudo crear la lista.');
+      console.error('Error creando lista:', error);
+      if (error.message === 'Debes pagar para crear más de 2 listas.') {
+        setError(
+          'Solo puedes crear 2 listas con tu plan actual. Hazte Premium para crear listas ilimitadas.'
+        );
+      } else {
+        setError('No se pudo crear la lista.');
+      }
     }
   };
 
@@ -110,6 +121,9 @@ const UserDashboard = () => {
       <h1>Bienvenido a tu Dashboard</h1>
       <p><strong>Email:</strong> {user.email}</p>
       <p><strong>Tipo de usuario:</strong> {user.esPagado ? 'Premium' : 'Gratuito'}</p>
+      <button onClick={handleLogout} style={{ marginBottom: '20px', padding: '10px 20px' }}>
+        Cerrar Sesión
+      </button>
       {!user.esPagado && (
         <>
           {!showPaymentForm ? (
@@ -132,7 +146,7 @@ const UserDashboard = () => {
         </>
       )}
 
-      <h2>Mis Listas</h2>
+      <h2>Mis listas de la compra</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <div>
               <input
