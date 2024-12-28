@@ -8,4 +8,6 @@ public interface UserDao extends JpaRepository<User, String> {
     User findByCookie(String fakeUserId);
 
     User findByToken(String token);
+
+    User findByEmail(String email);
 }

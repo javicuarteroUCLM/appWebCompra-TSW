@@ -101,6 +101,11 @@
     		<version>20240303</version>
 		</dependency>
 		<dependency>
+		    <groupId>com.brevo</groupId>
+		    <artifactId>brevo</artifactId>
+		    <version>1.0.0</version>
+		</dependency>	
+		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
 			<version>4.0.0-alpha-6</version>
