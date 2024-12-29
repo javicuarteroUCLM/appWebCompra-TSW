@@ -1,4 +1,5 @@
 package edu.uclm.esi.listasbe.services;
+
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -21,9 +22,9 @@ public class ProxyBEU {
             HttpPut httpPut = new HttpPut("http://localhost:9000/tokens/validar");
             httpPut.setEntity(new StringEntity(token));
             httpPut.setHeader("Content-type", "text/plain");
-    
+
             System.out.println("Enviando token para validación: " + token);
-    
+
             try (CloseableHttpResponse response = httpclient.execute(httpPut)) {
                 System.out.println("Código de respuesta: " + response.getCode());
                 return response.getCode() == 200;
@@ -33,19 +34,22 @@ public class ProxyBEU {
             return false;
         }
     }
-    
 
     /**
      * Obtener el email del usuario asociado a un token.
      */
     public String obtenerEmailDesdeToken(String token) {
+        this.validar(token);
+
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet("http://localhost:9000/tokens/obtenerEmail?token=" + token);
-    
+
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 if (response.getCode() == 200) {
                     // Extrae el email del cuerpo de la respuesta
-                    return EntityUtils.toString(response.getEntity());
+                    org.json.JSONObject jsonObject = new org.json.JSONObject(
+                            EntityUtils.toString(response.getEntity()));
+                    return jsonObject.getString("email");
                 } else {
                     System.err.println("Error en la validación del token: " + response.getCode());
                 }
@@ -53,27 +57,25 @@ public class ProxyBEU {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
+
         return null;
     }
-    
-    
 
     public boolean verificarUsuarioPagado(String email) {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet("http://localhost:9000/users/esPagado?email=" + email);
-    
+
             HttpContext context = new BasicHttpContext();
-    
+
             try (CloseableHttpResponse response = httpclient.execute(httpGet, context)) {
                 System.out.println("Response status: " + response.getCode());
                 return response.getCode() == 200;
             }
-    
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
-    
+
 }

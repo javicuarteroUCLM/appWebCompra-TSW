@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,16 +20,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-
-
-
-
-
-
-
-
-
 
 @RestController
 @RequestMapping("listas")
@@ -40,7 +31,7 @@ public class ListaController {
     @Autowired
     private ProxyBEU proxy;
 
-    //Método para obtener las listas de un usuario
+    // Método para obtener las listas de un usuario
     @GetMapping("/getLista")
     public List<Lista> getLista(@RequestHeader("token") String token) {
 
@@ -57,7 +48,7 @@ public class ListaController {
     }
 
     @PostMapping("/crearLista")
-    public Lista crearLista(@RequestBody Map<String, String> requestBody, @RequestHeader("token") String token) {
+    public String crearLista(@RequestBody Map<String, String> requestBody, @RequestHeader("token") String token) {
         String nombre = requestBody.get("nombre");
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista no puede ser vacío");
@@ -69,19 +60,21 @@ public class ListaController {
 
         return this.listaService.crearLista(nombre, token);
     }
-    /*
+
     @DeleteMapping("/borrarLista")
     public void borrarLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token) {
         if (idLista == null || idLista.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se proporcionó el ID de la lista");
         }
 
         if (token == null || token.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Token no proporcionado");
         }
 
         this.listaService.borrarLista(idLista, token);
-    }*/
+    }
 
     @PostMapping("/addProducto")
     public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
@@ -135,6 +128,6 @@ public class ListaController {
     @GetMapping("/productos/{idLista}")
     public List<Producto> getProductosDeLista(@PathVariable String idLista) {
         return this.listaService.getProductosDeLista(idLista);
-}
+    }
 
 }
