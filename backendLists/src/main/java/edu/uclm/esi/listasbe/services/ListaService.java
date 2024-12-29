@@ -193,4 +193,76 @@ public class ListaService {
 		// Borrar la lista
 		listaDao.delete(lista);
 	}
+
+	public void borrarUsuarioDeLista(String idLista, String email) {
+		// Buscar la relación entre el usuario y la lista
+		UsuarioLista relacion = usuarioListaRepository.findByUsuarioIdAndListaId(email, idLista);
+		if (relacion == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la relación usuario-lista");
+		}
+
+		// Borrar la relación
+		usuarioListaRepository.delete(relacion);
+	}
+
+	public UsuarioLista getRelacionUsuarioLista(String email, String idLista) {
+		// Buscar la relación entre el usuario y la lista
+		UsuarioLista relacion = usuarioListaRepository.findByUsuarioIdAndListaId(email, idLista);
+		if (relacion == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la relación usuario-lista");
+		}
+		return relacion;
+	}
+
+	public void compartirLista(String idLista, String urlCompartir) {
+		UsuarioLista propietario = this.propietario(idLista);
+
+		listaDao.findById(idLista).ifPresent(lista -> {
+			lista.setCompartida(true);
+			lista.setUrlInvitacion(urlCompartir);
+			if (propietario.isEsPropietario()) {
+				// Comprobar que el user es premium
+				if (this.proxy.verificarUsuarioPagado(propietario.getUsuarioId())) {
+					lista.setMaxUsuarios(1000000000);
+				}
+			}
+			listaDao.save(lista);
+		});
+	}
+
+	public UsuarioLista propietario(String idLista) {
+		UsuarioLista propietario = usuarioListaRepository.findByListaIdAndEsPropietario(idLista, true);
+		if (propietario == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado el propietario de la lista");
+		}
+		return propietario;
+	}
+
+	public void crearInvitacion(String idLista, String emailInvitado) {
+		// Obtener la lista
+		Optional<Lista> optLista = listaDao.findById(idLista);
+		if (optLista.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
+		}
+
+		Lista lista = optLista.get();
+
+		// Verificar si el usuario ya está en la lista
+		UsuarioLista relacion = usuarioListaRepository.findByUsuarioIdAndListaId(emailInvitado, idLista);
+		if (relacion != null) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario ya está en la lista");
+		}
+
+		// Verificar si la lista está llena
+		if (lista.getUsuarios().size() - 1 >= lista.getMaxUsuarios()) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La lista está llena");
+		}
+
+		// Crear la relación
+		UsuarioLista usuarioLista = new UsuarioLista(emailInvitado, lista, false);
+		usuarioListaRepository.save(usuarioLista);
+
+		// Si es por WebSocket, notificar al usuario y propietario aqui
+
+	}
 }

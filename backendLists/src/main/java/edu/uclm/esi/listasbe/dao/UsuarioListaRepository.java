@@ -19,4 +19,6 @@ public interface UsuarioListaRepository extends JpaRepository<UsuarioLista, Long
 
     // Buscar una relación entre un usuario y una lista específica
     UsuarioLista findByUsuarioIdAndListaId(String usuarioId, String listaId);
+
+    UsuarioLista findByListaIdAndEsPropietario(String idLista, boolean b);
 }

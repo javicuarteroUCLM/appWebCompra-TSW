@@ -113,7 +113,6 @@ public class WSListas extends TextWebSocketHandler {
         }
     }
     
-    
 
     private String getParameter(WebSocketSession session, String parameter) {
         URI uri = session.getUri();

@@ -2,6 +2,7 @@ package edu.uclm.esi.listasbe.http;
 
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.services.ListaService;
 import edu.uclm.esi.listasbe.services.ProxyBEU;
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,6 +83,40 @@ public class ListaController {
         this.listaService.borrarLista(idLista, token);
     }
 
+    @DeleteMapping("/borrarUsuarioDeLista")
+    public void borrarUsuarioDeLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
+            @RequestBody String email) {
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se proporcionó el ID de la lista");
+        }
+
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Token no proporcionado");
+        }
+
+        // Obterner email del propietario de la lista
+        String emailPropietario = this.proxy.obtenerEmailDesdeToken(token);
+        if (emailPropietario == null || emailPropietario.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
+        }
+
+        // Comprobar si la lista existe
+        if (this.listaService.getListaById(idLista).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
+        }
+
+        // Comprobar si el usuario es propietario de la lista
+        UsuarioLista relacion = this.listaService.getRelacionUsuarioLista(email, idLista);
+        if (relacion == null || !relacion.isEsPropietario()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para borrar esta lista");
+        }
+
+        // Borrar el usuario de la lista
+        this.listaService.borrarUsuarioDeLista(idLista, email);
+    }
+
     @PostMapping("/addProducto")
     public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
@@ -133,6 +168,37 @@ public class ListaController {
     @GetMapping("/productos/{idLista}")
     public List<Producto> getProductosDeLista(@PathVariable String idLista) {
         return this.listaService.getProductosDeLista(idLista);
+    }
+
+    @PostMapping("/compartirLista")
+    public String compartirLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
+            @RequestBody String emailInvitado) {
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+        }
+
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+
+        // Comprobar si la lista existe
+        if (this.listaService.getListaById(idLista).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
+        }
+
+        // Generar URL para compartir la lista
+        String urlCompartir = "http://localhost:80/listas/compartir/" + idLista;
+
+        this.listaService.compartirLista(idLista, urlCompartir);
+
+        // Crear Invitacion
+        this.listaService.crearInvitacion(idLista, emailInvitado);
+
+        // Enviar mensaje con la URL a la amiga Ana (simulación)
+        String mensaje = "Hola Ana, puedes ver la lista compartida en el siguiente enlace: " + urlCompartir;
+        System.out.println("Mensaje enviado a Ana: " + mensaje);
+
+        return urlCompartir;
     }
 
 }
