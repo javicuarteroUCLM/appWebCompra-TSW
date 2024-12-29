@@ -52,12 +52,45 @@ const getUserLists = async () => {
 }
 
 const addProductToList = async (listId, product) => {
-  const response = await axios.post(`${API_URL}/addProduct`, { listId, product });
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('Token no encontrado.');
+  }
+
+  const response = await axios.post(
+    `${API_URL}/addProducto`,
+    product,
+    {
+      headers: {
+        token,
+        idLista: listId,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
   return response.data;
 };
+
+const getProductsByListId = async (listId) => {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('Token no encontrado.');
+  }
+
+  const response = await axios.get(`${API_URL}/productos/${listId}`, {
+    headers: { token },
+  });
+
+  return response.data;
+};
+
+
+
 
 export default {
   createList,
   getUserLists,
   addProductToList,
+  getProductsByListId,
 };

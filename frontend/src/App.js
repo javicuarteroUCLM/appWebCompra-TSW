@@ -9,9 +9,6 @@ import RegisterForm from "./components/RegisterForm";
 import LoginForm from "./components/LoginForm";
 import UserDashboard from "./components/UserDashboard";
 
-
-
-
 const fetchStripeKey = async () => {
   const response = await fetch("http://localhost:9000/pagos/stripeKey");
   const stripeKey = await response.text();

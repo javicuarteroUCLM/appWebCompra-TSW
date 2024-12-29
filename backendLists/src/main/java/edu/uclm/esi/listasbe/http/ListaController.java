@@ -10,8 +10,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +19,16 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+
+
+
+
+
+
+
+
+
 
 @RestController
 @RequestMapping("listas")
@@ -30,6 +40,7 @@ public class ListaController {
     @Autowired
     private ProxyBEU proxy;
 
+    //Método para obtener las listas de un usuario
     @GetMapping("/getLista")
     public List<Lista> getLista(@RequestHeader("token") String token) {
 
@@ -58,7 +69,7 @@ public class ListaController {
 
         return this.listaService.crearLista(nombre, token);
     }
-
+    /*
     @DeleteMapping("/borrarLista")
     public void borrarLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token) {
         if (idLista == null || idLista.trim().isEmpty()) {
@@ -70,10 +81,10 @@ public class ListaController {
         }
 
         this.listaService.borrarLista(idLista, token);
-    }
+    }*/
 
     @PostMapping("/addProducto")
-    public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
+    public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
         }
@@ -88,7 +99,18 @@ public class ListaController {
         }
 
         // Solo pasamos `idLista` y `producto`, ya que el token no se maneja aquí
-        return this.listaService.addProducto(idLista, producto);
+        String token = request.getHeader("token");
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+        try {
+            System.out.println("Solicitud para añadir producto a la lista " + idLista);
+            System.out.println("Producto recibido: " + producto.getNombre());
+            System.out.println("Token del usuario: " + token);
+            return this.listaService.addProducto(idLista, producto, token);
+        } catch (org.json.JSONException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error procesando JSON", e);
+        }
     }
 
     @PutMapping("/comprar")
@@ -109,4 +131,10 @@ public class ListaController {
         // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja aquí
         return this.listaService.comprar(idProducto, udsCompradas);
     }
+
+    @GetMapping("/productos/{idLista}")
+    public List<Producto> getProductosDeLista(@PathVariable String idLista) {
+        return this.listaService.getProductosDeLista(idLista);
+}
+
 }

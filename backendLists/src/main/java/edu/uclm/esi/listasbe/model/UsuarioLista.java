@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+
 @Entity
 @Table(name = "usuarios_listas")
 public class UsuarioLista {
@@ -18,6 +19,7 @@ public class UsuarioLista {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // IDENTITY para sincronizar con el autoincremento de MySQL
     private Long id;
 
+    
     @Column(name = "usuario_id", nullable = false, length = 60)
     private String usuarioId; // email del usuario como referencia
 
