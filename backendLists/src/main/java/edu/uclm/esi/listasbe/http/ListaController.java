@@ -32,19 +32,25 @@ public class ListaController {
     private ProxyBEU proxy;
 
     // Método para obtener las listas de un usuario
-    @GetMapping("/getLista")
+    @GetMapping("/getListas")
     public List<Lista> getLista(@RequestHeader("token") String token) {
-
-        System.out.println("Token recibido en /getLista: " + token);
         String email = this.proxy.obtenerEmailDesdeToken(token);
-        System.out.println("Email recuperado: " + email);
         if (token == null || token.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
         }
         List<Lista> listas = this.listaService.getListas(email);
-        System.out.println("Listas recuperadas: " + listas);
 
         return listas;
+    }
+
+    // Método para obtener las listas de un usuario
+    @GetMapping("/verLista")
+    public Lista verLista(@RequestHeader("idLista") String id) {
+        if (id == null || id.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "ID de la lista no proporcionado");
+        }
+        return this.listaService.getListaById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lista no encontrada"));
     }
 
     @PostMapping("/crearLista")
@@ -85,7 +91,6 @@ public class ListaController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El nombre del producto no puede tener más de 80 caracteres");
         }
-
         String idLista = request.getHeader("idLista");
         if (idLista == null || idLista.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
