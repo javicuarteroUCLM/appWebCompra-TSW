@@ -1,13 +1,15 @@
-import axios from 'axios';
+/** @format */
 
-const API_URL = 'http://localhost:9000/users'; // URL de la API de usuarios (backend)
+import axios from "axios";
+
+const API_URL = "http://localhost:9000/users"; // URL de la API de usuarios (backend)
 
 // Registrar un nuevo usuario
 const register = async (email, pwd1, pwd2) => {
   const params = new URLSearchParams();
-  params.append('email', email);
-  params.append('pwd1', pwd1);
-  params.append('pwd2', pwd2);
+  params.append("email", email);
+  params.append("pwd1", pwd1);
+  params.append("pwd2", pwd2);
 
   await axios.get(`${API_URL}/registrar2`, { params });
 };
@@ -21,31 +23,38 @@ const login = async (email, password) => {
   );
   // Guardar el token en localStorage
   const token = response.data;
-  localStorage.setItem('authToken', token);
+  localStorage.setItem("authToken", token);
   return token; // Retorna el token para confirmación
 };
 
 const logout = async () => {
-  localStorage.removeItem('authToken');
-}
+  localStorage.removeItem("authToken");
+};
 
 // Obtener detalles del usuario logueado
-const getUserDetails = async () => {
-  const token = localStorage.getItem('authToken');
+export const getUserDetails = async () => {
+  const token = localStorage.getItem("authToken");
   if (!token) {
-    throw new Error('Token no encontrado');
+    throw new Error("Token no encontrado");
   }
-  const response = await axios.get(`http://localhost:9000/tokens/obtenerEmail`, {
-    params: { token },
-  });
+  const response = await axios.get(
+    `http://localhost:9000/tokens/obtenerEmail`,
+    {
+      params: { token },
+    }
+  );
   return response.data;
 };
 
 const prepararTransaccion = async (importe) => {
-  const response = await axios.put(`http://localhost:9000/pagos/prepararTransaccion`, importe, {
-    headers: { 'Content-Type': 'application/json' },
-  });
-  console.log('Client secret recibido:', response.data);
+  const response = await axios.put(
+    `http://localhost:9000/pagos/prepararTransaccion`,
+    importe,
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  console.log("Client secret recibido:", response.data);
   return response.data; //client secret
 };
 
@@ -55,8 +64,6 @@ const marcarUsuarioComoPagado = async (email) => {
   });
   return response.data;
 };
-
- 
 
 export default {
   register,

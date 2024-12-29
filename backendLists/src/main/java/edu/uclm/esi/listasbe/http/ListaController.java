@@ -24,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("listas")
-@CrossOrigin // (origins = "*", allowCredentials = "true")
+@CrossOrigin(origins = { "https://localhost:3000", "https://localhost:80" }, allowCredentials = "true")
 public class ListaController {
     @Autowired
     private ListaService listaService;

@@ -27,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("users")
 // @CrossOrigin("*")
-@CrossOrigin(origins = { "https://localhost:4200" }, allowCredentials = "true")
+@CrossOrigin(origins = { "https://localhost:3000", "https://localhost:80" }, allowCredentials = "true")
 public class UserController {
 	@Autowired
 	private UserService userService;
@@ -67,8 +67,8 @@ public class UserController {
 	}
 
 	@PutMapping("/login1")
-		public String login1(HttpServletResponse response, HttpServletRequest request,
-				@RequestBody(required = false) User user) {
+	public String login1(HttpServletResponse response, HttpServletRequest request,
+			@RequestBody(required = false) User user) {
 
 		// Validar las credenciales del usuario primero
 		if (user == null || user.getEmail() == null || user.getPwd() == null) {

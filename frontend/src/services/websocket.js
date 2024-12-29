@@ -1,3 +1,5 @@
+/** @format */
+
 import { w3cwebsocket as WebSocket } from "websocket";
 
 let ws; // Variable para mantener la conexión WebSocket
@@ -29,19 +31,17 @@ export const connectWebSocket = (email) => {
   ws.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
-  
-      if (data.type === 'actualizacionDeLista') {
+
+      if (data.type === "actualizacionDeLista") {
         const listId = data.idLista;
         if (subscriptions[listId]) {
           subscriptions[listId](data); // Llama al callback asociado
         }
       }
     } catch (err) {
-      console.error('Error procesando mensaje WebSocket:', err);
+      console.error("Error procesando mensaje WebSocket:", err);
     }
   };
-  
-  
 };
 
 // Suscribirse a actualizaciones de una lista específica

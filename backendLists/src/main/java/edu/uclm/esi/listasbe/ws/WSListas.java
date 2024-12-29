@@ -19,12 +19,6 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-
-
-
-
-
-
 @Component
 public class WSListas extends TextWebSocketHandler {
 
@@ -54,56 +48,59 @@ public class WSListas extends TextWebSocketHandler {
         }
     }
 
-    /* 
-    public void notificar(String idLista, Producto producto) throws JSONException {
-        List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
-        if (interesados == null)
-            return;
-
-        JSONObject json = new JSONObject();
-        json.put("type", "actualizacionDeLista");
-        try {
-            json.put("idLista", idLista);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        json.put("udsCompradas", producto.getUdsCompradas());
-        json.put("udsPedidas", producto.getUdsPedidas());
-        json.put("nombre", producto.getNombre());
-
-        TextMessage message = new TextMessage(json.toString());
-
-        for (WebSocketSession target : interesados) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        target.sendMessage(message);
-                    } catch (IOException e) {
-
-                    }
-                }
-            }).start();
-        }
-    } */
+    /*
+     * public void notificar(String idLista, Producto producto) throws JSONException
+     * {
+     * List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
+     * if (interesados == null)
+     * return;
+     * 
+     * JSONObject json = new JSONObject();
+     * json.put("type", "actualizacionDeLista");
+     * try {
+     * json.put("idLista", idLista);
+     * } catch (JSONException e) {
+     * e.printStackTrace();
+     * }
+     * json.put("udsCompradas", producto.getUdsCompradas());
+     * json.put("udsPedidas", producto.getUdsPedidas());
+     * json.put("nombre", producto.getNombre());
+     * 
+     * TextMessage message = new TextMessage(json.toString());
+     * 
+     * for (WebSocketSession target : interesados) {
+     * new Thread(new Runnable() {
+     * 
+     * @Override
+     * public void run() {
+     * try {
+     * target.sendMessage(message);
+     * } catch (IOException e) {
+     * 
+     * }
+     * }
+     * }).start();
+     * }
+     * }
+     */
 
     public void notificar(String idLista, Producto producto) throws JSONException {
         List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
         if (interesados == null || interesados.isEmpty()) {
             return; // No hay sesiones interesadas
         }
-    
+
         JSONObject json = new JSONObject();
         json.put("type", "actualizacionDeLista");
         json.put("idLista", idLista);
         json.put("producto", new JSONObject()
-            .put("id", producto.getId())
-            .put("nombre", producto.getNombre())
-            .put("udsPedidas", producto.getUdsPedidas())
-            .put("udsCompradas", producto.getUdsCompradas()));
-    
+                .put("id", producto.getId())
+                .put("nombre", producto.getNombre())
+                .put("udsPedidas", producto.getUdsPedidas())
+                .put("udsCompradas", producto.getUdsCompradas()));
+
         TextMessage message = new TextMessage(json.toString());
-    
+
         for (WebSocketSession session : interesados) {
             try {
                 session.sendMessage(message);
@@ -112,7 +109,6 @@ public class WSListas extends TextWebSocketHandler {
             }
         }
     }
-    
 
     private String getParameter(WebSocketSession session, String parameter) {
         URI uri = session.getUri();
