@@ -7,6 +7,7 @@ import { getUserDetails } from "./userService";
 const API_URL = "http://localhost:8383/listas";
 let ws;
 
+// Crear una Lista
 const createList = async (listName) => {
   const token = localStorage.getItem("authToken");
   if (!token) {
@@ -35,6 +36,7 @@ const createList = async (listName) => {
   }
 };
 
+// Obtener Listas del Usuario
 const getUserLists = async () => {
   const token = localStorage.getItem("authToken");
   if (!token) {
@@ -44,7 +46,7 @@ const getUserLists = async () => {
   const response = await axios.get(`${API_URL}/getListas`, {
     withCredentials: true,
     headers: {
-      token: token, // Cambié 'Authorization' por 'token'
+      token: token,
       "Content-Type": "application/json",
     },
   });
@@ -52,6 +54,7 @@ const getUserLists = async () => {
   return response.data;
 };
 
+// Añadir Producto a Lista
 const addProductToList = async (listId, product) => {
   const token = localStorage.getItem("authToken");
   if (!token) {
@@ -92,7 +95,7 @@ const addProductToList = async (listId, product) => {
   return response.data;
 };
 
-
+// Obtener Productos de una Lista
 const getProductsByListId = async (listId) => {
   if (!listId) {
     throw new Error("No se ha proporcionado un ID de lista.");

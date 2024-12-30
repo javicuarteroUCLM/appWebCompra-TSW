@@ -59,6 +59,7 @@ const UserDashboard = () => {
     }
   };
 
+  // Cerrar sesión y borrar Cookies
   const handleLogout = async () => {
     await userService.logout();
     // Eliminar la cookie al cerrar sesión fakeUserID
@@ -79,6 +80,7 @@ const UserDashboard = () => {
     navigate("/");
   };
 
+  // Crear una nueva lista
   const handleCreateList = async () => {
     const trimmedName = newListName.trim();
     if (!trimmedName) {
@@ -87,9 +89,10 @@ const UserDashboard = () => {
     }
 
     try {
-      console.log("Creando lista:", trimmedName);
       const createdList = await listService.createList(trimmedName);
-      setLists([...lists, createdList]);
+      const userLists = await listService.getUserLists();
+
+      setLists(userLists);
       setNewListName("");
     } catch (error) {
       console.error("Error creando lista:", error);
@@ -103,6 +106,7 @@ const UserDashboard = () => {
     }
   };
 
+  // Añadir producto a la lista seleccionada
   const handleAddProduct = async () => {
     if (!selectedList) {
       setError("Por favor, selecciona una lista.");
@@ -166,11 +170,13 @@ const UserDashboard = () => {
     });
   };
 
+  // Pasarela de pago para hacer un usuario premium
   const handleGoPremium = () => {
     setShowPaymentForm(true);
     setError(null);
   };
 
+  // Procesar el pago con Stripe
   const handleSubmitPayment = async (event) => {
     event.preventDefault();
     setLoading(true);
