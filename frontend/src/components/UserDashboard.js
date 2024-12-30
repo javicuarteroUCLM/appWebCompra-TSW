@@ -34,11 +34,9 @@ const UserDashboard = () => {
       try {
         const response = await userService.getUserDetails();
         setUser(response);
-        console.log("User info:", response);
 
         const userLists = await listService.getUserLists();
         setLists(userLists);
-        console.log("User lists:", userLists);
       } catch (error) {
         console.error("Error fetching user info or lists:", error);
         navigate("/login");
@@ -237,8 +235,8 @@ const UserDashboard = () => {
   }
 
   return (
-    <div>
-      <h1>Bienvenido a tu Dashboard</h1>
+    <div style={styles.container}>
+      <h1 style={styles.title}>Bienvenido a tu Dashboard</h1>
       <p>
         <strong>Email:</strong> {user.email}
       </p>
@@ -246,10 +244,7 @@ const UserDashboard = () => {
         <strong>Tipo de usuario:</strong>{" "}
         {user.esPagado ? "Premium" : "Gratuito"}
       </p>
-      <button
-        onClick={handleLogout}
-        style={{ marginBottom: "20px", padding: "10px 20px" }}
-      >
+      <button onClick={handleLogout} style={styles.logoutButton}>
         Cerrar Sesión
       </button>
       {!user.esPagado && (
@@ -258,15 +253,19 @@ const UserDashboard = () => {
             <button
               onClick={handleGoPremium}
               disabled={loading}
-              style={{ marginTop: "20px", padding: "10px 20px" }}
+              style={styles.premiumButton}
             >
               Hazte Premium
             </button>
           ) : (
-            <form onSubmit={handleSubmitPayment} style={{ marginTop: "20px" }}>
+            <form onSubmit={handleSubmitPayment} style={styles.paymentForm}>
               <CardElement />
-              {error && <p style={{ color: "red" }}>{error}</p>}
-              <button type="submit" disabled={loading || !stripe || !elements}>
+              {error && <p style={styles.error}>{error}</p>}
+              <button
+                type="submit"
+                disabled={loading || !stripe || !elements}
+                style={styles.button}
+              >
                 Confirmar Pago
               </button>
             </form>
@@ -275,25 +274,26 @@ const UserDashboard = () => {
       )}
 
       <h2>Mis listas de la compra</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <div>
+      {error && <p style={styles.error}>{error}</p>}
+      <div style={styles.createListContainer}>
         <input
           type="text"
           value={newListName}
           onChange={(e) => setNewListName(e.target.value)}
           placeholder="Nombre de la nueva lista"
+          style={styles.input}
         />
-        <button onClick={handleCreateList} style={{ marginLeft: "10px" }}>
+        <button onClick={handleCreateList} style={styles.createListButton}>
           Crear Lista
         </button>
       </div>
-      <ul style={{ marginTop: "20px" }}>
+      <ul style={styles.list}>
         {lists.map((list) => (
-          <li key={list.id}>
+          <li key={list.id} style={styles.listItem}>
             {list.nombre}
             <button
               onClick={() => handleSelectList(list.id)}
-              style={{ marginLeft: "10px", padding: "5px" }}
+              style={styles.selectButton}
             >
               Seleccionar
             </button>
@@ -301,26 +301,27 @@ const UserDashboard = () => {
         ))}
       </ul>
       {selectedList && (
-        <div style={{ marginTop: "20px" }}>
+        <div style={styles.selectedListContainer}>
           <h3>Añadir Producto a la Lista Seleccionada</h3>
           <input
             type="text"
             value={newProductName}
             onChange={(e) => setNewProductName(e.target.value)}
             placeholder="Nombre del producto"
+            style={styles.input}
           />
           <input
             type="number"
             value={newProductQuantity}
             onChange={(e) => setNewProductQuantity(Number(e.target.value))}
             placeholder="Cantidad"
-            style={{ marginLeft: "10px", width: "80px" }}
+            style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
           />
-          <button onClick={handleAddProduct} style={{ marginLeft: "10px" }}>
+          <button onClick={handleAddProduct} style={styles.button}>
             Añadir Producto
           </button>
           <h3>Productos en la Lista</h3>
-          <ul>
+          <ul style={styles.productList}>
             {products.map((product) => (
               <li key={product.id}>
                 {product.nombre} - {product.udsPedidas} unidades pedidas,{" "}

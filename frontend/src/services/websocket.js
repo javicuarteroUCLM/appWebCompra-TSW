@@ -24,11 +24,6 @@ export const connectWebSocket = (email) => {
   ws.onclose = () => {
     console.log("Conexión WebSocket cerrada. Intentando reconectar...");
     ws = null;
-
-    // Intentar reconectar después de 2 segundos
-    setTimeout(() => {
-      connectWebSocket(email);
-    }, 2000);
   };
 
   ws.onerror = (error) => {
@@ -56,7 +51,6 @@ export const getWebSocket = (email) => {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     connectWebSocket(email);
   }
-
   return ws;
 };
 

@@ -118,6 +118,12 @@ const conectarWebSocket = async () => {
   return ws;
 };
 
+const desconectarWebSocket = () => {
+  if (ws) {
+    ws.close();
+  }
+};
+
 const listService = {
   createList,
   getUserLists,
