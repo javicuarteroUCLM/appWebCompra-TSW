@@ -25,12 +25,14 @@ public class TokenController {
 
 	@PutMapping("/validar")
 	public void validar(@RequestBody String token) {
-		User user = userDao.findByToken(token);
+		User user = this.userDao.findByToken(token);
+		System.out.println("Token recibido en /validar: " + token);
+		System.out.println("User encontrado: " + user);
 		if (user == null) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
 		}
 	}
-	
+
 	@GetMapping("/obtenerEmail")
 	public Map<String, Object> obtenerEmail(@RequestParam String token) {
 		System.out.println("Token recibido en /obtenerEmail: " + token);
@@ -38,15 +40,15 @@ public class TokenController {
 		User user = userDao.findByToken(token);
 		if (user != null) {
 			Map<String, Object> userInfo = new HashMap<>();
-			//String email = user.getEmail();
+			// String email = user.getEmail();
 			userInfo.put("email", user.getEmail());
-			//System.out.println("Email encontrado: " + email);
+			// System.out.println("Email encontrado: " + email);
 			userInfo.put("esPagado", user.isEsPagado());
 			return userInfo;
 		} else {
 			System.out.println("Token no encontrado: " + token);
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
 		}
-	} 
+	}
 
 }

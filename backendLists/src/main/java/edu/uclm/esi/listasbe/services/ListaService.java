@@ -181,7 +181,7 @@ public class ListaService {
 		Lista lista = optLista.get();
 		String email = this.proxy.obtenerEmailDesdeToken(token);
 		if (email == null || email.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token propietario no válido");
 		}
 
 		// Verificar que el usuario es propietario de la lista

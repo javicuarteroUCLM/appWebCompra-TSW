@@ -87,7 +87,7 @@ public class ListaController {
 
     @DeleteMapping("/borrarUsuarioDeLista")
     public void borrarUsuarioDeLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
-            @RequestBody String email) {
+            @RequestBody String emailEliminar) {
         if (idLista == null || idLista.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se proporcionó el ID de la lista");
@@ -101,7 +101,12 @@ public class ListaController {
         // Obterner email del propietario de la lista
         String emailPropietario = this.proxy.obtenerEmailDesdeToken(token);
         if (emailPropietario == null || emailPropietario.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido, sin propietario.");
+        }
+
+        // Comprobar que no se elimina a uno mismo
+        if (emailPropietario.equals(emailEliminar)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes eliminarte a ti mismo de la lista");
         }
 
         // Comprobar si la lista existe
@@ -110,13 +115,13 @@ public class ListaController {
         }
 
         // Comprobar si el usuario es propietario de la lista
-        UsuarioLista relacion = this.listaService.getRelacionUsuarioLista(email, idLista);
+        UsuarioLista relacion = this.listaService.getRelacionUsuarioLista(emailPropietario, idLista);
         if (relacion == null || !relacion.isEsPropietario()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para borrar esta lista");
         }
 
         // Borrar el usuario de la lista
-        this.listaService.borrarUsuarioDeLista(idLista, email);
+        this.listaService.borrarUsuarioDeLista(idLista, emailEliminar);
     }
 
     @PostMapping("/addProducto")
