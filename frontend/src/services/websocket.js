@@ -12,7 +12,9 @@ export const connectWebSocket = (email) => {
     return;
   }
 
-  const wsUrl = `ws://localhost:80/wsListas?email=${encodeURIComponent(email)}`;
+  const wsUrl = `wss://localhost:8383/wsListas?email=${encodeURIComponent(
+    email
+  )}`;
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {

@@ -122,14 +122,34 @@ public class WSListas extends TextWebSocketHandler {
         return null;
     }
 
-    private void difundir(JSONObject json) {
-    }
-
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+        try {
+            String payload = message.getPayload();
+            JSONObject json = new JSONObject(payload);
+            String action = json.getString("action");
 
+            if ("addProducto".equals(action)) {
+                String idLista = json.getString("idLista");
+                Producto producto = new Producto();
+                producto.setId(json.getString("idProducto"));
+                producto.setNombre(json.getString("nombre"));
+                producto.setUdsPedidas(json.getInt("udsPedidas"));
+                producto.setUdsCompradas(json.getInt("udsCompradas"));
+
+                // Lógica para agregar el producto a la lista
+                // ...
+
+                // Notificar a los interesados
+                notificar(idLista, producto);
+            }
+            // Manejar otras acciones
+            // ...
+        } catch (JSONException e) {
+            System.err.println("Error procesando mensaje WebSocket: " + e.getMessage());
+        }
     }
-
+    
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
     }

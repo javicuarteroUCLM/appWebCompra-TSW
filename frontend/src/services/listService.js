@@ -4,7 +4,7 @@ import axios from "axios";
 import { sendMessage, connectWebSocket } from "./websocket"; // Importa la función sendMessage y connectWebSocket desde websocket.js
 import { getUserDetails } from "./userService";
 
-const API_URL = "http://localhost:80/listas";
+const API_URL = "http://localhost:8383/listas";
 let ws;
 
 const createList = async (listName) => {
@@ -42,8 +42,13 @@ const getUserLists = async () => {
   if (!token) {
     throw new Error("Token no encontrado para getUserLists");
   }
+
   const response = await axios.get(`${API_URL}/getListas`, {
-    headers: { token },
+    withCredentials: true,
+    headers: {
+      token: token, // Cambié 'Authorization' por 'token'
+      "Content-Type": "application/json",
+    },
   });
 
   return response.data;
@@ -91,14 +96,11 @@ const addProductToList = async (listId, product) => {
 };
 
 const getProductsByListId = async (listId) => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado.");
+  if (!listId) {
+    throw new Error("No se ha proporcionado un ID de lista.");
   }
 
-  const response = await axios.get(`${API_URL}/getProductos`, {
-    headers: { token, idLista: listId },
-  });
+  const response = await axios.get(`${API_URL}/productos/${listId}`);
 
   return response.data;
 };
