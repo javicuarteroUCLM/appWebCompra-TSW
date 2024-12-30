@@ -334,4 +334,125 @@ const UserDashboard = () => {
   );
 };
 
+const styles = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "20px",
+    minHeight: "100vh",
+    backgroundColor: "#f7f9fb",
+  },
+  header: {
+    marginBottom: "30px",
+  },
+  title: {
+    fontSize: "36px",
+    color: "#4CAF50",
+    margin: "0",
+  },
+  logoutButton: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#ff9800",
+    color: "#fff",
+    fontSize: "16px",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  premiumButton: {
+    backgroundColor: "#ff5722", // Naranja oscuro para premium
+    color: "#fff",
+    fontSize: "16px",
+    padding: "12px 24px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    margin: "20px 0",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    transition: "background-color 0.3s",
+  },
+  createListContainer: {
+    display: "flex",
+    justifyContent: "flex-end",
+    width: "100%",
+    marginTop: "20px", // Añadimos margen superior para separar de otros elementos
+  },
+  createListButton: {
+    backgroundColor: "#ff9800", // Naranja para crear lista
+    color: "#fff",
+    fontSize: "16px",
+    padding: "12px 24px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  button: {
+    backgroundColor: "#ff9800",
+    color: "#fff",
+    fontSize: "16px",
+    padding: "12px 24px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    margin: "10px 0",
+    transition: "background-color 0.3s",
+  },
+  paymentForm: {
+    marginTop: "20px",
+  },
+  error: {
+    color: "red",
+  },
+  listsContainer: {
+    width: "100%",
+    maxWidth: "600px",
+  },
+  input: {
+    padding: "8px 12px",
+    margin: "10px 0",
+    width: "100%",
+    maxWidth: "300px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+  },
+  list: {
+    listStyleType: "none",
+    padding: "0",
+  },
+  listItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "8px 0",
+  },
+  selectButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  selectedListContainer: {
+    marginTop: "20px",
+  },
+  productList: {
+    listStyleType: "none",
+    padding: "0",
+  },
+};
+
 export default UserDashboard;
