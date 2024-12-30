@@ -8,6 +8,7 @@ import LandingPage from "./components/LandingPage";
 import RegisterForm from "./components/RegisterForm";
 import LoginForm from "./components/LoginForm";
 import UserDashboard from "./components/UserDashboard";
+import ResetPassword from "./components/ResetPassword";
 
 const fetchStripeKey = async () => {
   const response = await fetch("http://localhost:9000/pagos/stripeKey");
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </Elements>
     </Router>

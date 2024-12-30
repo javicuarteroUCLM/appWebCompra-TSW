@@ -65,6 +65,20 @@ const marcarUsuarioComoPagado = async (email) => {
   return response.data;
 };
 
+// Recuperar Contraseña de Cuenta
+const recoverPassword = async (email) => {
+  const response = await axios.post(
+    `http://localhost:9000/email/recoverEmail`,
+    {
+      email: email, // Aquí también mandas el email en el cuerpo de la solicitud
+    },
+    {
+      headers: { "Content-Type": "application/text-plain" },
+    }
+  );
+  return response.data;
+};
+
 export default {
   register,
   login,
@@ -72,4 +86,5 @@ export default {
   prepararTransaccion,
   marcarUsuarioComoPagado,
   logout,
+  recoverPassword,
 };

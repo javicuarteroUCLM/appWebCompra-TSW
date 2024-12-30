@@ -16,14 +16,12 @@ const createList = async (listName) => {
   const data = { nombre: listName };
 
   try {
-    console.log("Enviando a la API", data);
     const response = await axios.post(`${API_URL}/crearLista`, data, {
       headers: {
         token,
         "Content-Type": "application/json",
       },
     });
-    console.log("Respuesta de la API:", response.data);
     return response.data;
   } catch (error) {
     console.error(

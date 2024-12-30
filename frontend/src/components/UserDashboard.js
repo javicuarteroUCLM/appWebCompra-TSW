@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import userService from '../services/userService';
-import listService from '../services/listService';
-import websocket from '../services/websocket';
+/** @format */
+
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import userService from "../services/userService";
+import listService from "../services/listService";
+import websocket from "../services/websocket";
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
   const [lists, setLists] = useState([]);
   const [selectedList, setSelectedList] = useState(null);
-  const [newListName, setNewListName] = useState('');
-  const [newProductName, setNewProductName] = useState('');
+  const [newListName, setNewListName] = useState("");
+  const [newProductName, setNewProductName] = useState("");
   const [newProductQuantity, setNewProductQuantity] = useState(1);
   const [products, setProducts] = useState([]); // Productos de la lista seleccionada
   const [loading, setLoading] = useState(false);
@@ -25,14 +27,14 @@ const UserDashboard = () => {
       try {
         const response = await userService.getUserDetails();
         setUser(response);
-        console.log('User info:', response);
+        console.log("User info:", response);
 
         const userLists = await listService.getUserLists();
         setLists(userLists);
-        console.log('User lists:', userLists);
+        console.log("User lists:", userLists);
       } catch (error) {
-        console.error('Error fetching user info or lists:', error);
-        navigate('/login');
+        console.error("Error fetching user info or lists:", error);
+        navigate("/login");
       }
     };
 
@@ -52,36 +54,51 @@ const UserDashboard = () => {
       const productList = await listService.getProductsByListId(listId);
       setProducts(productList);
     } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('Error al cargar los productos de la lista.');
+      console.error("Error fetching products:", err);
+      setError("Error al cargar los productos de la lista.");
     }
   };
 
   const handleLogout = async () => {
     await userService.logout();
-    navigate('/');
+    // Eliminar la cookie al cerrar sesión fakeUserID
+    document.cookie =
+      "fakeUserID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    // Borrar todas las cookies al cerrar sesión
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    // Eliminar el token del localStorage
+    localStorage.removeItem("authToken");
+    // Limpiar local storage
+    localStorage.clear();
+    // Limpiar session storage
+    sessionStorage.clear();
+    navigate("/");
   };
 
   const handleCreateList = async () => {
     const trimmedName = newListName.trim();
     if (!trimmedName) {
-      setError('El nombre de la lista no puede estar vacío.');
+      setError("El nombre de la lista no puede estar vacío.");
       return;
     }
 
     try {
-      console.log('Creando lista:', trimmedName);
+      console.log("Creando lista:", trimmedName);
       const createdList = await listService.createList(trimmedName);
       setLists([...lists, createdList]);
-      setNewListName('');
+      setNewListName("");
     } catch (error) {
-      console.error('Error creando lista:', error);
-      if (error.message === 'Debes pagar para crear más de 2 listas.') {
+      console.error("Error creando lista:", error);
+      if (error.message === "Debes pagar para crear más de 2 listas.") {
         setError(
-          'Solo puedes crear 2 listas con tu plan actual. Hazte Premium para crear listas ilimitadas.'
+          "Solo puedes crear 2 listas con tu plan actual. Hazte Premium para crear listas ilimitadas."
         );
       } else {
-        setError('No se pudo crear la lista.');
+        setError("No se pudo crear la lista.");
       }
     }
   };
@@ -91,24 +108,24 @@ const UserDashboard = () => {
       setError("Por favor, selecciona una lista.");
       return;
     }
-  
+
     if (!newProductName.trim()) {
       setError("El nombre del producto no puede estar vacío.");
       return;
     }
-  
+
     if (newProductQuantity <= 0) {
       setError("La cantidad debe ser mayor que 0.");
       return;
     }
-  
+
     try {
       const product = {
         nombre: newProductName,
         udsPedidas: newProductQuantity,
         udsCompradas: 0,
       };
-  
+
       await listService.addProductToList(selectedList, product);
       setNewProductName("");
       setNewProductQuantity(1);
@@ -118,35 +135,36 @@ const UserDashboard = () => {
       setError("No se pudo añadir el producto.");
     }
   };
-  
 
   const handleSelectList = async (listId) => {
     if (selectedList) {
-        websocket.unsubscribeFromListUpdates(selectedList);
+      websocket.unsubscribeFromListUpdates(selectedList);
     }
 
     setSelectedList(listId);
-    setProducts([]); 
+    setProducts([]);
     await fetchProducts(listId); // Carga los productos de la lista seleccionada
 
     // Suscribirse a actualizaciones en tiempo real para esta lista
     websocket.subscribeToListUpdates(listId, (data) => {
-      if (data.action === 'updateProduct' && data.idLista === listId) {
-          setProducts((prevProducts) => {
-              const productoExistente = prevProducts.find(p => p.id === data.producto.id);
-              if (productoExistente) {
-                  // Actualiza el producto existente
-                  return prevProducts.map(p => 
-                      p.id === data.producto.id ? data.producto : p
-                  );
-              } else {
-                  // Agrega el nuevo producto
-                  return [...prevProducts, data.producto];
-              }
-          });
+      if (data.action === "updateProduct" && data.idLista === listId) {
+        setProducts((prevProducts) => {
+          const productoExistente = prevProducts.find(
+            (p) => p.id === data.producto.id
+          );
+          if (productoExistente) {
+            // Actualiza el producto existente
+            return prevProducts.map((p) =>
+              p.id === data.producto.id ? data.producto : p
+            );
+          } else {
+            // Agrega el nuevo producto
+            return [...prevProducts, data.producto];
+          }
+        });
       }
-  });  
-};
+    });
+  };
 
   const handleGoPremium = () => {
     setShowPaymentForm(true);
@@ -159,8 +177,8 @@ const UserDashboard = () => {
     setError(null);
 
     if (!stripe || !elements) {
-      console.error('Stripe no está inicializado.');
-      setError('Stripe no está disponible en este momento.');
+      console.error("Stripe no está inicializado.");
+      setError("Stripe no está disponible en este momento.");
       return;
     }
 
@@ -169,14 +187,17 @@ const UserDashboard = () => {
 
       const clientSecret = await userService.prepararTransaccion(3);
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: user.email, // Obtiene el email del usuario para que aparezca en las transacciones de stripe
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: user.email, // Obtiene el email del usuario para que aparezca en las transacciones de stripe
+            },
           },
-        },
-      });
+        }
+      );
 
       if (error) {
         console.error(error.message);
@@ -184,14 +205,14 @@ const UserDashboard = () => {
         return;
       }
 
-      if (paymentIntent.status === 'succeeded') {
+      if (paymentIntent.status === "succeeded") {
         await userService.marcarUsuarioComoPagado(user.email);
-        alert('¡Pago procesado con éxito! Ahora eres un usuario premium.');
+        alert("¡Pago procesado con éxito! Ahora eres un usuario premium.");
         window.location.reload();
       }
     } catch (error) {
-      console.error('Error al procesar el pago:', error);
-      setError('Hubo un problema al procesar el pago. Intenta nuevamente.');
+      console.error("Error al procesar el pago:", error);
+      setError("Hubo un problema al procesar el pago. Intenta nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -204,9 +225,17 @@ const UserDashboard = () => {
   return (
     <div>
       <h1>Bienvenido a tu Dashboard</h1>
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Tipo de usuario:</strong> {user.esPagado ? 'Premium' : 'Gratuito'}</p>
-      <button onClick={handleLogout} style={{ marginBottom: '20px', padding: '10px 20px' }}>
+      <p>
+        <strong>Email:</strong> {user.email}
+      </p>
+      <p>
+        <strong>Tipo de usuario:</strong>{" "}
+        {user.esPagado ? "Premium" : "Gratuito"}
+      </p>
+      <button
+        onClick={handleLogout}
+        style={{ marginBottom: "20px", padding: "10px 20px" }}
+      >
         Cerrar Sesión
       </button>
       {!user.esPagado && (
@@ -215,14 +244,14 @@ const UserDashboard = () => {
             <button
               onClick={handleGoPremium}
               disabled={loading}
-              style={{ marginTop: '20px', padding: '10px 20px' }}
+              style={{ marginTop: "20px", padding: "10px 20px" }}
             >
               Hazte Premium
             </button>
           ) : (
-            <form onSubmit={handleSubmitPayment} style={{ marginTop: '20px' }}>
+            <form onSubmit={handleSubmitPayment} style={{ marginTop: "20px" }}>
               <CardElement />
-              {error && <p style={{ color: 'red' }}>{error}</p>}
+              {error && <p style={{ color: "red" }}>{error}</p>}
               <button type="submit" disabled={loading || !stripe || !elements}>
                 Confirmar Pago
               </button>
@@ -232,7 +261,7 @@ const UserDashboard = () => {
       )}
 
       <h2>Mis listas de la compra</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <div>
         <input
           type="text"
@@ -240,17 +269,17 @@ const UserDashboard = () => {
           onChange={(e) => setNewListName(e.target.value)}
           placeholder="Nombre de la nueva lista"
         />
-        <button onClick={handleCreateList} style={{ marginLeft: '10px' }}>
+        <button onClick={handleCreateList} style={{ marginLeft: "10px" }}>
           Crear Lista
         </button>
       </div>
-      <ul style={{ marginTop: '20px' }}>
+      <ul style={{ marginTop: "20px" }}>
         {lists.map((list) => (
           <li key={list.id}>
             {list.nombre}
             <button
               onClick={() => handleSelectList(list.id)}
-              style={{ marginLeft: '10px', padding: '5px' }}
+              style={{ marginLeft: "10px", padding: "5px" }}
             >
               Seleccionar
             </button>
@@ -258,7 +287,7 @@ const UserDashboard = () => {
         ))}
       </ul>
       {selectedList && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{ marginTop: "20px" }}>
           <h3>Añadir Producto a la Lista Seleccionada</h3>
           <input
             type="text"
@@ -271,16 +300,17 @@ const UserDashboard = () => {
             value={newProductQuantity}
             onChange={(e) => setNewProductQuantity(Number(e.target.value))}
             placeholder="Cantidad"
-            style={{ marginLeft: '10px', width: '80px' }}
+            style={{ marginLeft: "10px", width: "80px" }}
           />
-          <button onClick={handleAddProduct} style={{ marginLeft: '10px' }}>
+          <button onClick={handleAddProduct} style={{ marginLeft: "10px" }}>
             Añadir Producto
           </button>
           <h3>Productos en la Lista</h3>
           <ul>
             {products.map((product) => (
               <li key={product.id}>
-                {product.nombre} - {product.udsPedidas} unidades pedidas, {product.udsCompradas} compradas
+                {product.nombre} - {product.udsPedidas} unidades pedidas,{" "}
+                {product.udsCompradas} compradas
               </li>
             ))}
           </ul>
