@@ -88,50 +88,65 @@ const UserDashboard = () => {
 
   const handleAddProduct = async () => {
     if (!selectedList) {
-      setError('Por favor, selecciona una lista.');
+      setError("Por favor, selecciona una lista.");
       return;
     }
+  
     if (!newProductName.trim()) {
-      setError('El nombre del producto no puede estar vacío.');
+      setError("El nombre del producto no puede estar vacío.");
       return;
     }
+  
     if (newProductQuantity <= 0) {
-      setError('La cantidad debe ser mayor que 0.');
+      setError("La cantidad debe ser mayor que 0.");
       return;
     }
   
     try {
-      const product = { nombre: newProductName, udsPedidas: newProductQuantity, udsCompradas: 0 };
-      await listService.addProductToList(selectedList, product);
-      setNewProductName('');
-      setNewProductQuantity(1); // Reinicia la cantidad
-      setError(null);
+      const product = {
+        nombre: newProductName,
+        udsPedidas: newProductQuantity,
+        udsCompradas: 0,
+      };
   
+      await listService.addProductToList(selectedList, product);
+      setNewProductName("");
+      setNewProductQuantity(1);
+      setError(null);
     } catch (err) {
-      console.error('Error añadiendo producto:', err);
-      setError('No se pudo añadir el producto.');
+      console.error("Error añadiendo producto:", err);
+      setError("No se pudo añadir el producto.");
     }
   };
   
 
   const handleSelectList = async (listId) => {
     if (selectedList) {
-      websocket.unsubscribeFromListUpdates(selectedList);
+        websocket.unsubscribeFromListUpdates(selectedList);
     }
-  
+
     setSelectedList(listId);
-    setProducts([]); // Resetea productos mientras carga
+    setProducts([]); 
     await fetchProducts(listId); // Carga los productos de la lista seleccionada
-  
+
     // Suscribirse a actualizaciones en tiempo real para esta lista
     websocket.subscribeToListUpdates(listId, (data) => {
-      if (data.type === 'actualizacionDeLista' && data.idLista === listId) {
-        setProducts((prevProducts) => [...prevProducts, data.producto]);
+      if (data.action === 'updateProduct' && data.idLista === listId) {
+          setProducts((prevProducts) => {
+              const productoExistente = prevProducts.find(p => p.id === data.producto.id);
+              if (productoExistente) {
+                  // Actualiza el producto existente
+                  return prevProducts.map(p => 
+                      p.id === data.producto.id ? data.producto : p
+                  );
+              } else {
+                  // Agrega el nuevo producto
+                  return [...prevProducts, data.producto];
+              }
+          });
       }
-    });
-  };
-  
-  
+  });  
+};
 
   const handleGoPremium = () => {
     setShowPaymentForm(true);

@@ -21,7 +21,7 @@ public class ResponseFilter extends OncePerRequestFilter {
 
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, token");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, token, idLista");
         }
         filterChain.doFilter(request, response);
     }

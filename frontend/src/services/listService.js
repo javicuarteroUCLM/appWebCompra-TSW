@@ -1,7 +1,7 @@
 /** @format */
 
 import axios from "axios";
-import { sendMessage, connectWebSocket } from "./websocket"; // Importa la función sendMessage y connectWebSocket desde websocket.js
+import { sendMessage, connectWebSocket } from "./websocket";
 import { getUserDetails } from "./userService";
 
 const API_URL = "http://localhost:8383/listas";
@@ -59,6 +59,7 @@ const addProductToList = async (listId, product) => {
   if (!token) {
     throw new Error("Token no encontrado.");
   }
+
   console.log("Añadiendo producto a la lista", listId, product);
 
   const response = await axios.post(`${API_URL}/addProducto`, product, {
@@ -69,17 +70,15 @@ const addProductToList = async (listId, product) => {
     },
   });
 
-  // Pide email a traves de token
   const userDetails = await getUserDetails();
   const email = userDetails.email;
-  console.log("Email del usuario:", email);
-  // Asegurarse de que el WebSocket esté conectado antes de enviar el mensaje
+
+  // Reconectar WebSocket si no está conectado
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    console.error("WebSocket no está conectado. Intentando reconectar...");
-    ws = connectWebSocket(email);
+    console.log("Reconectando WebSocket...");
+    connectWebSocket(email);
   }
 
-  // Enviar notificación a través del WebSocket
   const message = {
     type: "actualizacionDeLista",
     idLista: listId,
@@ -94,6 +93,7 @@ const addProductToList = async (listId, product) => {
 
   return response.data;
 };
+
 
 const getProductsByListId = async (listId) => {
   if (!listId) {

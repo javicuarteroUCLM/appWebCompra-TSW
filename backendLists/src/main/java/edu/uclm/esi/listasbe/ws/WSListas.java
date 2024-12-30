@@ -1,13 +1,12 @@
 package edu.uclm.esi.listasbe.ws;
 
-import edu.uclm.esi.listasbe.dao.ListaDao;
-import edu.uclm.esi.listasbe.model.Producto;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,97 +18,68 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import edu.uclm.esi.listasbe.dao.ListaDao;
+import edu.uclm.esi.listasbe.model.Producto;
+
 @Component
 public class WSListas extends TextWebSocketHandler {
 
     @Autowired
-    private static ListaDao listaDao;
-
-    public void setListaDao(ListaDao listaDao) {
-        WSListas.listaDao = listaDao;
-    }
+    private ListaDao listaDao;
 
     private Map<String, List<WebSocketSession>> sessionsByIdLista = new ConcurrentHashMap<>();
 
+    /* 
+    public void setListaDao(ListaDao listaDao) {
+        WSListas.listaDao = listaDao;
+    }  */
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println(session.getId());
         String email = this.getParameter(session, "email");
+        System.out.println("Email del usuario conectado: " + email);
 
         List<String> listas = this.listaDao.getListasDe(email);
+        System.out.println("Listas asociadas al usuario " + email + ": " + listas);
 
         for (String idLista : listas) {
-            List<WebSocketSession> auxiliar = this.sessionsByIdLista.get(idLista);
-            if (auxiliar == null) {
-                auxiliar = new ArrayList<>();
-            }
-            auxiliar.add(session);
-            this.sessionsByIdLista.put(idLista, auxiliar);
+            sessionsByIdLista.computeIfAbsent(idLista, k -> new ArrayList<>()).add(session);
+            System.out.println("Sesión " + session.getId() + " asociada a la lista " + idLista);
         }
     }
 
-    /*
-     * public void notificar(String idLista, Producto producto) throws JSONException
-     * {
-     * List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
-     * if (interesados == null)
-     * return;
-     * 
-     * JSONObject json = new JSONObject();
-     * json.put("type", "actualizacionDeLista");
-     * try {
-     * json.put("idLista", idLista);
-     * } catch (JSONException e) {
-     * e.printStackTrace();
-     * }
-     * json.put("udsCompradas", producto.getUdsCompradas());
-     * json.put("udsPedidas", producto.getUdsPedidas());
-     * json.put("nombre", producto.getNombre());
-     * 
-     * TextMessage message = new TextMessage(json.toString());
-     * 
-     * for (WebSocketSession target : interesados) {
-     * new Thread(new Runnable() {
-     * 
-     * @Override
-     * public void run() {
-     * try {
-     * target.sendMessage(message);
-     * } catch (IOException e) {
-     * 
-     * }
-     * }
-     * }).start();
-     * }
-     * }
-     */
-
-    public void notificar(String idLista, Producto producto) throws JSONException {
+     public void notificar(String idLista, Producto producto) throws JSONException {
         List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
         if (interesados == null || interesados.isEmpty()) {
-            return; // No hay sesiones interesadas
+            System.out.println("No hay sesiones interesadas en la lista " + idLista);
+            return;
         }
-
+    
+        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista + ": " + interesados);
+    
         JSONObject json = new JSONObject();
         json.put("type", "actualizacionDeLista");
+        json.put("action", "updateProduct"); // Campo `action` añadido correctamente
         json.put("idLista", idLista);
         json.put("producto", new JSONObject()
                 .put("id", producto.getId())
                 .put("nombre", producto.getNombre())
                 .put("udsPedidas", producto.getUdsPedidas())
                 .put("udsCompradas", producto.getUdsCompradas()));
-
+    
         TextMessage message = new TextMessage(json.toString());
-
+    
         for (WebSocketSession session : interesados) {
             try {
                 session.sendMessage(message);
+                System.out.println("Mensaje enviado a sesión " + session.getId());
             } catch (IOException e) {
-                System.err.println("Error enviando mensaje WebSocket: " + e.getMessage());
+                System.err.println("Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
             }
         }
     }
-
+    
+    
     private String getParameter(WebSocketSession session, String parameter) {
         URI uri = session.getUri();
         String query = uri.getQuery();
@@ -123,10 +93,13 @@ public class WSListas extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
-        try {
-            String payload = message.getPayload();
-            JSONObject json = new JSONObject(payload);
+protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+    try {
+        String payload = message.getPayload();
+        JSONObject json = new JSONObject(payload);
+
+        // Manejar mensajes con el campo "action" (esto creo que lo voy a quitar pero ahora mismo funciona asi que NO TOCAR)
+        if (json.has("action")) {
             String action = json.getString("action");
 
             if ("addProducto".equals(action)) {
@@ -143,16 +116,24 @@ public class WSListas extends TextWebSocketHandler {
                 // Notificar a los interesados
                 notificar(idLista, producto);
             }
-            // Manejar otras acciones
-            // ...
-        } catch (JSONException e) {
-            System.err.println("Error procesando mensaje WebSocket: " + e.getMessage());
+            // Manejar futuras acciones
+        } else {
+            // Ignorar mensajes sin el campo "action" si no son relevantes
+            System.out.println("Mensaje recibido sin 'action': " + payload);
         }
+    } catch (JSONException e) {
+        System.err.println("Error procesando mensaje WebSocket: " + e.getMessage());
     }
+}
+
+
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("Conexión cerrada: " + session.getId());
+        sessionsByIdLista.values().forEach(sessions -> sessions.remove(session));
     }
+
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {

@@ -12,19 +12,25 @@ export const connectWebSocket = (email) => {
     return;
   }
 
-  const wsUrl = `wss://localhost:8383/wsListas?email=${encodeURIComponent(
+  const wsUrl = `ws://localhost:8383/wsListas?email=${encodeURIComponent(
     email
   )}`;
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    console.log("Conexión WebSocket establecida.");
+    console.log("Conexión WebSocket establecida para el email:", email);
   };
 
   ws.onclose = () => {
-    console.log("Conexión WebSocket cerrada.");
+    console.log("Conexión WebSocket cerrada. Intentando reconectar...");
     ws = null;
+  
+    // Intentar reconectar después de 2 segundos
+    setTimeout(() => {
+      connectWebSocket(email);
+    }, 2000);
   };
+  
 
   ws.onerror = (error) => {
     console.error("Error en WebSocket:", error);
