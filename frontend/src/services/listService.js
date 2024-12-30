@@ -1,7 +1,7 @@
 /** @format */
 
 import axios from "axios";
-import { sendMessage, connectWebSocket } from "./websocket";
+import { sendMessage, connectWebSocket, getWebSocket } from "./websocket";
 import { getUserDetails } from "./userService";
 
 const API_URL = "http://localhost:8383/listas";
@@ -71,14 +71,7 @@ const addProductToList = async (listId, product) => {
     },
   });
 
-  const userDetails = await getUserDetails();
-  const email = userDetails.email;
-
-  // Reconectar WebSocket si no está conectado
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    console.log("Reconectando WebSocket...");
-    connectWebSocket(email);
-  }
+  ws = conectarWebSocket();
 
   const message = {
     type: "actualizacionDeLista",
@@ -106,10 +99,30 @@ const getProductsByListId = async (listId) => {
   return response.data;
 };
 
+// Conectar WebSocket
+const conectarWebSocket = async () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    throw new Error("Token no encontrado.");
+  }
+  const userDetails = await getUserDetails();
+  const email = userDetails.email;
+
+  ws = getWebSocket(email);
+  // Reconectar WebSocket si no está conectado
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    console.log("Reconectando WebSocket...");
+    connectWebSocket(email);
+    ws = getWebSocket(email); // Actualizar ws después de reconectar
+  }
+  return ws;
+};
+
 const listService = {
   createList,
   getUserLists,
   addProductToList,
   getProductsByListId,
+  conectarWebSocket,
 };
 export default listService;

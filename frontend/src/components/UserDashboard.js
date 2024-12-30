@@ -7,6 +7,8 @@ import userService from "../services/userService";
 import listService from "../services/listService";
 import websocket from "../services/websocket";
 
+let ws;
+
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
   const [lists, setLists] = useState([]);
@@ -21,6 +23,11 @@ const UserDashboard = () => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+
+  // Conectar WebSocket
+  useEffect(() => {
+    ws = listService.conectarWebSocket();
+  }, []);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -49,6 +56,7 @@ const UserDashboard = () => {
     };
   }, [selectedList]);
 
+  // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
     try {
       const productList = await listService.getProductsByListId(listId);
