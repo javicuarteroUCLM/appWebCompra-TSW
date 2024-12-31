@@ -9,17 +9,27 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.apache.hc.core5.http.protocol.HttpContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProxyBEU {
 
+    private final Manager manager;
+
+    @Autowired
+    public ProxyBEU(Manager manager) throws org.json.JSONException {
+        this.manager = manager;
+    }
+
     /**
      * Validar un token con el backend de usuarios.
      */
     public boolean validar(String token) {
+        String url = this.manager.getConfiguration().getString("urlBESeguro")
+                + "tokens/validar";
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPut httpPut = new HttpPut("http://localhost:9000/tokens/validar");
+            HttpPut httpPut = new HttpPut(url);
             httpPut.setEntity(new StringEntity(token));
             httpPut.setHeader("Content-type", "text/plain");
 
@@ -40,9 +50,11 @@ public class ProxyBEU {
      */
     public String obtenerEmailDesdeToken(String token) {
         this.validar(token);
+        String url = this.manager.getConfiguration().getString("urlBESeguro")
+                + "tokens/obtenerEmail?token=" + token;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet httpGet = new HttpGet("http://localhost:9000/tokens/obtenerEmail?token=" + token);
+            HttpGet httpGet = new HttpGet(url);
 
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 if (response.getCode() == 200) {
@@ -62,8 +74,10 @@ public class ProxyBEU {
     }
 
     public boolean verificarUsuarioPagado(String email) {
+        String url = this.manager.getConfiguration().getString("urlBESeguro")
+                + "users/esPagado?email=" + email;
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpGet httpGet = new HttpGet("http://localhost:9000/users/esPagado?email=" + email);
+            HttpGet httpGet = new HttpGet(url);
 
             HttpContext context = new BasicHttpContext();
 

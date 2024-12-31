@@ -179,7 +179,9 @@ public class ListaController {
 
     @PostMapping("/compartirLista")
     public String compartirLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
-            @RequestBody String emailInvitado) {
+            @RequestBody Map<String, String> body) {
+        String emailInvitado = body.get("emailInvitado");
+
         if (idLista == null || idLista.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
         }
@@ -193,10 +195,13 @@ public class ListaController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
         }
 
-        // Generar URL para compartir la lista
-        String urlCompartir = "http://localhost:80/listas/compartir/" + idLista;
+        // Comprobar si hay email de invitado
+        if (emailInvitado == null || emailInvitado.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el email del invitado");
+        }
 
-        this.listaService.compartirLista(idLista, urlCompartir);
+        // Generar URL para compartir la lista
+        String urlCompartir = this.listaService.compartirLista(idLista);
 
         // Crear Invitacion
         this.listaService.crearInvitacion(idLista, emailInvitado);

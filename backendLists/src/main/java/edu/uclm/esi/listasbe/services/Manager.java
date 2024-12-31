@@ -17,6 +17,9 @@ public class Manager {
             s = readFileAsString(this, "configuracion.json");
 
             JSONObject config = new JSONObject(s);
+            String entorno = config.getString("entorno");
+
+            this.configuracion = config.getJSONObject(entorno);
         } catch (Exception e) {
             e.printStackTrace();
         }

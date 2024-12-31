@@ -9,13 +9,9 @@ import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,6 +38,13 @@ public class ListaService {
 
 	@Autowired
 	private WSListas wsListas;
+
+	private final Manager manager;
+
+	@Autowired
+	public ListaService(Manager manager) throws org.json.JSONException {
+		this.manager = manager;
+	}
 
 	/**
 	 * Obtener las listas asociadas a un usuario
@@ -214,9 +217,10 @@ public class ListaService {
 		return relacion;
 	}
 
-	public void compartirLista(String idLista, String urlCompartir) {
+	public String compartirLista(String idLista) {
 		UsuarioLista propietario = this.propietario(idLista);
-
+		String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
+				+ idLista;
 		listaDao.findById(idLista).ifPresent(lista -> {
 			lista.setCompartida(true);
 			lista.setUrlInvitacion(urlCompartir);
@@ -228,6 +232,7 @@ public class ListaService {
 			}
 			listaDao.save(lista);
 		});
+		return urlCompartir;
 	}
 
 	public UsuarioLista propietario(String idLista) {

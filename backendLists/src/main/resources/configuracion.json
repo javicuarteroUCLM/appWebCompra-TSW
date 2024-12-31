@@ -1,3 +1,13 @@
 {
-  "urlBENoSeguro": "http://localhost:8000/tokens/validar"
+  "entorno": "desarrollo",
+  "desarrollo": {
+    "urlBase": "http://localhost:8383/",
+    "urlBESeguro": "http://localhost:9000/",
+    "urlCompartirLista": "http://localhost:8383/listas/compartir/"
+  },
+  "produccion": {
+    "urlBase": "https://listabase.com/",
+    "urlBENoSeguro": "https://listabase.com/tokens/validar",
+    "urlCompartirLista": "https://listabase.com/listas/compartir/"
+  }
 }
