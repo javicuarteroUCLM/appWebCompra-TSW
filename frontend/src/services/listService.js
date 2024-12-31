@@ -54,6 +54,23 @@ const getUserLists = async () => {
   return response.data;
 };
 
+// Compartir Lista
+const shareList = async (listId, emailInvitado) => {
+  const response = await fetch(`http://localhost:8383/listas/compartirLista`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      idLista: listId,
+      token: localStorage.getItem("authToken"),
+    },
+    body: JSON.stringify({ emailInvitado }), // Enviar email como JSON
+  });
+  if (!response.ok) {
+    throw new Error("Error compartiendo lista");
+  }
+  return await response.text(); // La respuesta contiene la URL generada
+};
+
 // Añadir Producto a Lista
 const addProductToList = async (listId, product) => {
   const token = localStorage.getItem("authToken");
@@ -130,5 +147,7 @@ const listService = {
   addProductToList,
   getProductsByListId,
   conectarWebSocket,
+  desconectarWebSocket,
+  shareList,
 };
 export default listService;

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { FaStar, FaShareAlt } from "react-icons/fa"; // Importar ícono de estrella y de compartir
 import userService from "../services/userService";
 import listService from "../services/listService";
 import websocket from "../services/websocket";
@@ -20,6 +21,9 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -153,6 +157,7 @@ const UserDashboard = () => {
 
     setSelectedList(listId);
     setProducts([]);
+    setShareUrl(""); // Limpiar la URL al cambiar de lista
     await fetchProducts(listId); // Carga los productos de la lista seleccionada
 
     // Suscribirse a actualizaciones en tiempo real para esta lista
@@ -162,6 +167,7 @@ const UserDashboard = () => {
           const productoExistente = prevProducts.find(
             (p) => p.id === data.producto.id
           );
+
           if (productoExistente) {
             // Actualiza el producto existente
             return prevProducts.map((p) =>
@@ -230,6 +236,28 @@ const UserDashboard = () => {
     }
   };
 
+  // Compartir lista
+  const handleShareList = async () => {
+    if (!selectedList) {
+      setError("Por favor, selecciona una lista antes de compartir.");
+      return;
+    }
+
+    if (!inviteEmail.trim()) {
+      setError("Por favor, introduce un email para compartir la lista.");
+      return;
+    }
+
+    try {
+      const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
+      setShareUrl(url); // Guardar la URL generada
+      setError(null);
+    } catch (err) {
+      console.error("Error compartiendo lista:", err);
+      setError("No se pudo compartir la lista.");
+    }
+  };
+
   if (!user) {
     return <p>Cargando datos del usuario...</p>;
   }
@@ -259,7 +287,11 @@ const UserDashboard = () => {
             </button>
           ) : (
             <form onSubmit={handleSubmitPayment} style={styles.paymentForm}>
-              <CardElement />
+              <div style={{ width: "100%", marginBottom: "10px" }}>
+                <CardElement
+                  options={{ style: { base: styles.cardElement } }}
+                />
+              </div>
               {error && <p style={styles.error}>{error}</p>}
               <button
                 type="submit"
@@ -302,6 +334,40 @@ const UserDashboard = () => {
       </ul>
       {selectedList && (
         <div style={styles.selectedListContainer}>
+          <h3>Opciones para la Lista Seleccionada</h3>
+          <div>
+            <h3>Compartir Lista</h3>
+            <input
+              type="email"
+              placeholder="Introduce el email para compartir"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              style={{ marginBottom: "10px", padding: "8px" }}
+            />
+            <button onClick={handleShareList} style={{ padding: "10px" }}>
+              Compartir Lista
+            </button>
+            {shareUrl && (
+              <p>
+                URL generada: <a href={shareUrl}>{shareUrl}</a>
+              </p>
+            )}
+            {error && <p style={{ color: "red" }}>{error}</p>}
+          </div>
+          <button onClick={handleShareList} style={styles.shareButton}>
+            <FaShareAlt /> Compartir Lista
+          </button>
+          {shareUrl && (
+            <div style={styles.shareUrlContainer}>
+              <p>Comparte esta URL con tus amigos:</p>
+              <input
+                type="text"
+                value={shareUrl}
+                readOnly
+                style={styles.shareUrlInput}
+              />
+            </div>
+          )}
           <h3>Añadir Producto a la Lista Seleccionada</h3>
           <input
             type="text"
@@ -400,6 +466,28 @@ const styles = {
     alignItems: "center",
     gap: "10px",
   },
+  paymentForm: {
+    marginTop: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "20px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    backgroundColor: "#fff",
+    maxWidth: "400px",
+    width: "100%",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  },
+  cardElement: {
+    width: "100%",
+    padding: "10px",
+    fontSize: "16px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    marginBottom: "10px",
+    boxSizing: "border-box",
+  },
   button: {
     backgroundColor: "#ff9800",
     color: "#fff",
@@ -410,9 +498,6 @@ const styles = {
     cursor: "pointer",
     margin: "10px 0",
     transition: "background-color 0.3s",
-  },
-  paymentForm: {
-    marginTop: "20px",
   },
   error: {
     color: "red",
@@ -453,6 +538,29 @@ const styles = {
   productList: {
     listStyleType: "none",
     padding: "0",
+  },
+  shareButton: {
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    margin: "10px 0",
+  },
+  shareUrlContainer: {
+    marginTop: "10px",
+    textAlign: "center",
+  },
+  shareUrlInput: {
+    width: "100%",
+    padding: "8px",
+    marginTop: "5px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
   },
 };
 

@@ -6,73 +6,105 @@ import { FaEnvelope } from "react-icons/fa";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   const sendResetPasswordEmail = async () => {
     try {
       console.log("Email: ", email);
       await userService.recoverPassword(email);
-      console.log("Email sent");
+      setMessage("¡Correo de recuperación enviado!");
     } catch (error) {
       alert("Error sending email");
+      setMessage("Error al enviar el correo.");
     }
   };
 
   return (
-    <div>
-      {/* <Logo /> */}
-      <h2>Reset your password.</h2>
-      <div style={styles.inputGroup}>
-        <FaEnvelope style={styles.icon} />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Correo Electrónico"
-          style={styles.input}
-          required
-        />
+    <div style={styles.container}>
+      <div style={styles.formContainer}>
+        <h2 style={styles.title}>Restablecer Contraseña</h2>
+        <div style={styles.inputGroup}>
+          <FaEnvelope style={styles.icon} />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Correo Electrónico"
+            style={styles.input}
+            required
+          />
+        </div>
+        <button onClick={sendResetPasswordEmail} style={styles.button}>
+          Continuar
+        </button>
+        {message && <p style={styles.message}>{message}</p>}
       </div>
-      <button
-        mode="contained"
-        onClick={sendResetPasswordEmail}
-        style={{ marginTop: 16 }}
-      >
-        Continue
-      </button>
     </div>
   );
 };
 
 const styles = {
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5fcff",
+    display: "flex",
+    minHeight: "100vh",
+    backgroundColor: "#f7f9fb",
+    padding: "20px",
+  },
+  formContainer: {
+    width: "100%",
+    maxWidth: "400px",
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    padding: "30px",
+    textAlign: "center",
   },
   title: {
-    fontSize: 24,
+    fontSize: "24px",
     fontWeight: "bold",
     color: "#000",
   },
   form: {
     width: "80%",
     marginTop: 30,
+    marginBottom: "20px",
+    color: "#4CAF50",
   },
   inputGroup: {
-    flexDirection: "row",
+    display: "flex",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#cccccc",
-    marginBottom: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: "5px",
+    padding: "10px",
+    position: "relative",
+    marginBottom: "15px", // added margin for spacing
   },
   icon: {
-    padding: 10,
-    color: "#cccccc",
+    marginRight: "10px",
+    color: "#4CAF50",
   },
   input: {
-    flex: 1,
-    height: 40,
+    border: "none",
+    outline: "none",
+    backgroundColor: "transparent",
+    fontSize: "16px",
+    color: "#333",
+  },
+  button: {
+    backgroundColor: "#ff9800",
+    color: "#fff",
+    fontSize: "16px",
+    padding: "12px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
+    width: "100%",
+  },
+  message: {
+    marginTop: "15px",
+    fontSize: "14px",
+    color: "#ff5722",
   },
 };
 
