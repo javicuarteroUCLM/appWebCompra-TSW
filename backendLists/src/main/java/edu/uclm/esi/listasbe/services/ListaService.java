@@ -8,15 +8,18 @@ import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+
+
+
 
 @Service
 public class ListaService {
@@ -159,6 +162,24 @@ public class ListaService {
 		return lista;
 	}
 
+	public void eliminarProducto(String idProducto) {
+		Optional<Producto> optProducto = productoDao.findById(idProducto);
+		if (optProducto.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
+		}
+
+		Producto producto = optProducto.get();
+		productoDao.delete(producto);
+
+		// Notificar a los usuarios interesados
+		try {
+			wsListas.notificarEliminacion(producto.getLista().getId(), idProducto);
+		} catch (JSONException e) {
+			throw new RuntimeException("Error al notificar la eliminación del producto", e);
+		}
+	}
+
+
 	public Optional<Lista> getListaById(String id) {
 		return this.listaDao.findById(id);
 	}
@@ -217,7 +238,7 @@ public class ListaService {
 		return relacion;
 	}
 
-	public String compartirLista(String idLista) {
+	public String compartirLista(String idLista) throws org.json.JSONException {
 		UsuarioLista propietario = this.propietario(idLista);
 		String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
 				+ idLista;

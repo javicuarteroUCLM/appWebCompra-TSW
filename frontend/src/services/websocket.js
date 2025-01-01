@@ -30,6 +30,7 @@ export const connectWebSocket = (email) => {
     console.error("Error en WebSocket:", error);
   };
 
+  /*
   ws.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
@@ -43,8 +44,62 @@ export const connectWebSocket = (email) => {
     } catch (err) {
       console.error("Error procesando mensaje WebSocket:", err);
     }
+  }; */
+  ws.onmessage = (message) => {
+    try {
+      const data = JSON.parse(message.data);
+  
+      if (data.type === "actualizacionDeLista") {
+        const listId = data.idLista;
+  
+        // Verifica si hay una suscripción activa para la lista
+        if (subscriptions[listId]) {
+          const callback = subscriptions[listId];
+  
+          switch (data.action) {
+            case "updateProduct":
+              // Actualizar o agregar el producto en la lista
+              callback((prevProducts) => {
+                const existingProduct = prevProducts.find(
+                  (p) => p.id === data.producto.id
+                );
+  
+                if (existingProduct) {
+                  // Si el producto ya existe, actualiza su información
+                  return prevProducts.map((p) =>
+                    p.id === data.producto.id ? data.producto : p
+                  );
+                } else {
+                  // Si no existe, agrega el nuevo producto
+                  return [...prevProducts, data.producto];
+                }
+              });
+              break;
+  
+            case "deleteProduct":
+              // Eliminar el producto de la lista
+              callback((prevProducts) =>
+                prevProducts.filter((p) => p.id !== data.idProducto)
+              );
+              break;
+  
+            case "newList":
+              // Manejar una nueva lista compartida (si aplica)
+              console.log("Nueva lista recibida:", data.listDetails);
+              break;
+  
+            default:
+              console.warn("Acción no reconocida en WebSocket:", data.action);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error procesando mensaje WebSocket:", err);
+    }
   };
+  
 };
+
 
 // Funcion para conectar al WebSocket y devolverlo
 export const getWebSocket = (email) => {

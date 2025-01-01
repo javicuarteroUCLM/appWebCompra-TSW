@@ -150,6 +150,26 @@ const UserDashboard = () => {
     }
   };
 
+  const handleDeleteProduct = async (product) => {
+    const confirm = window.confirm(
+      `¿Estás seguro que quieres eliminar el producto "${product.nombre}" de la lista?`
+    );
+  
+    if (!confirm) return;
+  
+    try {
+      await listService.deleteProductFromList(product.id); // Llama al servicio
+      setProducts((prevProducts) =>
+        prevProducts.filter((p) => p.id !== product.id)
+      ); // Actualiza el estado local
+      setError(null);
+    } catch (err) {
+      console.error("Error eliminando producto:", err);
+      setError("No se pudo eliminar el producto.");
+    }
+  };
+  
+
   const handleSelectList = async (listId) => {
     if (selectedList) {
       websocket.unsubscribeFromListUpdates(selectedList);
@@ -388,13 +408,24 @@ const UserDashboard = () => {
           </button>
           <h3>Productos en la Lista</h3>
           <ul style={styles.productList}>
-            {products.map((product) => (
-              <li key={product.id}>
-                {product.nombre} - {product.udsPedidas} unidades pedidas,{" "}
-                {product.udsCompradas} compradas
-              </li>
-            ))}
-          </ul>
+          {products.map((product) => (
+            <li key={product.id} style={styles.productListItem}>
+              {product.nombre} - {product.udsPedidas} unidades pedidas, {product.udsCompradas} compradas
+              <button
+                style={styles.editButton}
+                onClick={() => console.log("Editar producto:", product.nombre)}
+              >
+                Editar
+              </button>
+              <button
+                style={styles.deleteButton}
+                onClick={() => handleDeleteProduct(product)}
+              >
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
         </div>
       )}
     </div>
@@ -561,6 +592,30 @@ const styles = {
     marginTop: "5px",
     border: "1px solid #ddd",
     borderRadius: "5px",
+  },
+  productListItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "8px 0",
+    borderBottom: "1px solid #ddd",
+  },
+  editButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  deleteButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
   },
 };
 

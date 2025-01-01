@@ -87,7 +87,7 @@ const addProductToList = async (listId, product) => {
       "Content-Type": "application/json",
     },
   });
-
+  
   ws = conectarWebSocket();
 
   const message = {
@@ -103,6 +103,26 @@ const addProductToList = async (listId, product) => {
   sendMessage(message);
 
   return response.data;
+};
+
+const deleteProductFromList = async (productId) => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    throw new Error("Token no encontrado.");
+  }
+
+  try {
+    await axios.delete(`${API_URL}/eliminarProducto`, {
+      headers: {
+        token,
+        idProducto: productId,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.error("Error eliminando producto:", err.response?.data || err);
+    throw new Error("No se pudo eliminar el producto.");
+  }
 };
 
 // Obtener Productos de una Lista
@@ -149,5 +169,6 @@ const listService = {
   conectarWebSocket,
   desconectarWebSocket,
   shareList,
+  deleteProductFromList,
 };
 export default listService;
