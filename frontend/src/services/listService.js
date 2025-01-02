@@ -1,7 +1,7 @@
 /** @format */
 
 import axios from "axios";
-import { sendMessage, connectWebSocket, getWebSocket } from "./websocket";
+import { sendMessage, getWebSocket } from "./websocket";
 import { getUserDetails } from "./userService";
 
 const API_URL = "http://localhost:8383/listas";
@@ -10,10 +10,6 @@ let ws;
 // Crear una Lista
 const createList = async (listName) => {
   const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado para createList");
-  }
-
   const data = { nombre: listName };
 
   try {
@@ -39,10 +35,6 @@ const createList = async (listName) => {
 // Obtener Listas del Usuario
 const getUserLists = async () => {
   const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado para getUserLists");
-  }
-
   const response = await axios.get(`${API_URL}/getListas`, {
     withCredentials: true,
     headers: {
@@ -74,9 +66,6 @@ const shareList = async (listId, emailInvitado) => {
 // Añadir Producto a Lista
 const addProductToList = async (listId, product) => {
   const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado.");
-  }
 
   console.log("Añadiendo producto a la lista", listId, product);
 
@@ -87,8 +76,10 @@ const addProductToList = async (listId, product) => {
       "Content-Type": "application/json",
     },
   });
-  
-  ws = conectarWebSocket();
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    console.log("WebSocket no conectado. No se enviará mensaje.");
+    this.conectarWebSocket();
+  }
 
   const message = {
     type: "actualizacionDeLista",
@@ -105,16 +96,11 @@ const addProductToList = async (listId, product) => {
   return response.data;
 };
 
+// Eliminar Producto de Lista
 const deleteProductFromList = async (productId) => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado.");
-  }
-
   try {
     await axios.delete(`${API_URL}/eliminarProducto`, {
       headers: {
-        token,
         idProducto: productId,
         "Content-Type": "application/json",
       },
@@ -122,6 +108,20 @@ const deleteProductFromList = async (productId) => {
   } catch (err) {
     console.error("Error eliminando producto:", err.response?.data || err);
     throw new Error("No se pudo eliminar el producto.");
+  }
+};
+
+// Editar Producto de Lista
+const editProductFromList = async (product) => {
+  try {
+    await axios.put(`${API_URL}/editarProducto`, product, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.error("Error editando producto:", err.response?.data || err);
+    throw new Error("No se pudo editar el producto.");
   }
 };
 
@@ -138,20 +138,10 @@ const getProductsByListId = async (listId) => {
 
 // Conectar WebSocket
 const conectarWebSocket = async () => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    throw new Error("Token no encontrado.");
-  }
   const userDetails = await getUserDetails();
   const email = userDetails.email;
 
   ws = getWebSocket(email);
-  // Reconectar WebSocket si no está conectado
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    console.log("Reconectando WebSocket...");
-    connectWebSocket(email);
-    ws = getWebSocket(email); // Actualizar ws después de reconectar
-  }
   return ws;
 };
 
@@ -170,5 +160,6 @@ const listService = {
   desconectarWebSocket,
   shareList,
   deleteProductFromList,
+  editProductFromList,
 };
 export default listService;

@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -168,8 +166,21 @@ public class ListaController {
         }
     }
 
+    @PutMapping("/editarProducto")
+    public Producto editarProducto(@RequestBody Producto producto) {
+        if (producto.getId() == null || producto.getId().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID del producto");
+        }
+        if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
+        }
+        if (producto.getNombre().length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del producto no puede tener más de 80 caracteres");
+        }
 
-
+        return this.listaService.editarProducto(producto);
+    }
 
     @PutMapping("/comprar")
     public Producto comprar(@RequestBody Map<String, Object> compra) {
@@ -225,8 +236,9 @@ public class ListaController {
         this.listaService.crearInvitacion(idLista, emailInvitado);
 
         // Enviar mensaje con la URL a la amiga Ana (simulación)
-        //String mensaje = "Hola Ana, puedes ver la lista compartida en el siguiente enlace: " + urlCompartir;
-        //System.out.println("Mensaje enviado a Ana: " + mensaje);
+        // String mensaje = "Hola Ana, puedes ver la lista compartida en el siguiente
+        // enlace: " + urlCompartir;
+        // System.out.println("Mensaje enviado a Ana: " + mensaje);
 
         return urlCompartir;
     }

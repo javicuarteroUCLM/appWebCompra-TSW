@@ -17,10 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
 @Service
 public class ListaService {
 
@@ -179,7 +175,6 @@ public class ListaService {
 		}
 	}
 
-
 	public Optional<Lista> getListaById(String id) {
 		return this.listaDao.findById(id);
 	}
@@ -290,5 +285,22 @@ public class ListaService {
 
 		// Si es por WebSocket, notificar al usuario y propietario aqui
 
+	}
+
+	// Método para editar un producto dado el objeto Producto entero
+	public Producto editarProducto(Producto producto) {
+		Optional<Producto> optProducto = productoDao.findById(producto.getId());
+		if (optProducto.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"No se ha encontrado el producto con id " + producto.getId());
+		}
+
+		Producto productoGuardado = optProducto.get();
+		productoGuardado.setNombre(producto.getNombre());
+		productoGuardado.setUdsPedidas(producto.getUdsPedidas());
+		productoGuardado.setUdsCompradas(producto.getUdsCompradas());
+		productoDao.save(productoGuardado);
+
+		return productoGuardado;
 	}
 }

@@ -22,7 +22,12 @@ const UserDashboard = () => {
   const [error, setError] = useState(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editProductName, setEditProductName] = useState("");
+  const [editProductUdsPedidas, setEditProductUdsPedidas] = useState(0);
+  const [editProductUdsCompradas, setEditProductUdsCompradas] = useState(0);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const stripe = useStripe();
   const elements = useElements();
@@ -57,6 +62,14 @@ const UserDashboard = () => {
       }
     };
   }, [selectedList]);
+
+  useEffect(() => {
+    if (selectedProduct) {
+      setEditProductName(selectedProduct.nombre);
+      setEditProductUdsPedidas(selectedProduct.udsPedidas);
+      setEditProductUdsCompradas(selectedProduct.udsCompradas);
+    }
+  }, [selectedProduct]);
 
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
@@ -154,9 +167,9 @@ const UserDashboard = () => {
     const confirm = window.confirm(
       `¿Estás seguro que quieres eliminar el producto "${product.nombre}" de la lista?`
     );
-  
+
     if (!confirm) return;
-  
+
     try {
       await listService.deleteProductFromList(product.id); // Llama al servicio
       setProducts((prevProducts) =>
@@ -168,7 +181,11 @@ const UserDashboard = () => {
       setError("No se pudo eliminar el producto.");
     }
   };
-  
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
 
   const handleSelectList = async (listId) => {
     if (selectedList) {
@@ -254,6 +271,30 @@ const UserDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveEditProduct = async (product) => {
+    try {
+      product.nombre = editProductName;
+      product.udsPedidas = editProductUdsPedidas;
+      product.udsCompradas = editProductUdsCompradas;
+
+      await listService.editProductFromList(product);
+
+      setEditProductName("");
+      setEditProductUdsPedidas(0);
+      setEditProductUdsCompradas(0);
+      setShowEditModal(false);
+
+      setError(null);
+    } catch (err) {
+      console.error("Error editando producto:", err);
+      setError("No se pudo editar el producto.");
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
   };
 
   // Compartir lista
@@ -408,24 +449,64 @@ const UserDashboard = () => {
           </button>
           <h3>Productos en la Lista</h3>
           <ul style={styles.productList}>
-          {products.map((product) => (
-            <li key={product.id} style={styles.productListItem}>
-              {product.nombre} - {product.udsPedidas} unidades pedidas, {product.udsCompradas} compradas
-              <button
-                style={styles.editButton}
-                onClick={() => console.log("Editar producto:", product.nombre)}
-              >
-                Editar
-              </button>
-              <button
-                style={styles.deleteButton}
-                onClick={() => handleDeleteProduct(product)}
-              >
-                Eliminar
-              </button>
-            </li>
-          ))}
-        </ul>
+            {products.map((product) => (
+              <li key={product.id} style={styles.productListItem}>
+                {product.nombre} - {product.udsPedidas} Unidades pedidas,{" "}
+                {product.udsCompradas} Unidades compradas
+                <button
+                  style={styles.editButton}
+                  onClick={() => handleEditProduct(product)}
+                >
+                  Editar
+                </button>
+                <button
+                  style={styles.deleteButton}
+                  onClick={() => handleDeleteProduct(product)}
+                >
+                  Eliminar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {showEditModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3>Editar Producto</h3>
+            <input
+              type="text"
+              value={editProductName}
+              onChange={(e) => setEditProductName(e.target.value)}
+              placeholder={selectedProduct?.nombre}
+              style={styles.input}
+            />
+            <input
+              type="number"
+              value={editProductUdsPedidas}
+              onChange={(e) => setEditProductUdsPedidas(Number(e.target.value))}
+              placeholder={selectedProduct?.udsPedidas}
+              style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
+            />
+            <input
+              type="number"
+              value={editProductUdsCompradas}
+              onChange={(e) =>
+                setEditProductUdsCompradas(Number(e.target.value))
+              }
+              placeholder={selectedProduct?.udsCompradas}
+              style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
+            />
+            <button
+              onClick={() => handleSaveEditProduct(selectedProduct)}
+              style={styles.button}
+            >
+              Guardar Cambios
+            </button>
+            <button onClick={handleCloseEditModal} style={styles.cancelButton}>
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -616,6 +697,32 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "5px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  },
+  cancelButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    margin: "10px",
   },
 };
 
