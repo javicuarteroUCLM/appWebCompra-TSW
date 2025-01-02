@@ -76,13 +76,17 @@ const addProductToList = async (listId, product) => {
       "Content-Type": "application/json",
     },
   });
+
+  // Mandar difusion por Websocket
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     console.log("WebSocket no conectado. No se enviará mensaje.");
-    this.conectarWebSocket();
+    conectarWebSocket();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   const message = {
     type: "actualizacionDeLista",
+    action: "addProduct",
     idLista: listId,
     producto: {
       id: product.id,
@@ -91,6 +95,7 @@ const addProductToList = async (listId, product) => {
       udsCompradas: product.udsCompradas,
     },
   };
+
   sendMessage(message);
 
   return response.data;
@@ -134,11 +139,13 @@ const buyProduct = async (productId, udsCompradas) => {
     );
     return response.data;
   } catch (err) {
-    console.error("Error marcando producto como comprado:", err.response?.data || err);
+    console.error(
+      "Error marcando producto como comprado:",
+      err.response?.data || err
+    );
     throw new Error("No se pudo marcar el producto como comprado.");
   }
 };
-
 
 // Obtener Productos de una Lista
 const getProductsByListId = async (listId) => {

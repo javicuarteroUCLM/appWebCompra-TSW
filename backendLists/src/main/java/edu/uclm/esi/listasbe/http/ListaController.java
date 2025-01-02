@@ -23,14 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
-
-
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -191,24 +183,28 @@ public class ListaController {
     }
 
     /*
-    @PutMapping("/comprar")
-    public Producto comprar(@RequestBody Map<String, Object> compra) {
-        if (!compra.containsKey("idProducto") || !compra.containsKey("udsCompradas")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "La petición debe incluir idProducto y udsCompradas");
-        }
-
-        String idProducto = compra.get("idProducto").toString();
-        float udsCompradas;
-        try {
-            udsCompradas = Float.parseFloat(compra.get("udsCompradas").toString());
-        } catch (NumberFormatException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "udsCompradas debe ser un número válido");
-        }
-
-        // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja aquí
-        return this.listaService.comprar(idProducto, udsCompradas);
-    }*/
+     * @PutMapping("/comprar")
+     * public Producto comprar(@RequestBody Map<String, Object> compra) {
+     * if (!compra.containsKey("idProducto") || !compra.containsKey("udsCompradas"))
+     * {
+     * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+     * "La petición debe incluir idProducto y udsCompradas");
+     * }
+     * 
+     * String idProducto = compra.get("idProducto").toString();
+     * float udsCompradas;
+     * try {
+     * udsCompradas = Float.parseFloat(compra.get("udsCompradas").toString());
+     * } catch (NumberFormatException e) {
+     * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+     * "udsCompradas debe ser un número válido");
+     * }
+     * 
+     * // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja
+     * aquí
+     * return this.listaService.comprar(idProducto, udsCompradas);
+     * }
+     */
 
     @PutMapping("/comprarProducto")
     public Producto comprar(@RequestBody Map<String, Object> body) {
@@ -228,7 +224,6 @@ public class ListaController {
 
         return listaService.comprar(idProducto, udsCompradas);
     }
-
 
     @GetMapping("/productos/{idLista}")
     public List<Producto> getProductosDeLista(@PathVariable String idLista) {

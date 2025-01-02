@@ -28,16 +28,30 @@ public class WSListas extends TextWebSocketHandler {
     private UsuarioListaRepository usuarioListaRepository;
 
     private Map<String, List<WebSocketSession>> sessionsByIdLista = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, WebSocketSession> activeSessions = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String email = this.getParameter(session, "email");
-        // System.out.println("Email del usuario conectado: " + email);
+
+        // Si el usuario ya tiene una conexión activa, retornamos y no creamos una nueva
+        if (activeSessions.containsKey(email)) {
+            // WebSocketSession existingSession = activeSessions.get(email);
+            return;
+            /*
+             * if (existingSession != null && existingSession.isOpen()) {
+             * System.out.println("Conexión anterior cerrada: " + existingSession.getId());
+             * existingSession.close(); // Cerrar la conexión anterior
+             * }
+             */
+        }
+
+        // Añadir la nueva conexión activa para el usuario
+        activeSessions.put(email, session);
+        super.afterConnectionEstablished(session);
 
         List<UsuarioLista> relaciones = this.usuarioListaRepository.findByUsuarioId(email);
-        // System.out.println("Listas asociadas al usuario " + email + ": " +
-        // relaciones);
-
+        System.out.println("Conexiones activas: " + activeSessions.size());
         for (UsuarioLista relacion : relaciones) {
             String idLista = relacion.getLista().getId();
             sessionsByIdLista.computeIfAbsent(idLista, k -> new ArrayList<>()).add(session);
@@ -52,8 +66,10 @@ public class WSListas extends TextWebSocketHandler {
             return;
         }
 
-        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista + ": " + interesados);
+        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista
+                + " sobre la actualización del producto " + producto.getId() + ": " + interesados);
 
+        // Crear mensaje JSON con la información del producto a enviar
         JSONObject json = new JSONObject();
         json.put("type", "actualizacionDeLista");
         json.put("action", "updateProduct"); // Campo `action` añadido correctamente
@@ -188,30 +204,22 @@ public class WSListas extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
             String payload = message.getPayload();
+            System.out.println("Mensaje recibido: " + payload);
+
             JSONObject json = new JSONObject(payload);
+            System.out.println("Tipo de mensaje: " + json.getString("type"));
 
-            // Manejar mensajes con el campo "action" (esto creo que lo voy a quitar pero
-            // ahora mismo funciona asi que NO TOCAR)
-            if (json.has("action")) {
-                String action = json.getString("action");
-
-                if ("addProducto".equals(action)) {
-                    String idLista = json.getString("idLista");
-                    Producto producto = new Producto();
-                    producto.setId(json.getString("idProducto"));
-                    producto.setNombre(json.getString("nombre"));
-                    producto.setUdsPedidas(json.getInt("udsPedidas"));
-                    producto.setUdsCompradas(json.getInt("udsCompradas"));
-
-                    // Lógica para agregar el producto a la lista
-                    // ...
-
-                    // Notificar a los interesados
-                    notificar(idLista, producto);
-                }
-                // Manejar futuras acciones
+            if ("actualizacionDeLista".equals(json.getString("type"))
+                    && "addProduct".equals(json.getString("action"))) {
+                String idLista = json.getString("idLista");
+                JSONObject productoJson = json.getJSONObject("producto");
+                Producto producto = new Producto();
+                producto.setNombre(productoJson.getString("nombre"));
+                producto.setUdsPedidas(productoJson.getInt("udsPedidas"));
+                producto.setUdsCompradas(productoJson.getInt("udsCompradas"));
+                System.out.println("Producto añadido: " + producto + " a la lista " + idLista);
+                this.notificar(idLista, producto);
             } else {
-                // Ignorar mensajes sin el campo "action" si no son relevantes
                 System.out.println("Mensaje recibido sin 'action': " + payload);
             }
         } catch (JSONException e) {

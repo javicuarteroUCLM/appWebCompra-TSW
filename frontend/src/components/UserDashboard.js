@@ -33,9 +33,6 @@ const UserDashboard = () => {
   const elements = useElements();
   const navigate = useNavigate();
 
-  // Conectar WebSocket al cargar el componente
-  let ws = listService.conectarWebSocket();
-
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
