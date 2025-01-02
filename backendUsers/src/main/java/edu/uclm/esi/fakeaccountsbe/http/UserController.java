@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,6 +22,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+
+
+
+
+
 
 @RestController
 @RequestMapping("users")
@@ -216,19 +221,10 @@ public class UserController {
 	}
 
 	@PutMapping("/actualizarPwd")
-	public void actualizarContraseña(@RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
-		User user = userDao.findById(email)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-
-		CredencialesRegistro cr = new CredencialesRegistro();
-		cr.setEmail(email);
-		cr.setPwd1(pwd1);
-		cr.setPwd2(pwd2);
-		cr.comprobar();
-
-		user.setPwd(pwd1);
-		this.userDao.save(user);
+	public void actualizarPwd(@RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
+		this.userService.actualizarPwd(email, pwd1, pwd2);
 	}
+
 
 	private boolean isPrime(int n) {
 		if (n <= 1)

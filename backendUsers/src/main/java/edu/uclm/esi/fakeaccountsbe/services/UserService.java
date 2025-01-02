@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
 @Service
 public class UserService {
 
@@ -97,6 +99,26 @@ public class UserService {
 		// Recargo los usuarios desde la base de datos
 		this.getAllUsers();
 	}
+
+	public void actualizarPwd(String email, String pwd1, String pwd2) {
+		// Verificar que el usuario existe
+		User user = userDao.findById(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+	
+		// Verificar que las contraseñas coincidan y cumplan los requisitos
+		if (!pwd1.equals(pwd2)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Las contraseñas no coinciden");
+		}
+		if (pwd1.length() < 4) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 4 caracteres");
+		}
+	
+		// Actualizar la contraseña y guardar
+		user.setPwd(pwd1); // El hash se aplica automáticamente en el método `setPwd` del modelo `User`
+		userDao.save(user);
+	}
+
+	
 	/*
 	 * public synchronized void clearOld() {
 	 * long time = System.currentTimeMillis();

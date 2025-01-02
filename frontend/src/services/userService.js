@@ -79,6 +79,17 @@ const recoverPassword = async (email) => {
   return response.data;
 };
 
+const updatePassword = async (email, pwd1, pwd2) => {
+  const response = await axios.put(
+    `${API_URL}/actualizarPwd`,
+    {},
+    {
+      params: { email, pwd1, pwd2 },
+    }
+  );
+  return response.data;
+};
+
 export default {
   register,
   login,
@@ -87,4 +98,5 @@ export default {
   marcarUsuarioComoPagado,
   logout,
   recoverPassword,
+  updatePassword,
 };

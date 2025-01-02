@@ -28,6 +28,11 @@ const UserDashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [buyProductUds, setBuyProductUds] = useState(0);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
+  const [newPassword1, setNewPassword1] = useState("");
+  const [newPassword2, setNewPassword2] = useState("");
+  const [passwordError, setPasswordError] = useState(null);
+
 
   const stripe = useStripe();
   const elements = useElements();
@@ -88,6 +93,25 @@ const UserDashboard = () => {
     // Limpiar session storage
     sessionStorage.clear();
     navigate("/");
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword1 !== newPassword2) {
+      setPasswordError("Las contraseñas no coinciden");
+      return;
+    }
+  
+    try {
+      await userService.updatePassword(user.email, newPassword1, newPassword2);
+      alert("Contraseña actualizada con éxito");
+      setShowChangePasswordForm(false);
+      setNewPassword1("");
+      setNewPassword2("");
+      setPasswordError(null);
+    } catch (err) {
+      console.error("Error actualizando contraseña:", err);
+      setPasswordError("No se pudo actualizar la contraseña");
+    }
   };
 
   // Crear una nueva lista
@@ -364,6 +388,42 @@ const UserDashboard = () => {
       <button onClick={handleLogout} style={styles.logoutButton}>
         Cerrar Sesión
       </button>
+      {showChangePasswordForm ? (
+        <div style={styles.changePasswordForm}>
+          <h3>Cambiar Contraseña</h3>
+          <input
+            type="password"
+            value={newPassword1}
+            onChange={(e) => setNewPassword1(e.target.value)}
+            placeholder="Nueva contraseña"
+            style={styles.input}
+          />
+          <input
+            type="password"
+            value={newPassword2}
+            onChange={(e) => setNewPassword2(e.target.value)}
+            placeholder="Confirmar nueva contraseña"
+            style={styles.input}
+          />
+          {passwordError && <p style={styles.error}>{passwordError}</p>}
+          <button onClick={handleChangePassword} style={styles.button}>
+            Cambiar Contraseña
+          </button>
+          <button
+            onClick={() => setShowChangePasswordForm(false)}
+            style={styles.cancelButton}
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowChangePasswordForm(true)}
+          style={styles.changePasswordButton}
+        >
+          Cambiar Contraseña
+        </button>
+      )}
       {!user.esPagado && (
         <>
           {!showPaymentForm ? (
@@ -802,6 +862,30 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
   },
+  changePasswordForm: {
+    marginTop: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "20px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    backgroundColor: "#fff",
+    maxWidth: "400px",
+    width: "100%",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  },
+  changePasswordButton: {
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    fontSize: "16px",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginTop: "20px",
+  },
+  
 };
 
 export default UserDashboard;

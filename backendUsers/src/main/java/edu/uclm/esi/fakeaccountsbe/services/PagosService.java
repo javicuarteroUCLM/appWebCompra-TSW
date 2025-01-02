@@ -7,6 +7,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class PagosService {
     // Pregunta de examen para que sirve la clave publica y privada de stripe
@@ -34,7 +35,7 @@ public class PagosService {
         }
     }
 
-    public String getStripeKey() {
+    public String getStripeKey() throws org.json.JSONException {
         return this.manager.getConfiguration().getJSONObject("stripe").getString("clavePublicaStripe");
     }
 
