@@ -23,6 +23,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
+
+
+
+
+
+
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -182,6 +190,7 @@ public class ListaController {
         return this.listaService.editarProducto(producto);
     }
 
+    /*
     @PutMapping("/comprar")
     public Producto comprar(@RequestBody Map<String, Object> compra) {
         if (!compra.containsKey("idProducto") || !compra.containsKey("udsCompradas")) {
@@ -199,7 +208,27 @@ public class ListaController {
 
         // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja aquí
         return this.listaService.comprar(idProducto, udsCompradas);
+    }*/
+
+    @PutMapping("/comprarProducto")
+    public Producto comprar(@RequestBody Map<String, Object> body) {
+        if (!body.containsKey("idProducto") || !body.containsKey("udsCompradas")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La solicitud debe incluir 'idProducto' y 'udsCompradas'");
+        }
+
+        String idProducto = body.get("idProducto").toString();
+        int udsCompradas;
+
+        try {
+            udsCompradas = Integer.parseInt(body.get("udsCompradas").toString());
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "udsCompradas debe ser un número válido");
+        }
+
+        return listaService.comprar(idProducto, udsCompradas);
     }
+
 
     @GetMapping("/productos/{idLista}")
     public List<Producto> getProductosDeLista(@PathVariable String idLista) {
@@ -208,7 +237,7 @@ public class ListaController {
 
     @PostMapping("/compartirLista")
     public String compartirLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body) throws org.json.JSONException {
         String emailInvitado = body.get("emailInvitado");
 
         if (idLista == null || idLista.trim().isEmpty()) {
@@ -230,7 +259,12 @@ public class ListaController {
         }
 
         // Generar URL para compartir la lista
-        String urlCompartir = this.listaService.compartirLista(idLista);
+        String urlCompartir;
+        try {
+            urlCompartir = this.listaService.compartirLista(idLista);
+        } catch (org.json.JSONException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al compartir la lista", e);
+        }
 
         // Crear Invitacion
         this.listaService.crearInvitacion(idLista, emailInvitado);

@@ -48,6 +48,7 @@ export const connectWebSocket = (email) => {
   ws.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
+      console.log("Mensaje recibido por WebSocket:", data);
   
       if (data.type === "actualizacionDeLista") {
         const listId = data.idLista;
@@ -63,7 +64,7 @@ export const connectWebSocket = (email) => {
                 const existingProduct = prevProducts.find(
                   (p) => p.id === data.producto.id
                 );
-  
+
                 if (existingProduct) {
                   // Si el producto ya existe, actualiza su información
                   return prevProducts.map((p) =>
@@ -82,6 +83,23 @@ export const connectWebSocket = (email) => {
                 prevProducts.filter((p) => p.id !== data.idProducto)
               );
               break;
+
+            case "editProduct":
+              callback((prevProducts) =>
+                prevProducts.map((p) =>
+                  p.id === data.producto.id ? data.producto : p
+                )
+              );
+              break;
+            
+            case "buyProduct":
+              callback((prevProducts) =>
+                prevProducts.map((p) =>
+                  p.id === data.producto.id ? data.producto : p
+                )
+              );
+              break;
+
   
             case "newList":
               // Manejar una nueva lista compartida (si aplica)

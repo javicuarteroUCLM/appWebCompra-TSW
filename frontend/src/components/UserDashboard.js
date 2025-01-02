@@ -28,6 +28,8 @@ const UserDashboard = () => {
   const [editProductUdsCompradas, setEditProductUdsCompradas] = useState(0);
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [buyProductUds, setBuyProductUds] = useState(0);
 
   const stripe = useStripe();
   const elements = useElements();
@@ -187,37 +189,79 @@ const UserDashboard = () => {
     setShowEditModal(true);
   };
 
-  const handleSelectList = async (listId) => {
-    if (selectedList) {
-      websocket.unsubscribeFromListUpdates(selectedList);
-    }
-
-    setSelectedList(listId);
-    setProducts([]);
-    setShareUrl(""); // Limpiar la URL al cambiar de lista
-    await fetchProducts(listId); // Carga los productos de la lista seleccionada
-
-    // Suscribirse a actualizaciones en tiempo real para esta lista
-    websocket.subscribeToListUpdates(listId, (data) => {
-      if (data.action === "updateProduct" && data.idLista === listId) {
-        setProducts((prevProducts) => {
-          const productoExistente = prevProducts.find(
-            (p) => p.id === data.producto.id
-          );
-
-          if (productoExistente) {
-            // Actualiza el producto existente
-            return prevProducts.map((p) =>
-              p.id === data.producto.id ? data.producto : p
-            );
-          } else {
-            // Agrega el nuevo producto
-            return [...prevProducts, data.producto];
-          }
-        });
-      }
-    });
+  const handleBuyProduct = (product) => {
+    setSelectedProduct(product);
+    setBuyProductUds(product.udsCompradas);
+    setShowBuyModal(true);
   };
+
+  const handleSaveBuyProduct = async () => {
+    try {
+      const updatedProduct = await listService.buyProduct(
+        selectedProduct.id,
+        buyProductUds
+      );
+      setProducts((prevProducts) =>
+        prevProducts.map((p) =>
+          p.id === updatedProduct.id ? updatedProduct : p
+        )
+      );
+      setShowBuyModal(false);
+      setError(null);
+    } catch (err) {
+      console.error("Error marcando producto como comprado:", err);
+      setError("No se pudo marcar el producto como comprado.");
+    }
+  };
+
+  const handleSelectList = async (listId) => {
+  if (selectedList) {
+    websocket.unsubscribeFromListUpdates(selectedList);
+  }
+
+  setSelectedList(listId);
+  setProducts([]);
+  setShareUrl(""); // Limpiar la URL al cambiar de lista
+
+  await fetchProducts(listId); // Carga los productos de la lista seleccionada
+
+  // Suscribirse a actualizaciones en tiempo real para esta lista
+  websocket.subscribeToListUpdates(listId, (data) => {
+    switch (data.action) {
+      case "updateProduct":
+        if (data.idLista === listId) {
+          setProducts((prevProducts) => {
+            const productoExistente = prevProducts.find(
+              (p) => p.id === data.producto.id
+            );
+
+            if (productoExistente) {
+              // Actualiza el producto existente
+              return prevProducts.map((p) =>
+                p.id === data.producto.id ? data.producto : p
+              );
+            } else {
+              // Agrega el nuevo producto
+              return [...prevProducts, data.producto];
+            }
+          });
+        }
+        break;
+
+      case "deleteProduct":
+        if (data.idLista === listId) {
+          setProducts((prevProducts) =>
+            prevProducts.filter((p) => p.id !== data.idProducto)
+          );
+        }
+        break;
+
+      default:
+        console.warn("Acción no reconocida:", data.action);
+    }
+  });
+};
+
 
   // Pasarela de pago para hacer un usuario premium
   const handleGoPremium = () => {
@@ -278,20 +322,21 @@ const UserDashboard = () => {
       product.nombre = editProductName;
       product.udsPedidas = editProductUdsPedidas;
       product.udsCompradas = editProductUdsCompradas;
-
+  
       await listService.editProductFromList(product);
-
+  
       setEditProductName("");
       setEditProductUdsPedidas(0);
       setEditProductUdsCompradas(0);
       setShowEditModal(false);
-
+  
       setError(null);
     } catch (err) {
       console.error("Error editando producto:", err);
       setError("No se pudo editar el producto.");
     }
   };
+  
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
@@ -454,6 +499,13 @@ const UserDashboard = () => {
                 {product.nombre} - {product.udsPedidas} Unidades pedidas,{" "}
                 {product.udsCompradas} Unidades compradas
                 <button
+                  style={styles.buyButton}
+                  onClick={() => handleBuyProduct(product)}
+                >
+                  Comprar
+                </button>
+
+                <button
                   style={styles.editButton}
                   onClick={() => handleEditProduct(product)}
                 >
@@ -471,45 +523,84 @@ const UserDashboard = () => {
         </div>
       )}
       {showEditModal && (
+  <div style={styles.modalOverlay}>
+    <div style={styles.modalContent}>
+      <h3>Editar Producto</h3>
+      <input
+        type="text"
+        value={editProductName}
+        onChange={(e) => setEditProductName(e.target.value)}
+        placeholder={selectedProduct?.nombre}
+        style={styles.input}
+      />
+      <input
+        type="number"
+        value={editProductUdsPedidas}
+        onChange={(e) => setEditProductUdsPedidas(Number(e.target.value))}
+        placeholder={selectedProduct?.udsPedidas}
+        style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
+      />
+      <input
+        type="number"
+        value={editProductUdsCompradas}
+        disabled
+        placeholder={selectedProduct?.udsCompradas}
+        style={{
+          ...styles.input,
+          width: "80px",
+          marginLeft: "10px",
+          backgroundColor: "#f0f0f0",
+          cursor: "not-allowed", 
+        }}
+      />
+      <button
+        onClick={() => handleSaveEditProduct(selectedProduct)}
+        style={styles.button}
+      >
+        Guardar Cambios
+      </button>
+      <button onClick={handleCloseEditModal} style={styles.cancelButton}>
+        Cancelar
+      </button>
+    </div>
+  </div>
+)}
+
+      
+      {showBuyModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <h3>Editar Producto</h3>
+            <h3>Marcar como Comprado</h3>
+            <p>
+              <strong>Producto:</strong> {selectedProduct?.nombre}
+            </p>
+            <p>
+              <strong>Unidades Pedidas:</strong> {selectedProduct?.udsPedidas}
+            </p>
+            <p>
+              <strong>Unidades Compradas:</strong>
+            </p>
             <input
-              type="text"
-              value={editProductName}
-              onChange={(e) => setEditProductName(e.target.value)}
-              placeholder={selectedProduct?.nombre}
+              type="number"
+              value={buyProductUds}
+              onChange={(e) => setBuyProductUds(Number(e.target.value))}
               style={styles.input}
+              min={0}
+              max={selectedProduct?.udsPedidas}
             />
-            <input
-              type="number"
-              value={editProductUdsPedidas}
-              onChange={(e) => setEditProductUdsPedidas(Number(e.target.value))}
-              placeholder={selectedProduct?.udsPedidas}
-              style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
-            />
-            <input
-              type="number"
-              value={editProductUdsCompradas}
-              onChange={(e) =>
-                setEditProductUdsCompradas(Number(e.target.value))
-              }
-              placeholder={selectedProduct?.udsCompradas}
-              style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
-            />
-            <button
-              onClick={() => handleSaveEditProduct(selectedProduct)}
-              style={styles.button}
-            >
-              Guardar Cambios
+            <button onClick={handleSaveBuyProduct} style={styles.button}>
+              Guardar
             </button>
-            <button onClick={handleCloseEditModal} style={styles.cancelButton}>
+            <button onClick={() => setShowBuyModal(false)} style={styles.cancelButton}>
               Cancelar
             </button>
           </div>
-        </div>
-      )}
+  </div>
+)}
+
+
     </div>
+
   );
 };
 
@@ -724,6 +815,15 @@ const styles = {
     cursor: "pointer",
     margin: "10px",
   },
+  buyButton: {
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  
 };
 
 export default UserDashboard;

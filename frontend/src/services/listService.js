@@ -125,6 +125,21 @@ const editProductFromList = async (product) => {
   }
 };
 
+const buyProduct = async (productId, udsCompradas) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/comprarProducto`,
+      { idProducto: productId, udsCompradas },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Error marcando producto como comprado:", err.response?.data || err);
+    throw new Error("No se pudo marcar el producto como comprado.");
+  }
+};
+
+
 // Obtener Productos de una Lista
 const getProductsByListId = async (listId) => {
   if (!listId) {
@@ -161,5 +176,6 @@ const listService = {
   shareList,
   deleteProductFromList,
   editProductFromList,
+  buyProduct,
 };
 export default listService;

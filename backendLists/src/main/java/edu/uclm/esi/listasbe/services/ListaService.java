@@ -17,6 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
+
+
 @Service
 public class ListaService {
 
@@ -103,7 +107,6 @@ public class ListaService {
 
 	/**
 	 * Actualizar las unidades compradas de un producto
-	 */
 	public Producto comprar(String idProducto, float udsCompradas) {
 		Optional<Producto> optProducto = productoDao.findById(idProducto);
 		if (optProducto.isEmpty()) {
@@ -116,7 +119,36 @@ public class ListaService {
 		productoDao.save(producto);
 
 		return producto;
+	} */
+
+	public Producto comprar(String idProducto, int udsCompradas) {
+		Optional<Producto> optProducto = productoDao.findById(idProducto);
+		if (optProducto.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado con ID: " + idProducto);
+		}
+	
+		Producto producto = optProducto.get();
+	
+		// Validar unidades compradas
+		if (udsCompradas > producto.getUdsPedidas()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes marcar más unidades de las pedidas");
+		}
+	
+		// Actualizar unidades compradas
+		producto.setUdsCompradas(udsCompradas);
+		producto.setUdsPedidas(producto.getUdsPedidas() - udsCompradas);
+		productoDao.save(producto);
+	
+		// Notificar mediante WebSocket
+		try {
+			wsListas.notificarCompra(producto.getLista().getId(), producto);
+		} catch (JSONException e) {
+			throw new RuntimeException("Error notificando la compra del producto", e);
+		}
+	
+		return producto;
 	}
+	
 
 	public Lista addProducto(String idLista, Producto producto, String token) throws org.json.JSONException {
 		String email = this.proxy.obtenerEmailDesdeToken(token);
@@ -294,13 +326,21 @@ public class ListaService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
 					"No se ha encontrado el producto con id " + producto.getId());
 		}
-
+	
 		Producto productoGuardado = optProducto.get();
 		productoGuardado.setNombre(producto.getNombre());
 		productoGuardado.setUdsPedidas(producto.getUdsPedidas());
 		productoGuardado.setUdsCompradas(producto.getUdsCompradas());
 		productoDao.save(productoGuardado);
-
+	
+		// Notificar a los usuarios interesados
+		try {
+			wsListas.notificarEdicion(productoGuardado.getLista().getId(), productoGuardado);
+		} catch (JSONException e) {
+			throw new RuntimeException("Error al notificar la edición del producto", e);
+		}
+	
 		return productoGuardado;
 	}
+	
 }

@@ -21,6 +21,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 
 
+
+
+
+
 @Component
 public class WSListas extends TextWebSocketHandler {
 
@@ -105,6 +109,70 @@ public class WSListas extends TextWebSocketHandler {
             }
         }
     }
+
+    public void notificarCompra(String idLista, Producto producto) throws JSONException {
+        List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
+        if (interesados == null || interesados.isEmpty()) {
+            System.out.println("No hay sesiones interesadas en la lista " + idLista);
+            return;
+        }
+    
+        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista + " sobre la compra del producto " + producto.getId() + ": " + interesados);
+    
+        JSONObject json = new JSONObject();
+        json.put("type", "actualizacionDeLista");
+        json.put("action", "buyProduct");
+        json.put("idLista", idLista);
+        json.put("producto", new JSONObject()
+                .put("id", producto.getId())
+                .put("nombre", producto.getNombre())
+                .put("udsPedidas", producto.getUdsPedidas())
+                .put("udsCompradas", producto.getUdsCompradas()));
+    
+        TextMessage message = new TextMessage(json.toString());
+    
+        for (WebSocketSession session : interesados) {
+            try {
+                session.sendMessage(message);
+                System.out.println("Mensaje enviado a sesión " + session.getId());
+            } catch (IOException e) {
+                System.err.println("Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
+            }
+        }
+    }
+    
+
+    public void notificarEdicion(String idLista, Producto producto) throws JSONException {
+        List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
+        if (interesados == null || interesados.isEmpty()) {
+            System.out.println("No hay sesiones interesadas en la lista " + idLista);
+            return;
+        }
+    
+        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista + " sobre la edición del producto " + producto.getId() + ": " + interesados);
+    
+        JSONObject json = new JSONObject();
+        json.put("type", "actualizacionDeLista");
+        json.put("action", "editProduct");
+        json.put("idLista", idLista);
+        json.put("producto", new JSONObject()
+                .put("id", producto.getId())
+                .put("nombre", producto.getNombre())
+                .put("udsPedidas", producto.getUdsPedidas())
+                .put("udsCompradas", producto.getUdsCompradas()));
+    
+        TextMessage message = new TextMessage(json.toString());
+    
+        for (WebSocketSession session : interesados) {
+            try {
+                session.sendMessage(message);
+                System.out.println("Mensaje enviado a sesión " + session.getId());
+            } catch (IOException e) {
+                System.err.println("Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
+            }
+        }
+    }
+    
     
     
     private String getParameter(WebSocketSession session, String parameter) {
