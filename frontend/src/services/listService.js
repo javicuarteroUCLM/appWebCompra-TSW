@@ -32,6 +32,23 @@ const createList = async (listName) => {
   }
 };
 
+const deleteList = async (listId) => {
+  const token = localStorage.getItem("authToken");
+  try {
+      await axios.delete(`${API_URL}/borrarLista`, {
+          headers: {
+              token: token,
+              idLista: listId,
+              "Content-Type": "application/json",
+          },
+      });
+  } catch (err) {
+      console.error("Error eliminando lista:", err.response?.data || err);
+      throw new Error("No se pudo eliminar la lista.");
+  }
+};
+
+
 // Obtener Listas del Usuario
 const getUserLists = async () => {
   const token = localStorage.getItem("authToken");
@@ -184,5 +201,6 @@ const listService = {
   deleteProductFromList,
   editProductFromList,
   buyProduct,
+  deleteList,
 };
 export default listService;

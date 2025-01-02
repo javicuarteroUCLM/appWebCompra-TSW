@@ -140,6 +140,22 @@ const UserDashboard = () => {
     }
   };
 
+  const handleDeleteList = async (listId) => {
+    const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta lista?");
+    if (!confirmDelete) return;
+
+    try {
+        await listService.deleteList(listId);
+        setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
+        setSelectedList(null);
+        alert("Lista eliminada con éxito.");
+    } catch (err) {
+        console.error("Error eliminando lista:", err);
+        setError("No se pudo eliminar la lista.");
+    }
+};
+
+
   // Añadir producto a la lista seleccionada
   const handleAddProduct = async () => {
     if (!selectedList) {
@@ -472,13 +488,18 @@ const UserDashboard = () => {
         {lists.map((list) => (
           <li key={list.id} style={styles.listItem}>
             {list.nombre}
+            
             <button
               onClick={() => handleSelectList(list.id)}
               style={styles.selectButton}
             >
               Seleccionar
             </button>
+            <button onClick={() => handleDeleteList(list.id)} style={styles.deleteButton}>
+              Eliminar Lista
+          </button>
           </li>
+          
         ))}
       </ul>
       {selectedList && (
@@ -496,6 +517,7 @@ const UserDashboard = () => {
             <button onClick={handleShareList} style={styles.shareButton}>
               <FaShareAlt /> Compartir Lista
             </button>
+
             {shareUrl && (
               <p>
                 URL generada: <a href={shareUrl}>{shareUrl}</a>
