@@ -12,9 +12,7 @@ export const connectWebSocket = (email) => {
     return;
   }
 
-  const wsUrl = `ws://localhost:8383/wsListas?email=${encodeURIComponent(
-    email
-  )}`;
+  const wsUrl = `ws://localhost:8383/wsListas?email=${email}`;
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
@@ -49,14 +47,14 @@ export const connectWebSocket = (email) => {
     try {
       const data = JSON.parse(message.data);
       console.log("Mensaje recibido por WebSocket:", data);
-  
+
       if (data.type === "actualizacionDeLista") {
         const listId = data.idLista;
-  
+
         // Verifica si hay una suscripción activa para la lista
         if (subscriptions[listId]) {
           const callback = subscriptions[listId];
-  
+
           switch (data.action) {
             case "updateProduct":
               // Actualizar o agregar el producto en la lista
@@ -76,7 +74,7 @@ export const connectWebSocket = (email) => {
                 }
               });
               break;
-  
+
             case "deleteProduct":
               // Eliminar el producto de la lista
               callback((prevProducts) =>
@@ -91,7 +89,7 @@ export const connectWebSocket = (email) => {
                 )
               );
               break;
-            
+
             case "buyProduct":
               callback((prevProducts) =>
                 prevProducts.map((p) =>
@@ -100,12 +98,11 @@ export const connectWebSocket = (email) => {
               );
               break;
 
-  
             case "newList":
               // Manejar una nueva lista compartida (si aplica)
               console.log("Nueva lista recibida:", data.listDetails);
               break;
-  
+
             default:
               console.warn("Acción no reconocida en WebSocket:", data.action);
           }
@@ -115,9 +112,7 @@ export const connectWebSocket = (email) => {
       console.error("Error procesando mensaje WebSocket:", err);
     }
   };
-  
 };
-
 
 // Funcion para conectar al WebSocket y devolverlo
 export const getWebSocket = (email) => {
@@ -148,7 +143,6 @@ export const sendMessage = (message) => {
 };
 
 export default {
-  connectWebSocket,
   subscribeToListUpdates,
   unsubscribeFromListUpdates,
   sendMessage,

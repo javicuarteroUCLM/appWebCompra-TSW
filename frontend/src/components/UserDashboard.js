@@ -3,12 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { FaStar, FaShareAlt } from "react-icons/fa"; // Importar ícono de estrella y de compartir
+import { FaShareAlt } from "react-icons/fa"; // Importar ícono de estrella y de compartir
 import userService from "../services/userService";
 import listService from "../services/listService";
 import websocket from "../services/websocket";
-
-let ws;
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
@@ -35,10 +33,8 @@ const UserDashboard = () => {
   const elements = useElements();
   const navigate = useNavigate();
 
-  // Conectar WebSocket
-  useEffect(() => {
-    ws = listService.conectarWebSocket();
-  }, []);
+  // Conectar WebSocket al cargar el componente
+  let ws = listService.conectarWebSocket();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -56,14 +52,6 @@ const UserDashboard = () => {
 
     fetchUserInfo();
   }, [navigate]);
-
-  useEffect(() => {
-    return () => {
-      if (selectedList) {
-        websocket.unsubscribeFromListUpdates(selectedList);
-      }
-    };
-  }, [selectedList]);
 
   useEffect(() => {
     if (selectedProduct) {
@@ -215,53 +203,52 @@ const UserDashboard = () => {
   };
 
   const handleSelectList = async (listId) => {
-  if (selectedList) {
-    websocket.unsubscribeFromListUpdates(selectedList);
-  }
-
-  setSelectedList(listId);
-  setProducts([]);
-  setShareUrl(""); // Limpiar la URL al cambiar de lista
-
-  await fetchProducts(listId); // Carga los productos de la lista seleccionada
-
-  // Suscribirse a actualizaciones en tiempo real para esta lista
-  websocket.subscribeToListUpdates(listId, (data) => {
-    switch (data.action) {
-      case "updateProduct":
-        if (data.idLista === listId) {
-          setProducts((prevProducts) => {
-            const productoExistente = prevProducts.find(
-              (p) => p.id === data.producto.id
-            );
-
-            if (productoExistente) {
-              // Actualiza el producto existente
-              return prevProducts.map((p) =>
-                p.id === data.producto.id ? data.producto : p
-              );
-            } else {
-              // Agrega el nuevo producto
-              return [...prevProducts, data.producto];
-            }
-          });
-        }
-        break;
-
-      case "deleteProduct":
-        if (data.idLista === listId) {
-          setProducts((prevProducts) =>
-            prevProducts.filter((p) => p.id !== data.idProducto)
-          );
-        }
-        break;
-
-      default:
-        console.warn("Acción no reconocida:", data.action);
+    if (selectedList) {
+      websocket.unsubscribeFromListUpdates(selectedList);
     }
-  });
-};
 
+    setSelectedList(listId);
+    setProducts([]);
+    setShareUrl(""); // Limpiar la URL al cambiar de lista
+
+    await fetchProducts(listId); // Carga los productos de la lista seleccionada
+
+    // Suscribirse a actualizaciones en tiempo real para esta lista
+    websocket.subscribeToListUpdates(listId, (data) => {
+      switch (data.action) {
+        case "updateProduct":
+          if (data.idLista === listId) {
+            setProducts((prevProducts) => {
+              const productoExistente = prevProducts.find(
+                (p) => p.id === data.producto.id
+              );
+
+              if (productoExistente) {
+                // Actualiza el producto existente
+                return prevProducts.map((p) =>
+                  p.id === data.producto.id ? data.producto : p
+                );
+              } else {
+                // Agrega el nuevo producto
+                return [...prevProducts, data.producto];
+              }
+            });
+          }
+          break;
+
+        case "deleteProduct":
+          if (data.idLista === listId) {
+            setProducts((prevProducts) =>
+              prevProducts.filter((p) => p.id !== data.idProducto)
+            );
+          }
+          break;
+
+        default:
+          console.warn("Acción no reconocida:", data.action);
+      }
+    });
+  };
 
   // Pasarela de pago para hacer un usuario premium
   const handleGoPremium = () => {
@@ -322,21 +309,20 @@ const UserDashboard = () => {
       product.nombre = editProductName;
       product.udsPedidas = editProductUdsPedidas;
       product.udsCompradas = editProductUdsCompradas;
-  
+
       await listService.editProductFromList(product);
-  
+
       setEditProductName("");
       setEditProductUdsPedidas(0);
       setEditProductUdsCompradas(0);
       setShowEditModal(false);
-  
+
       setError(null);
     } catch (err) {
       console.error("Error editando producto:", err);
       setError("No se pudo editar el producto.");
     }
   };
-  
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
@@ -450,8 +436,8 @@ const UserDashboard = () => {
               onChange={(e) => setInviteEmail(e.target.value)}
               style={{ marginBottom: "10px", padding: "8px" }}
             />
-            <button onClick={handleShareList} style={{ padding: "10px" }}>
-              Compartir Lista
+            <button onClick={handleShareList} style={styles.shareButton}>
+              <FaShareAlt /> Compartir Lista
             </button>
             {shareUrl && (
               <p>
@@ -460,9 +446,7 @@ const UserDashboard = () => {
             )}
             {error && <p style={{ color: "red" }}>{error}</p>}
           </div>
-          <button onClick={handleShareList} style={styles.shareButton}>
-            <FaShareAlt /> Compartir Lista
-          </button>
+
           {shareUrl && (
             <div style={styles.shareUrlContainer}>
               <p>Comparte esta URL con tus amigos:</p>
@@ -504,7 +488,6 @@ const UserDashboard = () => {
                 >
                   Comprar
                 </button>
-
                 <button
                   style={styles.editButton}
                   onClick={() => handleEditProduct(product)}
@@ -523,50 +506,49 @@ const UserDashboard = () => {
         </div>
       )}
       {showEditModal && (
-  <div style={styles.modalOverlay}>
-    <div style={styles.modalContent}>
-      <h3>Editar Producto</h3>
-      <input
-        type="text"
-        value={editProductName}
-        onChange={(e) => setEditProductName(e.target.value)}
-        placeholder={selectedProduct?.nombre}
-        style={styles.input}
-      />
-      <input
-        type="number"
-        value={editProductUdsPedidas}
-        onChange={(e) => setEditProductUdsPedidas(Number(e.target.value))}
-        placeholder={selectedProduct?.udsPedidas}
-        style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
-      />
-      <input
-        type="number"
-        value={editProductUdsCompradas}
-        disabled
-        placeholder={selectedProduct?.udsCompradas}
-        style={{
-          ...styles.input,
-          width: "80px",
-          marginLeft: "10px",
-          backgroundColor: "#f0f0f0",
-          cursor: "not-allowed", 
-        }}
-      />
-      <button
-        onClick={() => handleSaveEditProduct(selectedProduct)}
-        style={styles.button}
-      >
-        Guardar Cambios
-      </button>
-      <button onClick={handleCloseEditModal} style={styles.cancelButton}>
-        Cancelar
-      </button>
-    </div>
-  </div>
-)}
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3>Editar Producto</h3>
+            <input
+              type="text"
+              value={editProductName}
+              onChange={(e) => setEditProductName(e.target.value)}
+              placeholder={selectedProduct?.nombre}
+              style={styles.input}
+            />
+            <input
+              type="number"
+              value={editProductUdsPedidas}
+              onChange={(e) => setEditProductUdsPedidas(Number(e.target.value))}
+              placeholder={selectedProduct?.udsPedidas}
+              style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
+            />
+            <input
+              type="number"
+              value={editProductUdsCompradas}
+              disabled
+              placeholder={selectedProduct?.udsCompradas}
+              style={{
+                ...styles.input,
+                width: "80px",
+                marginLeft: "10px",
+                backgroundColor: "#f0f0f0",
+                cursor: "not-allowed",
+              }}
+            />
+            <button
+              onClick={() => handleSaveEditProduct(selectedProduct)}
+              style={styles.button}
+            >
+              Guardar Cambios
+            </button>
+            <button onClick={handleCloseEditModal} style={styles.cancelButton}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
-      
       {showBuyModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -591,16 +573,16 @@ const UserDashboard = () => {
             <button onClick={handleSaveBuyProduct} style={styles.button}>
               Guardar
             </button>
-            <button onClick={() => setShowBuyModal(false)} style={styles.cancelButton}>
+            <button
+              onClick={() => setShowBuyModal(false)}
+              style={styles.cancelButton}
+            >
               Cancelar
             </button>
           </div>
-  </div>
-)}
-
-
+        </div>
+      )}
     </div>
-
   );
 };
 
@@ -823,7 +805,6 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
   },
-  
 };
 
 export default UserDashboard;
