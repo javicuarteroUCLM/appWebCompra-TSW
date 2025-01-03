@@ -47,11 +47,14 @@ export const connectWebSocket = (email, selectedList, setProducts) => {
     try {
       const data = JSON.parse(message.data);
       console.log("Mensaje recibido por WebSocket:", data);
+      console.log("Lista seleccionada:", selectedList);
+      console.log("Id de lista en mensaje:", data.idLista);
 
       if (
         data.type === "actualizacionDeLista" &&
         data.idLista === selectedList
       ) {
+        console.log("Actualización de lista recibida:", data.action);
         switch (data.action) {
           case "updateProduct":
             console.log("Actualizando producto...");
@@ -98,7 +101,6 @@ export const getWebSocket = (email, selectedList, setProducts) => {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     connectWebSocket(email, selectedList, setProducts);
   }
-  console.log("El WebSocket ya esta conectado:", ws);
   return ws;
 };
 

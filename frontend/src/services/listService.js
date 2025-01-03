@@ -186,6 +186,7 @@ const conectarWebSocket = async (selectedList, setProducts) => {
 const desconectarWebSocket = () => {
   if (ws) {
     ws.close();
+    ws = null;
   }
 };
 

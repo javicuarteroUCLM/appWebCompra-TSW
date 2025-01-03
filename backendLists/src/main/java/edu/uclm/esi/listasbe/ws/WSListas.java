@@ -35,7 +35,7 @@ public class WSListas extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String email = this.getParameter(session, "email");
-
+        System.out.println("Conexión establecida: " + session.getId() + " para el usuario " + email);
         // Si el usuario ya tiene una conexión activa, retornamos y no creamos una nueva
         if (activeSessions.containsKey(email)) {
             // WebSocketSession existingSession = activeSessions.get(email);

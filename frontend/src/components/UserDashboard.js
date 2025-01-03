@@ -233,13 +233,14 @@ const UserDashboard = () => {
         selectedProduct.id,
         buyProductUds
       );
-  
+
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
           p.id === updatedProduct.id
             ? {
                 ...updatedProduct,
-                udsPendientes: updatedProduct.udsPedidas - updatedProduct.udsCompradas, // Cálculo local
+                udsPendientes:
+                  updatedProduct.udsPedidas - updatedProduct.udsCompradas, // Cálculo local
               }
             : p
         )
@@ -251,12 +252,9 @@ const UserDashboard = () => {
       setError("No se pudo marcar el producto como comprado.");
     }
   };
-  
 
   const handleSelectList = async (listId) => {
-    if (selectedList) {
-      websocket.unsubscribeFromListUpdates(selectedList);
-    }
+    ws = listService.desconectarWebSocket(); // Desconectar el WebSocket de la lista anterior
 
     setSelectedList(listId);
     setProducts([]);
@@ -264,42 +262,8 @@ const UserDashboard = () => {
 
     await fetchProducts(listId); // Carga los productos de la lista seleccionada
 
-    // Suscribirse a actualizaciones en tiempo real para esta lista
-    websocket.subscribeToListUpdates(listId, (data) => {
-      console.log("Actualización recibida:", data);
-
-      // Verificar que la acción sea para la lista seleccionada
-      if (data.idLista !== listId) {
-        console.warn(`Mensaje para otra lista: ${data.idLista}`);
-        return;
-      }
-
-      switch (data.action) {
-        case "updateProduct":
-          console.log("Actualizando producto en la lista...");
-          setProducts((prevProducts) =>
-            prevProducts.map((p) =>
-              p.id === data.producto.id ? data.producto : p
-            )
-          );
-          break;
-
-        case "deleteProduct":
-          console.log("Eliminando producto de la lista...");
-          setProducts((prevProducts) =>
-            prevProducts.filter((p) => p.id !== data.idProducto)
-          );
-          break;
-
-        case "addProduct":
-          console.log("Agregando nuevo producto a la lista...");
-          setProducts((prevProducts) => [...prevProducts, data.producto]);
-          break;
-
-        default:
-          console.warn("Acción no reconocida:", data.action);
-      }
-    });
+    // Conectar el WebSocket de la lista seleccionada
+    listService.conectarWebSocket(listId, setProducts);
   };
 
   // Pasarela de pago para hacer un usuario premium
@@ -578,7 +542,8 @@ const UserDashboard = () => {
               <li key={product.id} style={styles.productListItem}>
                 {product.nombre} - {product.udsPedidas} Unidades pedidas,{" "}
                 {product.udsCompradas} Unidades compradas,{" "}
-                {product.udsPendientes || product.udsPedidas - product.udsCompradas}{" "}
+                {product.udsPendientes ||
+                  product.udsPedidas - product.udsCompradas}{" "}
                 Unidades pendientes
                 <button
                   style={styles.buyButton}
@@ -601,7 +566,6 @@ const UserDashboard = () => {
               </li>
             ))}
           </ul>
-
         </div>
       )}
       {showEditModal && (
