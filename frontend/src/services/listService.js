@@ -133,7 +133,7 @@ const deleteProductFromList = async (productId) => {
 };
 
 // Editar Producto de Lista
-const editProductFromList = async (product) => {
+const editProductFromList = async (selectedList, product) => {
   try {
     await axios.put(`${API_URL}/editarProducto`, product, {
       headers: {
@@ -144,6 +144,32 @@ const editProductFromList = async (product) => {
     console.error("Error editando producto:", err.response?.data || err);
     throw new Error("No se pudo editar el producto.");
   }
+
+  // Mandar difusion por Websocket
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    console.log("WebSocket no conectado. No se enviará mensaje.");
+    conectarWebSocket();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  } else {
+    console.log("WebSocket conectado. Enviando mensaje.");
+  }
+
+  const message = {
+    type: "actualizacionDeLista",
+    action: "updateProduct",
+    idLista: selectedList,
+    producto: {
+      id: product.id,
+      nombre: product.nombre,
+      udsPedidas: product.udsPedidas,
+      udsCompradas: product.udsCompradas,
+    },
+  };
+  console.log("Enviando mensaje:", message);
+
+  sendMessage(message);
+
+  return product;
 };
 
 const buyProduct = async (productId, udsCompradas) => {

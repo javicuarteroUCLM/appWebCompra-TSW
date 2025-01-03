@@ -22,7 +22,6 @@ import edu.uclm.esi.listasbe.dao.UsuarioListaRepository;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 
-
 @Component
 public class WSListas extends TextWebSocketHandler {
 
@@ -61,7 +60,7 @@ public class WSListas extends TextWebSocketHandler {
         }
     }
 
-    public void notificar(String idLista, Producto producto) throws JSONException {
+    public void notificar(String idLista, Producto producto, String action) throws JSONException {
         List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
         if (interesados == null || interesados.isEmpty()) {
             System.out.println("No hay sesiones interesadas en la lista " + idLista);
@@ -72,15 +71,7 @@ public class WSListas extends TextWebSocketHandler {
                 + " sobre la actualización del producto " + producto.getId() + ": " + interesados);
 
         // Crear mensaje JSON con la información del producto a enviar
-        JSONObject json = new JSONObject();
-        json.put("type", "actualizacionDeLista");
-        json.put("action", "updateProduct"); // Campo `action` añadido correctamente
-        json.put("idLista", idLista);
-        json.put("producto", new JSONObject()
-                .put("id", producto.getId())
-                .put("nombre", producto.getNombre())
-                .put("udsPedidas", producto.getUdsPedidas())
-                .put("udsCompradas", producto.getUdsCompradas()));
+        JSONObject json = crearJSON(action, idLista, producto);
 
         TextMessage message = new TextMessage(json.toString());
 
@@ -130,7 +121,7 @@ public class WSListas extends TextWebSocketHandler {
             System.out.println("No hay sesiones interesadas en la lista " + idLista);
             return;
         }
-    
+
         JSONObject json = new JSONObject();
         json.put("type", "actualizacionDeLista");
         json.put("action", "buyProduct");
@@ -141,39 +132,6 @@ public class WSListas extends TextWebSocketHandler {
                 .put("udsPedidas", producto.getUdsPedidas())
                 .put("udsCompradas", producto.getUdsCompradas())
                 .put("udsPendientes", producto.getUdsPendientes()));
-    
-        TextMessage message = new TextMessage(json.toString());
-    
-        for (WebSocketSession session : interesados) {
-            try {
-                session.sendMessage(message);
-                System.out.println("Mensaje enviado a sesión " + session.getId());
-            } catch (IOException e) {
-                System.err.println("Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
-            }
-        }
-    }
-    
-
-    public void notificarEdicion(String idLista, Producto producto) throws JSONException {
-        List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
-        if (interesados == null || interesados.isEmpty()) {
-            System.out.println("No hay sesiones interesadas en la lista " + idLista);
-            return;
-        }
-
-        System.out.println("Notificando a las sesiones interesadas en la lista " + idLista
-                + " sobre la edición del producto " + producto.getId() + ": " + interesados);
-
-        JSONObject json = new JSONObject();
-        json.put("type", "actualizacionDeLista");
-        json.put("action", "editProduct");
-        json.put("idLista", idLista);
-        json.put("producto", new JSONObject()
-                .put("id", producto.getId())
-                .put("nombre", producto.getNombre())
-                .put("udsPedidas", producto.getUdsPedidas())
-                .put("udsCompradas", producto.getUdsCompradas()));
 
         TextMessage message = new TextMessage(json.toString());
 
@@ -186,6 +144,28 @@ public class WSListas extends TextWebSocketHandler {
                         "Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
             }
         }
+    }
+
+    private JSONObject crearJSON(String action, String idLista, Producto producto) {
+        JSONObject json = new JSONObject();
+        json.put("type", "actualizacionDeLista");
+        json.put("action", action);
+        json.put("idLista", idLista);
+        json.put("producto", new JSONObject()
+                .put("id", producto.getId())
+                .put("nombre", producto.getNombre())
+                .put("udsPedidas", producto.getUdsPedidas())
+                .put("udsCompradas", producto.getUdsCompradas()));
+        return json;
+    }
+
+    private List<WebSocketSession> comprobarInteresados(String idLista) {
+        List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
+        if (interesados == null || interesados.isEmpty()) {
+            System.out.println("No hay sesiones interesadas en la lista " + idLista);
+            return null;
+        }
+        return interesados;
     }
 
     private String getParameter(WebSocketSession session, String parameter) {
@@ -207,24 +187,39 @@ public class WSListas extends TextWebSocketHandler {
             System.out.println("Mensaje recibido: " + payload);
 
             JSONObject json = new JSONObject(payload);
-            System.out.println("Tipo de mensaje: " + json.getString("type"));
-
-            if ("actualizacionDeLista".equals(json.getString("type"))
-                    && "addProduct".equals(json.getString("action"))) {
+            if ("actualizacionDeLista".equals(json.getString("type"))) {
+                String action = json.getString("action");
                 String idLista = json.getString("idLista");
-                JSONObject productoJson = json.getJSONObject("producto");
-                Producto producto = new Producto();
-                producto.setNombre(productoJson.getString("nombre"));
-                producto.setUdsPedidas(productoJson.getInt("udsPedidas"));
-                producto.setUdsCompradas(productoJson.getInt("udsCompradas"));
-                System.out.println("Producto añadido: " + producto + " a la lista " + idLista);
-                this.notificar(idLista, producto);
-            } else {
-                System.out.println("Mensaje recibido sin 'action': " + payload);
+                switch (action) {
+                    case "addProduct":
+                        Producto producto = obtenerProducto(json);
+                        this.notificar(idLista, producto, "addProduct");
+                        break;
+                    case "updateProduct":
+                        Producto productoUpdate = obtenerProducto(json);
+                        this.notificar(idLista, productoUpdate, "updateProduct");
+                        break;
+                    case "deleteProduct":
+                        String idProducto = json.getString("idProducto");
+                        this.notificarEliminacion(idLista, idProducto);
+                        break;
+                    default:
+                        System.out.println("Mensaje recibido sin 'action' válida: " + payload);
+                        break;
+                }
             }
         } catch (JSONException e) {
             System.err.println("Error procesando mensaje WebSocket: " + e.getMessage());
         }
+    }
+
+    private Producto obtenerProducto(JSONObject json) {
+        JSONObject productoJson = json.getJSONObject("producto");
+        Producto producto = new Producto();
+        producto.setNombre(productoJson.getString("nombre"));
+        producto.setUdsPedidas(productoJson.getInt("udsPedidas"));
+        producto.setUdsCompradas(productoJson.getInt("udsCompradas"));
+        return producto;
     }
 
     @Override

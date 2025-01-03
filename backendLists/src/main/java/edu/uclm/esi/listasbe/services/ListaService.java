@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,11 +16,6 @@ import edu.uclm.esi.listasbe.dao.UsuarioListaRepository;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
-import edu.uclm.esi.listasbe.ws.WSListas;
-
-
-
-
 
 @Service
 public class ListaService {
@@ -40,9 +34,6 @@ public class ListaService {
 
 	@Autowired
 	private ProxyBEU proxy;
-
-	@Autowired
-	private WSListas wsListas;
 
 	private final Manager manager;
 
@@ -124,31 +115,23 @@ public class ListaService {
 	 * }
 	 */
 
-	 public Producto comprar(String idProducto, int udsCompradas) {
+	public Producto comprar(String idProducto, int udsCompradas) {
 		Optional<Producto> optProducto = productoDao.findById(idProducto);
 		if (optProducto.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado con ID: " + idProducto);
 		}
-	
+
 		Producto producto = optProducto.get();
-	
+
 		if (udsCompradas > producto.getUdsPedidas()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes marcar más unidades de las pedidas");
 		}
-	
+
 		producto.setUdsCompradas(udsCompradas);
 		productoDao.save(producto);
-	
-		// Notificar mediante WebSocket
-		try {
-			wsListas.notificarCompra(producto.getLista().getId(), producto);
-		} catch (JSONException e) {
-			throw new RuntimeException("Error notificando la compra del producto", e);
-		}
-	
+
 		return producto;
 	}
-	
 
 	public String addProducto(String idLista, Producto producto, String token) throws org.json.JSONException {
 		String email = this.proxy.obtenerEmailDesdeToken(token);
@@ -201,13 +184,6 @@ public class ListaService {
 
 		Producto producto = optProducto.get();
 		productoDao.delete(producto);
-
-		// Notificar a los usuarios interesados
-		try {
-			wsListas.notificarEliminacion(producto.getLista().getId(), idProducto);
-		} catch (JSONException e) {
-			throw new RuntimeException("Error al notificar la eliminación del producto", e);
-		}
 	}
 
 	public Optional<Lista> getListaById(String id) {
@@ -335,13 +311,6 @@ public class ListaService {
 		productoGuardado.setUdsPedidas(producto.getUdsPedidas());
 		productoGuardado.setUdsCompradas(producto.getUdsCompradas());
 		productoDao.save(productoGuardado);
-
-		// Notificar a los usuarios interesados
-		try {
-			wsListas.notificarEdicion(productoGuardado.getLista().getId(), productoGuardado);
-		} catch (JSONException e) {
-			throw new RuntimeException("Error al notificar la edición del producto", e);
-		}
 
 		return productoGuardado;
 	}

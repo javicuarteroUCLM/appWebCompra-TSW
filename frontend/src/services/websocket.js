@@ -58,20 +58,13 @@ export const connectWebSocket = (email, selectedList, setProducts) => {
         switch (data.action) {
           case "updateProduct":
             console.log("Actualizando producto...");
-            setProducts((prevProducts) => {
-              const existingProduct = prevProducts.find(
-                (p) => p.id === data.producto.id
-              );
-              if (existingProduct) {
-                // Si el producto ya existe, actualiza su información
-                return prevProducts.map((p) =>
-                  p.id === data.producto.id ? data.producto : p
-                );
-              } else {
-                // Si no existe, agrega el nuevo producto
-                return [...prevProducts, data.producto];
-              }
-            });
+            console.log("Productos actuales:", setProducts);
+            console.log("Producto actualizado:", data.producto);
+            setProducts((prevProducts) =>
+              prevProducts.map((p) =>
+                p.id === data.producto.id ? data.producto : p
+              )
+            );
             break;
 
           case "deleteProduct":

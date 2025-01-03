@@ -326,7 +326,7 @@ const UserDashboard = () => {
       product.udsPedidas = editProductUdsPedidas;
       product.udsCompradas = editProductUdsCompradas;
 
-      await listService.editProductFromList(product);
+      await listService.editProductFromList(selectedList, product);
 
       setEditProductName("");
       setEditProductUdsPedidas(0);
