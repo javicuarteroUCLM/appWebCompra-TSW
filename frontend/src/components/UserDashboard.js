@@ -33,10 +33,10 @@ const UserDashboard = () => {
   const [newPassword2, setNewPassword2] = useState("");
   const [passwordError, setPasswordError] = useState(null);
 
-
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  let ws;
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -100,7 +100,7 @@ const UserDashboard = () => {
       setPasswordError("Las contraseñas no coinciden");
       return;
     }
-  
+
     try {
       await userService.updatePassword(user.email, newPassword1, newPassword2);
       alert("Contraseña actualizada con éxito");
@@ -141,20 +141,21 @@ const UserDashboard = () => {
   };
 
   const handleDeleteList = async (listId) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta lista?");
+    const confirmDelete = window.confirm(
+      "¿Estás seguro de que quieres eliminar esta lista?"
+    );
     if (!confirmDelete) return;
 
     try {
-        await listService.deleteList(listId);
-        setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
-        setSelectedList(null);
-        alert("Lista eliminada con éxito.");
+      await listService.deleteList(listId);
+      setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
+      setSelectedList(null);
+      alert("Lista eliminada con éxito.");
     } catch (err) {
-        console.error("Error eliminando lista:", err);
-        setError("No se pudo eliminar la lista.");
+      console.error("Error eliminando lista:", err);
+      setError("No se pudo eliminar la lista.");
     }
-};
-
+  };
 
   // Añadir producto a la lista seleccionada
   const handleAddProduct = async () => {
@@ -240,6 +241,8 @@ const UserDashboard = () => {
   };
 
   const handleSelectList = async (listId) => {
+    ws = listService.conectarWebSocket();
+
     if (selectedList) {
       websocket.unsubscribeFromListUpdates(selectedList);
     }
@@ -252,6 +255,7 @@ const UserDashboard = () => {
 
     // Suscribirse a actualizaciones en tiempo real para esta lista
     websocket.subscribeToListUpdates(listId, (data) => {
+      console.log("Actualización recibida:", data);
       switch (data.action) {
         case "updateProduct":
           if (data.idLista === listId) {
@@ -488,18 +492,20 @@ const UserDashboard = () => {
         {lists.map((list) => (
           <li key={list.id} style={styles.listItem}>
             {list.nombre}
-            
+
             <button
               onClick={() => handleSelectList(list.id)}
               style={styles.selectButton}
             >
               Seleccionar
             </button>
-            <button onClick={() => handleDeleteList(list.id)} style={styles.deleteButton}>
+            <button
+              onClick={() => handleDeleteList(list.id)}
+              style={styles.deleteButton}
+            >
               Eliminar Lista
-          </button>
+            </button>
           </li>
-          
         ))}
       </ul>
       {selectedList && (
@@ -907,7 +913,6 @@ const styles = {
     cursor: "pointer",
     marginTop: "20px",
   },
-  
 };
 
 export default UserDashboard;

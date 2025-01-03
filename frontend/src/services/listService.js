@@ -35,19 +35,18 @@ const createList = async (listName) => {
 const deleteList = async (listId) => {
   const token = localStorage.getItem("authToken");
   try {
-      await axios.delete(`${API_URL}/borrarLista`, {
-          headers: {
-              token: token,
-              idLista: listId,
-              "Content-Type": "application/json",
-          },
-      });
+    await axios.delete(`${API_URL}/borrarLista`, {
+      headers: {
+        token: token,
+        idLista: listId,
+        "Content-Type": "application/json",
+      },
+    });
   } catch (err) {
-      console.error("Error eliminando lista:", err.response?.data || err);
-      throw new Error("No se pudo eliminar la lista.");
+    console.error("Error eliminando lista:", err.response?.data || err);
+    throw new Error("No se pudo eliminar la lista.");
   }
 };
-
 
 // Obtener Listas del Usuario
 const getUserLists = async () => {
@@ -84,8 +83,6 @@ const shareList = async (listId, emailInvitado) => {
 const addProductToList = async (listId, product) => {
   const token = localStorage.getItem("authToken");
 
-  console.log("Añadiendo producto a la lista", listId, product);
-
   const response = await axios.post(`${API_URL}/addProducto`, product, {
     headers: {
       token,
@@ -106,7 +103,7 @@ const addProductToList = async (listId, product) => {
     action: "addProduct",
     idLista: listId,
     producto: {
-      id: product.id,
+      id: response.data,
       nombre: product.nombre,
       udsPedidas: product.udsPedidas,
       udsCompradas: product.udsCompradas,

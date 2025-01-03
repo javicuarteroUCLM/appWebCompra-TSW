@@ -47,7 +47,6 @@ export const connectWebSocket = (email) => {
     try {
       const data = JSON.parse(message.data);
       console.log("Mensaje recibido por WebSocket:", data);
-      console.log("Productos:", data.productos);
 
       if (data.type === "actualizacionDeLista") {
         const listId = data.idLista;
@@ -59,10 +58,9 @@ export const connectWebSocket = (email) => {
           switch (data.action) {
             case "updateProduct":
               const { producto } = data;
-              console.log("Actualizando producto:", producto);
 
               // Actualizar o agregar el producto en la lista
-              callback((prevProducts) => {
+              callback((prevProducts = []) => {
                 const existingProduct = prevProducts.find(
                   (p) => p.id === data.producto.id
                 );
@@ -153,4 +151,5 @@ export default {
   subscribeToListUpdates,
   unsubscribeFromListUpdates,
   sendMessage,
+  getWebSocket,
 };

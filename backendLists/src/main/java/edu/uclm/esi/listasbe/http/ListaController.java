@@ -125,7 +125,8 @@ public class ListaController {
     }
 
     @PostMapping("/addProducto")
-    public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
+    public String addProducto(HttpServletRequest request, @RequestBody Producto producto)
+            throws org.json.JSONException {
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
         }
@@ -144,9 +145,6 @@ public class ListaController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
         }
         try {
-            System.out.println("Solicitud para añadir producto a la lista " + idLista);
-            System.out.println("Producto recibido: " + producto.getNombre());
-            System.out.println("Token del usuario: " + token);
             return this.listaService.addProducto(idLista, producto, token);
         } catch (org.json.JSONException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error procesando JSON", e);

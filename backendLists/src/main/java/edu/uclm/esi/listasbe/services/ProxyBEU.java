@@ -33,10 +33,7 @@ public class ProxyBEU {
             httpPut.setEntity(new StringEntity(token));
             httpPut.setHeader("Content-type", "text/plain");
 
-            System.out.println("Enviando token para validación: " + token);
-
             try (CloseableHttpResponse response = httpclient.execute(httpPut)) {
-                System.out.println("Código de respuesta: " + response.getCode());
                 return response.getCode() == 200;
             }
         } catch (Exception e) {
@@ -82,7 +79,6 @@ public class ProxyBEU {
             HttpContext context = new BasicHttpContext();
 
             try (CloseableHttpResponse response = httpclient.execute(httpGet, context)) {
-                System.out.println("Response status: " + response.getCode());
                 return response.getCode() == 200;
             }
 

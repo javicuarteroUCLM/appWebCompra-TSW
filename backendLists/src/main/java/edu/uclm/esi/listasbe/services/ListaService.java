@@ -146,7 +146,7 @@ public class ListaService {
 		return producto;
 	}
 
-	public Lista addProducto(String idLista, Producto producto, String token) throws org.json.JSONException {
+	public String addProducto(String idLista, Producto producto, String token) throws org.json.JSONException {
 		String email = this.proxy.obtenerEmailDesdeToken(token);
 		if (email == null || email.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
@@ -186,7 +186,7 @@ public class ListaService {
 		 * }
 		 */
 
-		return lista;
+		return producto.getId();
 	}
 
 	public void eliminarProducto(String idProducto) {
