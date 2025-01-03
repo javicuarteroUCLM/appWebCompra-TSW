@@ -1,13 +1,8 @@
 package edu.uclm.esi.listasbe.http;
 
-import edu.uclm.esi.listasbe.model.Lista;
-import edu.uclm.esi.listasbe.model.Producto;
-import edu.uclm.esi.listasbe.model.UsuarioLista;
-import edu.uclm.esi.listasbe.services.ListaService;
-import edu.uclm.esi.listasbe.services.ProxyBEU;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,6 +17,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import edu.uclm.esi.listasbe.model.Lista;
+import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.model.UsuarioLista;
+import edu.uclm.esi.listasbe.services.ListaService;
+import edu.uclm.esi.listasbe.services.ProxyBEU;
+import jakarta.servlet.http.HttpServletRequest;
+
+
+
+
 
 @RestController
 @RequestMapping("listas")
@@ -125,8 +131,7 @@ public class ListaController {
     }
 
     @PostMapping("/addProducto")
-    public String addProducto(HttpServletRequest request, @RequestBody Producto producto)
-            throws org.json.JSONException {
+    public String addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
         }
@@ -145,6 +150,9 @@ public class ListaController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
         }
         try {
+            System.out.println("Solicitud para añadir producto a la lista " + idLista);
+            System.out.println("Producto recibido: " + producto.getNombre());
+            System.out.println("Token del usuario: " + token);
             return this.listaService.addProducto(idLista, producto, token);
         } catch (org.json.JSONException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error procesando JSON", e);
