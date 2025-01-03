@@ -1,5 +1,15 @@
 package edu.uclm.esi.listasbe.services;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
 import edu.uclm.esi.listasbe.dao.RestriccionUsuarioRepository;
@@ -8,14 +18,10 @@ import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.json.JSONException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
+
+
+
 
 @Service
 public class ListaService {
@@ -118,33 +124,31 @@ public class ListaService {
 	 * }
 	 */
 
-	public Producto comprar(String idProducto, int udsCompradas) {
+	 public Producto comprar(String idProducto, int udsCompradas) {
 		Optional<Producto> optProducto = productoDao.findById(idProducto);
 		if (optProducto.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado con ID: " + idProducto);
 		}
-
+	
 		Producto producto = optProducto.get();
-
-		// Validar unidades compradas
+	
 		if (udsCompradas > producto.getUdsPedidas()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes marcar más unidades de las pedidas");
 		}
-
-		// Actualizar unidades compradas
+	
 		producto.setUdsCompradas(udsCompradas);
-		producto.setUdsPedidas(producto.getUdsPedidas() - udsCompradas);
 		productoDao.save(producto);
-
+	
 		// Notificar mediante WebSocket
 		try {
 			wsListas.notificarCompra(producto.getLista().getId(), producto);
 		} catch (JSONException e) {
 			throw new RuntimeException("Error notificando la compra del producto", e);
 		}
-
+	
 		return producto;
 	}
+	
 
 	public String addProducto(String idLista, Producto producto, String token) throws org.json.JSONException {
 		String email = this.proxy.obtenerEmailDesdeToken(token);

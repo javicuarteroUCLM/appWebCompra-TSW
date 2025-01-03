@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -56,6 +57,10 @@ public class Producto {
 
     public void setUdsCompradas(float udsCompradas) {
         this.udsCompradas = udsCompradas;
+    }
+
+    public float getUdsPendientes() {
+        return udsPedidas - udsCompradas;
     }
 
     @JsonIgnore

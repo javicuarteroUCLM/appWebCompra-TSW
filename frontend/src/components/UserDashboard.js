@@ -233,9 +233,15 @@ const UserDashboard = () => {
         selectedProduct.id,
         buyProductUds
       );
+  
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
-          p.id === updatedProduct.id ? updatedProduct : p
+          p.id === updatedProduct.id
+            ? {
+                ...updatedProduct,
+                udsPendientes: updatedProduct.udsPedidas - updatedProduct.udsCompradas, // Cálculo local
+              }
+            : p
         )
       );
       setShowBuyModal(false);
@@ -245,6 +251,7 @@ const UserDashboard = () => {
       setError("No se pudo marcar el producto como comprado.");
     }
   };
+  
 
   const handleSelectList = async (listId) => {
     if (selectedList) {
@@ -570,7 +577,9 @@ const UserDashboard = () => {
             {products.map((product) => (
               <li key={product.id} style={styles.productListItem}>
                 {product.nombre} - {product.udsPedidas} Unidades pedidas,{" "}
-                {product.udsCompradas} Unidades compradas
+                {product.udsCompradas} Unidades compradas,{" "}
+                {product.udsPendientes || product.udsPedidas - product.udsCompradas}{" "}
+                Unidades pendientes
                 <button
                   style={styles.buyButton}
                   onClick={() => handleBuyProduct(product)}
@@ -592,6 +601,7 @@ const UserDashboard = () => {
               </li>
             ))}
           </ul>
+
         </div>
       )}
       {showEditModal && (
