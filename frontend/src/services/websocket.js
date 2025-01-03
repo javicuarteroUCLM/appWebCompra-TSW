@@ -6,7 +6,7 @@ let ws; // Variable para mantener la conexión WebSocket
 const subscriptions = {}; // Almacenar callbacks para listas específicas
 
 // Conectar al WebSocket
-export const connectWebSocket = (email) => {
+export const connectWebSocket = (email, selectedList, setProducts) => {
   if (ws && ws.readyState === WebSocket.OPEN) {
     console.log("WebSocket ya conectado.");
     return;
@@ -48,69 +48,43 @@ export const connectWebSocket = (email) => {
       const data = JSON.parse(message.data);
       console.log("Mensaje recibido por WebSocket:", data);
 
-      if (data.type === "actualizacionDeLista") {
-        const listId = data.idLista;
-
-        // Verifica si hay una suscripción activa para la lista
-        if (subscriptions[listId]) {
-          const callback = subscriptions[listId];
-
-          switch (data.action) {
-            case "updateProduct":
-              const { producto } = data;
-
-              // Actualizar o agregar el producto en la lista
-              callback((prevProducts = []) => {
-                const existingProduct = prevProducts.find(
-                  (p) => p.id === data.producto.id
+      if (
+        data.type === "actualizacionDeLista" &&
+        data.idLista === selectedList
+      ) {
+        switch (data.action) {
+          case "updateProduct":
+            console.log("Actualizando producto...");
+            setProducts((prevProducts) => {
+              const existingProduct = prevProducts.find(
+                (p) => p.id === data.producto.id
+              );
+              if (existingProduct) {
+                // Si el producto ya existe, actualiza su información
+                return prevProducts.map((p) =>
+                  p.id === data.producto.id ? data.producto : p
                 );
+              } else {
+                // Si no existe, agrega el nuevo producto
+                return [...prevProducts, data.producto];
+              }
+            });
+            break;
 
-                if (existingProduct) {
-                  // Si el producto ya existe, actualiza su información
-                  return prevProducts.map((p) =>
-                    p.id === data.producto.id ? data.producto : p
-                  );
-                } else {
-                  // Si no existe, agrega el nuevo producto
-                  return [...prevProducts, data.producto];
-                }
-              });
-              break;
+          case "deleteProduct":
+            console.log("Eliminando producto...");
+            setProducts((prevProducts) =>
+              prevProducts.filter((p) => p.id !== data.idProducto)
+            );
+            break;
 
-            case "deleteProduct":
-              // Eliminar el producto de la lista
-              callback((prevProducts) =>
-                prevProducts.filter((p) => p.id !== data.idProducto)
-              );
-              break;
+          case "addProduct":
+            console.log("Agregando producto...");
+            setProducts((prevProducts) => [...prevProducts, data.producto]);
+            break;
 
-            case "editProduct":
-              callback((prevProducts) =>
-                prevProducts.map((p) =>
-                  p.id === data.producto.id ? data.producto : p
-                )
-              );
-              break;
-
-            case "buyProduct":
-              callback((prevProducts) =>
-                prevProducts.map((p) =>
-                  p.id === data.producto.id ? data.producto : p
-                )
-              );
-              break;
-
-            case "newList":
-              // Manejar una nueva lista compartida (si aplica)
-              console.log("Nueva lista recibida:", data.listDetails);
-              break;
-            case "addProduct":
-              callback((prevProducts) => [...prevProducts, data.producto]);
-              break;
-
-            default:
-              console.warn("Acción no reconocida en WebSocket:", data.action);
-          }
+          default:
+            console.warn("Acción no reconocida:", data.action);
         }
       }
     } catch (err) {
@@ -120,10 +94,11 @@ export const connectWebSocket = (email) => {
 };
 
 // Funcion para conectar al WebSocket y devolverlo
-export const getWebSocket = (email) => {
+export const getWebSocket = (email, selectedList, setProducts) => {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    connectWebSocket(email);
+    connectWebSocket(email, selectedList, setProducts);
   }
+  console.log("El WebSocket ya esta conectado:", ws);
   return ws;
 };
 

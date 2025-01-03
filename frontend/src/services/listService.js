@@ -96,6 +96,8 @@ const addProductToList = async (listId, product) => {
     console.log("WebSocket no conectado. No se enviará mensaje.");
     conectarWebSocket();
     await new Promise((resolve) => setTimeout(resolve, 1000));
+  } else {
+    console.log("WebSocket conectado. Enviando mensaje.");
   }
 
   const message = {
@@ -173,11 +175,11 @@ const getProductsByListId = async (listId) => {
 };
 
 // Conectar WebSocket
-const conectarWebSocket = async () => {
+const conectarWebSocket = async (selectedList, setProducts) => {
   const userDetails = await getUserDetails();
   const email = userDetails.email;
 
-  ws = getWebSocket(email);
+  ws = getWebSocket(email, selectedList, setProducts);
   return ws;
 };
 

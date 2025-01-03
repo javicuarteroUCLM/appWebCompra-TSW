@@ -231,6 +231,9 @@ public class WSListas extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println("Conexión cerrada: " + session.getId());
         sessionsByIdLista.values().forEach(sessions -> sessions.remove(session));
+        activeSessions.values().remove(session);
+        System.out.println("Conexiones activas: " + activeSessions.size());
+        System.out.println("Conexiones por lista: " + sessionsByIdLista.size());
     }
 
     @Override

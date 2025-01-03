@@ -63,6 +63,12 @@ const UserDashboard = () => {
     }
   }, [selectedProduct]);
 
+  useEffect(() => {
+    if (user && selectedList) {
+      ws = listService.conectarWebSocket(selectedList, setProducts);
+    }
+  }, [user, selectedList, setProducts]);
+
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
     try {
@@ -241,8 +247,6 @@ const UserDashboard = () => {
   };
 
   const handleSelectList = async (listId) => {
-    ws = listService.conectarWebSocket();
-
     if (selectedList) {
       websocket.unsubscribeFromListUpdates(selectedList);
     }
@@ -256,33 +260,33 @@ const UserDashboard = () => {
     // Suscribirse a actualizaciones en tiempo real para esta lista
     websocket.subscribeToListUpdates(listId, (data) => {
       console.log("Actualización recibida:", data);
+
+      // Verificar que la acción sea para la lista seleccionada
+      if (data.idLista !== listId) {
+        console.warn(`Mensaje para otra lista: ${data.idLista}`);
+        return;
+      }
+
       switch (data.action) {
         case "updateProduct":
-          if (data.idLista === listId) {
-            setProducts((prevProducts) => {
-              const productoExistente = prevProducts.find(
-                (p) => p.id === data.producto.id
-              );
-
-              if (productoExistente) {
-                // Actualiza el producto existente
-                return prevProducts.map((p) =>
-                  p.id === data.producto.id ? data.producto : p
-                );
-              } else {
-                // Agrega el nuevo producto
-                return [...prevProducts, data.producto];
-              }
-            });
-          }
+          console.log("Actualizando producto en la lista...");
+          setProducts((prevProducts) =>
+            prevProducts.map((p) =>
+              p.id === data.producto.id ? data.producto : p
+            )
+          );
           break;
 
         case "deleteProduct":
-          if (data.idLista === listId) {
-            setProducts((prevProducts) =>
-              prevProducts.filter((p) => p.id !== data.idProducto)
-            );
-          }
+          console.log("Eliminando producto de la lista...");
+          setProducts((prevProducts) =>
+            prevProducts.filter((p) => p.id !== data.idProducto)
+          );
+          break;
+
+        case "addProduct":
+          console.log("Agregando nuevo producto a la lista...");
+          setProducts((prevProducts) => [...prevProducts, data.producto]);
           break;
 
         default:
