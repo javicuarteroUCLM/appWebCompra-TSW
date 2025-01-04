@@ -1,14 +1,5 @@
 package edu.uclm.esi.listasbe.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
 import edu.uclm.esi.listasbe.dao.RestriccionUsuarioRepository;
@@ -16,6 +7,28 @@ import edu.uclm.esi.listasbe.dao.UsuarioListaRepository;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
+import edu.uclm.esi.listasbe.ws.WSListas;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Service
 public class ListaService {
@@ -34,6 +47,9 @@ public class ListaService {
 
 	@Autowired
 	private ProxyBEU proxy;
+
+	@Autowired
+	private WSListas wsListas;
 
 	private final Manager manager;
 
@@ -163,6 +179,8 @@ public class ListaService {
 		producto.setLista(lista);
 		this.productoDao.save(producto);
 
+		wsListas.notificarAddProduct(idLista, producto);
+
 		/*
 		 * // Notificar a otros usuarios de la lista mediante WebSocket
 		 * try {
@@ -183,7 +201,11 @@ public class ListaService {
 		}
 
 		Producto producto = optProducto.get();
+		String idLista = producto.getLista().getId();
 		productoDao.delete(producto);
+
+		// Notificar a otros usuarios de la lista mediante WebSocket
+		wsListas.notificarEliminacion(idLista, idProducto);
 	}
 
 	public Optional<Lista> getListaById(String id) {
@@ -311,6 +333,8 @@ public class ListaService {
 		productoGuardado.setUdsPedidas(producto.getUdsPedidas());
 		productoGuardado.setUdsCompradas(producto.getUdsCompradas());
 		productoDao.save(productoGuardado);
+		// MIRAR ESTO BIEN
+		wsListas.notificarUpdateProduct(producto.getLista().getId(), productoGuardado);
 
 		return productoGuardado;
 	}

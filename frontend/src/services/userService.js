@@ -23,7 +23,8 @@ const login = async (email, password) => {
   );
   // Guardar el token en localStorage
   const token = response.data;
-  localStorage.setItem("authToken", token);
+  //localStorage.setItem("authToken", token);
+  sessionStorage.setItem("authToken", token);
   return token; // Retorna el token para confirmación
 };
 

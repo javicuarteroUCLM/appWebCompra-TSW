@@ -6,13 +6,15 @@ let ws; // Variable para mantener la conexión WebSocket
 const subscriptions = {}; // Almacenar callbacks para listas específicas
 
 // Conectar al WebSocket
+/*
 export const connectWebSocket = (email, selectedList, setProducts) => {
   if (ws && ws.readyState === WebSocket.OPEN) {
     console.log("WebSocket ya conectado.");
     return;
   }
 
-  const wsUrl = `ws://localhost:8383/wsListas?email=${email}`;
+  //const wsUrl = `ws://localhost:8383/wsListas?email=${email}`;
+  const wsUrl = `ws://localhost:8383/wsListas?token=${localStorage.getItem('authToken')}`;
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
@@ -42,7 +44,7 @@ export const connectWebSocket = (email, selectedList, setProducts) => {
     } catch (err) {
       console.error("Error procesando mensaje WebSocket:", err);
     }
-  }; */
+  }; 
   ws.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
@@ -68,7 +70,7 @@ export const connectWebSocket = (email, selectedList, setProducts) => {
             break;
 
           case "deleteProduct":
-            console.log("Eliminando producto...");
+            console.log("Eliminando producto en tiempo real:", data.idProducto);
             setProducts((prevProducts) =>
               prevProducts.filter((p) => p.id !== data.idProducto)
             );
@@ -87,12 +89,74 @@ export const connectWebSocket = (email, selectedList, setProducts) => {
       console.error("Error procesando mensaje WebSocket:", err);
     }
   };
+}; */
+
+export const connectWebSocket = (selectedList, setProducts) => {
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    console.log("Cerrando conexión WebSocket anterior...");
+    ws.close();
+  }
+
+  const token = sessionStorage.getItem("authToken");
+  const wsUrl = `ws://localhost:8383/wsListas?token=${token}`;
+
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log("Conexión WebSocket en el usuario:" +token+ " para la lista:", selectedList);
+  };
+
+  ws.onmessage = (message) => {
+    try {
+      const data = JSON.parse(message.data);
+      if (data.type === "actualizacionDeLista" && data.idLista === selectedList) {
+
+        switch (data.action) {
+          case "updateProduct":
+            console.log("Actualizando producto...");
+            console.log("Productos actuales:", setProducts);
+            console.log("Producto actualizado:", data.producto);
+            setProducts((prevProducts) =>
+              prevProducts.map((p) =>
+                p.id === data.producto.id ? data.producto : p
+              )
+            );
+            break;
+
+          case "deleteProduct":
+            setProducts((prevProducts) =>
+              prevProducts.filter((p) => p.id !== data.idProducto)
+            );
+            break;
+
+            case "addProduct":
+              setProducts((prevProducts) => [...prevProducts, data.producto]);
+              break;
+
+            default:
+              console.warn("Acción no reconocida:", data.action);
+          // Otros casos
+        }
+      }
+    } catch (err) {
+      console.error("Error procesando mensaje WebSocket:", err);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log("Conexión WebSocket cerrada");
+  };
+
+  ws.onerror = (error) => {
+    console.error("Error en WebSocket:", error);
+  };
 };
 
 // Funcion para conectar al WebSocket y devolverlo
 export const getWebSocket = (email, selectedList, setProducts) => {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    connectWebSocket(email, selectedList, setProducts);
+    connectWebSocket(selectedList, setProducts);
   }
   return ws;
 };
@@ -122,4 +186,5 @@ export default {
   unsubscribeFromListUpdates,
   sendMessage,
   getWebSocket,
+  connectWebSocket,
 };

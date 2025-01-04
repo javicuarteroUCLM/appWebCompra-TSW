@@ -194,7 +194,6 @@ const getProductsByListId = async (listId) => {
   if (!listId) {
     throw new Error("No se ha proporcionado un ID de lista.");
   }
-
   const response = await axios.get(`${API_URL}/productos/${listId}`);
 
   return response.data;
