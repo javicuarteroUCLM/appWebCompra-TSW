@@ -35,6 +35,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
+
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -180,10 +182,7 @@ public class ListaController {
 
     @PutMapping("/editarProducto")
     public Producto editarProducto(@RequestBody Producto producto) throws org.json.JSONException {
-        System.out.println("Solicitud para editar producto con ID " + producto.getId());
-        System.out.println("El producto recibido es: Producto [id=" + producto.getId() + ", nombre=" + producto.getNombre()
-                + ", udsPedidas=" + producto.getUdsPedidas() + ", udsCompradas=" + producto.getUdsCompradas() + "]");
-        System.out.println("La lista asociada al producto es: " + producto.getLista());
+        
         if (producto.getId() == null || producto.getId().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID del producto");
         }
@@ -223,7 +222,7 @@ public class ListaController {
      */
 
     @PutMapping("/comprarProducto")
-    public Producto comprar(@RequestBody Map<String, Object> body) {
+    public Producto comprar(@RequestBody Map<String, Object> body) throws org.json.JSONException {
         if (!body.containsKey("idProducto") || !body.containsKey("udsCompradas")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "La solicitud debe incluir 'idProducto' y 'udsCompradas'");

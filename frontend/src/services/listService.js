@@ -43,8 +43,11 @@ const deleteList = async (listId) => {
       },
     });
   } catch (err) {
-    console.error("Error eliminando lista:", err.response?.data || err);
-    throw new Error("No se pudo eliminar la lista.");
+    if (err.response.data.message === "No tienes permiso para borrar esta lista" && err.response.status === 403) {
+      throw new Error("Solo el propietario puede eliminar la lista.");
+    }
+
+    throw new Error("No pudo eliminar la lista.");
   }
 };
 

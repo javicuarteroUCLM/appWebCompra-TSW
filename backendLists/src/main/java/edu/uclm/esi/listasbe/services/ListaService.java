@@ -44,6 +44,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
+
 @Service
 public class ListaService {
 
@@ -145,20 +147,26 @@ public class ListaService {
 	 * }
 	 */
 
-	public Producto comprar(String idProducto, int udsCompradas) {
+	public Producto comprar(String idProducto, int udsCompradas) throws org.json.JSONException {
 		Optional<Producto> optProducto = productoDao.findById(idProducto);
 		if (optProducto.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado con ID: " + idProducto);
 		}
 
 		Producto producto = optProducto.get();
-
+		/*
 		if (udsCompradas > producto.getUdsPedidas()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes marcar más unidades de las pedidas");
 		}
+		*/
 
 		producto.setUdsCompradas(udsCompradas);
 		productoDao.save(producto);
+
+		// Notificar a los usuarios interesados
+		wsListas.notificarUpdateProduct(producto.getLista().getId(), producto);
+		
+
 
 		return producto;
 	}

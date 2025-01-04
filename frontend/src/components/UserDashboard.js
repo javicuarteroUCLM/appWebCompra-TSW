@@ -166,8 +166,11 @@ const UserDashboard = () => {
       setSelectedList(null);
       alert("Lista eliminada con éxito.");
     } catch (err) {
-      console.error("Error eliminando lista:", err);
-      setError("No se pudo eliminar la lista.");
+      if (err.message === "Solo el propietario puede eliminar la lista.") {
+        setError("No tienes permiso para borrar esta lista. Solo el propietario de la lista puede hacerlo.");
+      } else {
+        setError("No se pudo eliminar la lista.");
+      }
     }
   };
 
@@ -330,17 +333,13 @@ const UserDashboard = () => {
 
   const handleSaveEditProduct = async (product) => {
     try {
-      /*
-      product.nombre = editProductName;
-      product.udsPedidas = editProductUdsPedidas;
-      product.udsCompradas = editProductUdsCompradas;
-      */
+
       const updatedProduct = {
-        id: product.id, // Incluye el ID del producto existente
+        id: product.id, 
         nombre: editProductName,
         udsPedidas: editProductUdsPedidas,
         udsCompradas: editProductUdsCompradas,
-        lista: { id: selectedList }, // Incluye el ID de la lista seleccionada
+        lista: { id: selectedList },
       };
       console.log("selectedList:", selectedList);
 
@@ -498,6 +497,8 @@ const UserDashboard = () => {
             >
               Eliminar Lista
             </button>
+            {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+
           </li>
         ))}
       </ul>
