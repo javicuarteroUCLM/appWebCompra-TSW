@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 @Entity
 @Table(name = "listas")
 public class Lista {
@@ -39,7 +41,7 @@ public class Lista {
         this.productos = new ArrayList<>();
         this.usuarios = new ArrayList<>();
         this.compartida = false;
-        this.maxUsuarios = 1; // Valor por defecto para usuarios no registrados
+        this.maxUsuarios = 2; // (propietario + invitado) -> Valor por defecto para usuarios no registrados 
     }
 
     // Getters y setters

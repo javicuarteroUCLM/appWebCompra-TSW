@@ -46,6 +46,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
+
 @Service
 public class ListaService {
 
@@ -191,7 +193,7 @@ public class ListaService {
 				throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
 						"Los usuarios gratuitos solo pueden añadir hasta 10 productos");
 			}
-			if (lista.getUsuarios().size() > 1) {
+			if (lista.getUsuarios().size() > 2) {
 				throw new ResponseStatusException(HttpStatus.FORBIDDEN,
 						"Los usuarios gratuitos solo pueden compartir listas con una persona");
 			}

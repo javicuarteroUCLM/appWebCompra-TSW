@@ -49,6 +49,8 @@ const UserDashboard = () => {
   
         setSelectedList(null);
         setProducts([]);
+
+        sessionStorage.setItem("authToken", localStorage.getItem("authToken"));
       } catch (error) {
         console.error("Error fetching user info or lists:", error);
         navigate("/login"); // Redirige a la página de inicio de sesión si hay un error
@@ -390,16 +392,18 @@ const UserDashboard = () => {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Bienvenido a tu Dashboard</h1>
-      <p>
-        <strong>Email:</strong> {user.email}
-      </p>
+      <div style={styles.userInfo}>
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
+        <button onClick={handleLogout} style={styles.logoutButton}>
+          Cerrar Sesión
+        </button>
+      </div>
       <p>
         <strong>Tipo de usuario:</strong>{" "}
         {user.esPagado ? "Premium" : "Gratuito"}
       </p>
-      <button onClick={handleLogout} style={styles.logoutButton}>
-        Cerrar Sesión
-      </button>
       {showChangePasswordForm ? (
         <div style={styles.changePasswordForm}>
           <h3>Cambiar Contraseña</h3>
@@ -476,10 +480,9 @@ const UserDashboard = () => {
           placeholder="Nombre de la nueva lista"
           style={styles.input}
         />
-        <button onClick={handleCreateList} style={styles.createListButton}>
-          Crear Lista
-        </button>
+        <button onClick={handleCreateList} style={styles.createListButton}>Crear Lista</button>
       </div>
+
       <ul style={styles.list}>
         {lists.map((list) => (
           <li key={list.id} style={styles.listItem}>
@@ -506,24 +509,26 @@ const UserDashboard = () => {
         <div style={styles.selectedListContainer}>
           <h3>Opciones para la Lista Seleccionada</h3>
           <div>
-            <h3>Compartir Lista</h3>
-            <input
-              type="email"
-              placeholder="Introduce el email para compartir"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              style={{ marginBottom: "10px", padding: "8px" }}
-            />
-            <button onClick={handleShareList} style={styles.shareButton}>
-              <FaShareAlt /> Compartir Lista
-            </button>
+            <div style={styles.shareContainer}>
+              <h3>Compartir Lista</h3>
+              <input
+                type="email"
+                placeholder="Introduce el email para compartir"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                style={styles.input}
+              />
+              <button onClick={handleShareList} style={styles.shareButton}>
+                <FaShareAlt /> Compartir Lista
+              </button>
 
-            {shareUrl && (
-              <p>
-                URL generada: <a href={shareUrl}>{shareUrl}</a>
-              </p>
-            )}
-            {error && <p style={{ color: "red" }}>{error}</p>}
+              {shareUrl && (
+                <p>
+                  URL generada: <a href={shareUrl}>{shareUrl}</a>
+                </p>
+              )}
+              {error && <p style={{ color: "red" }}>{error}</p>}
+            </div>
           </div>
 
           {shareUrl && (
@@ -556,35 +561,52 @@ const UserDashboard = () => {
             Añadir Producto
           </button>
           <h3>Productos en la Lista</h3>
-          <ul style={styles.productList}>
-            {products.map((product) => (
-              <li key={product.id} style={styles.productListItem}>
-                {product.nombre} - {product.udsPedidas} Unidades pedidas,{" "}
-                {product.udsCompradas} Unidades compradas,{" "}
-                {product.udsPendientes ||
-                  product.udsPedidas - product.udsCompradas}{" "}
-                Unidades pendientes
-                <button
-                  style={styles.buyButton}
-                  onClick={() => handleBuyProduct(product)}
+          <table style={styles.productTable}>
+            <thead>
+          <tr>
+            <th style={styles.productTableHeader}>Nombre</th>
+            <th style={styles.productTableHeader}>Uds Pedidas</th>
+            <th style={styles.productTableHeader}>Uds Compradas</th>
+            <th style={styles.productTableHeader}>Uds Pendientes</th>
+            <th style={styles.productTableHeader}>Acciones</th>
+          </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr 
+                  key={product.id} 
+                  style={styles.productTableRow} 
                 >
-                  Comprar
-                </button>
-                <button
-                  style={styles.editButton}
-                  onClick={() => handleEditProduct(product)}
-                >
-                  Editar
-                </button>
-                <button
-                  style={styles.deleteButton}
-                  onClick={() => handleDeleteProduct(product)}
-                >
-                  Eliminar
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <td style={styles.productTableCell}>{product.nombre}</td>
+                  <td style={styles.productTableCell}>{product.udsPedidas}</td>
+                  <td style={styles.productTableCell}>{product.udsCompradas}</td>
+                  <td style={styles.productTableCell}>
+                    {product.udsPendientes || product.udsPedidas - product.udsCompradas}
+                  </td>
+                  <td style={styles.productTableCell}>
+                    <button
+                      style={styles.buyButton}
+                      onClick={() => handleBuyProduct(product)}
+                    >
+                      Comprar
+                    </button>
+                    <button
+                      style={styles.editButton}
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      style={styles.deleteButton}
+                      onClick={() => handleDeleteProduct(product)}
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
       {showEditModal && (
@@ -686,20 +708,19 @@ const styles = {
     color: "#4CAF50",
     margin: "0",
   },
+  userInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "10px",
+  },
   logoutButton: {
-    position: "absolute",
-    top: "20px",
-    right: "20px",
-    backgroundColor: "#ff9800",
+    backgroundColor: "#f44336",
     color: "#fff",
-    fontSize: "16px",
     padding: "10px 20px",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
   },
   premiumButton: {
     backgroundColor: "#ff5722", // Naranja oscuro para premium
@@ -717,9 +738,9 @@ const styles = {
   },
   createListContainer: {
     display: "flex",
-    justifyContent: "flex-end",
-    width: "100%",
-    marginTop: "20px", // Añadimos margen superior para separar de otros elementos
+    justifyContent: "center",
+    gap: "10px",
+    marginBottom: "20px",
   },
   createListButton: {
     backgroundColor: "#ff9800", // Naranja para crear lista
@@ -802,13 +823,23 @@ const styles = {
   selectedListContainer: {
     marginTop: "20px",
   },
-  productList: {
-    listStyleType: "none",
-    padding: "0",
+  shareContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center", // Alinea todo al centro
+    marginTop: "20px",
+  },
+  input: {
+    marginBottom: "10px",
+    padding: "8px",
+    width: "100%",
+    maxWidth: "400px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
   },
   shareButton: {
-    backgroundColor: "#2196F3",
-    color: "#fff",
+    backgroundColor: "#FFC107",
+    color: "#000",
     padding: "10px 20px",
     border: "none",
     borderRadius: "5px",
@@ -816,7 +847,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    margin: "10px 0",
   },
   shareUrlContainer: {
     marginTop: "10px",
@@ -829,12 +859,39 @@ const styles = {
     border: "1px solid #ddd",
     borderRadius: "5px",
   },
-  productListItem: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 0",
+  productTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: "20px",
+    fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f9f9f9",
+  },
+  productTableHeader: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    textAlign: "left",
+    padding: "12px 15px",
+  },
+  productTableCell: {
+    padding: "12px 15px",
+    textAlign: "left",
     borderBottom: "1px solid #ddd",
+  },
+  productTableRow: {
+    cursor: "pointer",
+    borderBottom: "1px solid #ddd",
+  },
+  productTableRowHover: {
+    backgroundColor: "#f1f1f1",
+  },
+  buyButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
   },
   editButton: {
     backgroundColor: "#4CAF50",
@@ -852,6 +909,32 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+  },
+  '@media screen and (max-width: 400px)': {
+    productTable: {
+      width: "100%",
+      fontSize: "10px",
+    },
+    productTableHeader: {
+      padding: "4px 6px",
+      fontSize: "10px",
+    },
+    productTableCell: {
+      padding: "4px 6px",
+      fontSize: "10px",
+    },
+    buyButton: {
+      padding: "2px 4px",
+      fontSize: "5px",
+    },
+    editButton: {
+      padding: "2px 4px",
+      fontSize: "5px",
+    },
+    deleteButton: {
+      padding: "2px 4px",
+      fontSize: "5px",
+    },
   },
   modalOverlay: {
     position: "fixed",
@@ -878,14 +961,6 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
     margin: "10px",
-  },
-  buyButton: {
-    backgroundColor: "#2196F3",
-    color: "#fff",
-    padding: "5px 10px",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
   },
   changePasswordForm: {
     marginTop: "20px",
