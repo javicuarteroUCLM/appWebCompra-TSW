@@ -41,14 +41,17 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await userService.getUserDetails();
-        setUser(response);
-
+        const userDetails = await userService.getUserDetails();
+        setUser(userDetails);
+  
         const userLists = await listService.getUserLists();
         setLists(userLists);
+  
+        setSelectedList(null);
+        setProducts([]);
       } catch (error) {
         console.error("Error fetching user info or lists:", error);
-        navigate("/login");
+        navigate("/login"); // Redirige a la página de inicio de sesión si hay un error
       }
     };
 
@@ -67,6 +70,7 @@ const UserDashboard = () => {
     if (user && selectedList) {
       ws = listService.conectarWebSocket(selectedList, setProducts);
     }
+
   }, [user, selectedList, setProducts]);
 
   // Obtener los productos de la lista seleccionada
@@ -98,6 +102,10 @@ const UserDashboard = () => {
     localStorage.clear();
     // Limpiar session storage
     sessionStorage.clear();
+    setUser(null);
+    setLists([]);
+    setProducts([]);
+    setSelectedList(null);
     navigate("/");
   };
 
@@ -322,11 +330,21 @@ const UserDashboard = () => {
 
   const handleSaveEditProduct = async (product) => {
     try {
+      /*
       product.nombre = editProductName;
       product.udsPedidas = editProductUdsPedidas;
       product.udsCompradas = editProductUdsCompradas;
+      */
+      const updatedProduct = {
+        id: product.id, // Incluye el ID del producto existente
+        nombre: editProductName,
+        udsPedidas: editProductUdsPedidas,
+        udsCompradas: editProductUdsCompradas,
+        lista: { id: selectedList }, // Incluye el ID de la lista seleccionada
+      };
+      console.log("selectedList:", selectedList);
 
-      await listService.editProductFromList(selectedList, product);
+      await listService.editProductFromList(selectedList, updatedProduct);
 
       setEditProductName("");
       setEditProductUdsPedidas(0);

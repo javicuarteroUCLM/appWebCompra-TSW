@@ -104,7 +104,7 @@ export const connectWebSocket = (selectedList, setProducts) => {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    console.log("Conexión WebSocket en el usuario:" +token+ " para la lista:", selectedList);
+    console.log("Conexión WebSocket para usuario con token:" +token+ " para la lista:", selectedList);
   };
 
   ws.onmessage = (message) => {
@@ -114,9 +114,6 @@ export const connectWebSocket = (selectedList, setProducts) => {
 
         switch (data.action) {
           case "updateProduct":
-            console.log("Actualizando producto...");
-            console.log("Productos actuales:", setProducts);
-            console.log("Producto actualizado:", data.producto);
             setProducts((prevProducts) =>
               prevProducts.map((p) =>
                 p.id === data.producto.id ? data.producto : p

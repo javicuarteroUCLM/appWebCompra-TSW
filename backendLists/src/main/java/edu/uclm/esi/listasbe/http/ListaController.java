@@ -1,8 +1,13 @@
 package edu.uclm.esi.listasbe.http;
 
+import edu.uclm.esi.listasbe.model.Lista;
+import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.model.UsuarioLista;
+import edu.uclm.esi.listasbe.services.ListaService;
+import edu.uclm.esi.listasbe.services.ProxyBEU;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,12 +23,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import edu.uclm.esi.listasbe.model.Lista;
-import edu.uclm.esi.listasbe.model.Producto;
-import edu.uclm.esi.listasbe.model.UsuarioLista;
-import edu.uclm.esi.listasbe.services.ListaService;
-import edu.uclm.esi.listasbe.services.ProxyBEU;
-import jakarta.servlet.http.HttpServletRequest;
+
+
+
+
+
+
+
 
 
 
@@ -173,7 +179,11 @@ public class ListaController {
     }
 
     @PutMapping("/editarProducto")
-    public Producto editarProducto(@RequestBody Producto producto) {
+    public Producto editarProducto(@RequestBody Producto producto) throws org.json.JSONException {
+        System.out.println("Solicitud para editar producto con ID " + producto.getId());
+        System.out.println("El producto recibido es: Producto [id=" + producto.getId() + ", nombre=" + producto.getNombre()
+                + ", udsPedidas=" + producto.getUdsPedidas() + ", udsCompradas=" + producto.getUdsCompradas() + "]");
+        System.out.println("La lista asociada al producto es: " + producto.getLista());
         if (producto.getId() == null || producto.getId().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID del producto");
         }

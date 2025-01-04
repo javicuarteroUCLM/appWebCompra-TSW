@@ -30,6 +30,20 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @Service
 public class ListaService {
 
@@ -321,22 +335,24 @@ public class ListaService {
 	}
 
 	// Método para editar un producto dado el objeto Producto entero
-	public Producto editarProducto(Producto producto) {
+	public Producto editarProducto(Producto producto) throws org.json.JSONException {
 		Optional<Producto> optProducto = productoDao.findById(producto.getId());
 		if (optProducto.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
 					"No se ha encontrado el producto con id " + producto.getId());
 		}
 
+		String idLista = optProducto.get().getLista().getId();
+
 		Producto productoGuardado = optProducto.get();
 		productoGuardado.setNombre(producto.getNombre());
 		productoGuardado.setUdsPedidas(producto.getUdsPedidas());
 		productoGuardado.setUdsCompradas(producto.getUdsCompradas());
 		productoDao.save(productoGuardado);
-		// MIRAR ESTO BIEN
-		wsListas.notificarUpdateProduct(producto.getLista().getId(), productoGuardado);
 
+		// Notificar a los usuarios interesados
+		wsListas.notificarUpdateProduct(idLista, producto);
 		return productoGuardado;
 	}
-
+	
 }

@@ -97,7 +97,7 @@ const addProductToList = async (listId, product) => {
     conectarWebSocket();
     await new Promise((resolve) => setTimeout(resolve, 1000));
   } else {
-    console.log("WebSocket conectado. Enviando mensaje.");
+    console.log("WebSocket conectado.");
   }
 
   const message = {
@@ -165,7 +165,6 @@ const editProductFromList = async (selectedList, product) => {
       udsCompradas: product.udsCompradas,
     },
   };
-  console.log("Enviando mensaje:", message);
 
   sendMessage(message);
 
