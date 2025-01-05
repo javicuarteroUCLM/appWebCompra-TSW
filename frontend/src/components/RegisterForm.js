@@ -10,6 +10,7 @@ const RegisterForm = () => {
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
   const [message, setMessage] = useState("");
+  const [messageColor, setMessageColor] = useState("#ff5722"); 
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const navigate = useNavigate();
@@ -25,11 +26,17 @@ const RegisterForm = () => {
     try {
       // Realiza el registro y obtén el token
       const token = await userService.register(email, password1, password2);
-      setMessage("Registro exitoso. Bienvenido.");
+      setMessageColor("#4CAF50");
+      setMessage("Registro exitoso.\nRedirigiendo a inicio de sesión...");
+       // Cambia el color del mensaje a verde (exito)
       localStorage.setItem("authToken", token); // Almacena el token en el almacenamiento local
+      setTimeout(() => {
+        navigate("/login");
+      }, 2500);
       //navigate('/dashboard'); // Redirige al dashboard
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || "Algo salió mal"}`);
+      setMessageColor("#ff5722"); // Cambia el color del mensaje a rojo (error)
     }
   };
 
@@ -97,7 +104,17 @@ const RegisterForm = () => {
             Registrarse
           </button>
         </form>
-        {message && <p style={styles.message}>{message}</p>}
+        {message && <p style={{...styles.message, color: messageColor}}>{message}</p>}
+        <p style={styles.loginPrompt}>
+          ¿Ya tienes una cuenta?{' '}
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            style={styles.loginButton}
+          >
+            Iniciar sesión
+          </button>
+        </p>
       </div>
     </div>
   );
@@ -175,6 +192,19 @@ const styles = {
     marginTop: "15px",
     fontSize: "14px",
     color: "#ff5722",
+  },
+  loginPrompt: {
+    marginTop: "20px",
+    fontSize: "14px",
+    color: "#333",
+  },
+  loginButton: {
+    backgroundColor: "transparent",
+    border: "none",
+    color: "#4CAF50",
+    cursor: "pointer",
+    fontSize: "14px",
+    textDecoration: "underline",
   },
 };
 

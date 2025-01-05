@@ -79,6 +79,16 @@ const LoginForm = () => {
           </button>
         </form>
         {message && <p style={styles.message}>{message}</p>}
+        <p style={styles.registerPrompt}>
+          ¿Aún no tienes una cuenta?{' '}
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            style={styles.registerButton}
+          >
+            Regístrate
+          </button>
+        </p>
       </div>
     </div>
   );
@@ -166,6 +176,19 @@ const styles = {
     color: "#4CAF50",
     cursor: "pointer",
     fontSize: "14px",
+  },
+  registerPrompt: {
+    marginTop: "20px",
+    fontSize: "14px",
+    color: "#333",
+  },
+  registerButton: {
+    backgroundColor: "transparent",
+    border: "none",
+    color: "#4CAF50",
+    cursor: "pointer",
+    fontSize: "14px",
+    textDecoration: "underline",
   },
 };
 
