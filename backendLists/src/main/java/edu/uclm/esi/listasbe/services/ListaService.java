@@ -16,6 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
+
+
+
+
 @Service
 public class ListaService {
 
@@ -124,6 +130,7 @@ public class ListaService {
 		}
 
 		Producto producto = optProducto.get();
+		float cantidadAntes = producto.getUdsCompradas();
 		/*
 		 * if (udsCompradas > producto.getUdsPedidas()) {
 		 * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -131,7 +138,7 @@ public class ListaService {
 		 * }
 		 */
 
-		producto.setUdsCompradas(udsCompradas);
+		producto.setUdsCompradas(udsCompradas+cantidadAntes);
 		productoDao.save(producto);
 
 		// Notificar a los usuarios interesados

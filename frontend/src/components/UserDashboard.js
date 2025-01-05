@@ -239,7 +239,7 @@ const UserDashboard = () => {
 
   const handleBuyProduct = (product) => {
     setSelectedProduct(product);
-    setBuyProductUds(product.udsCompradas);
+    setBuyProductUds(1);
     setShowBuyModal(true);
   };
 
@@ -710,7 +710,7 @@ const UserDashboard = () => {
               <strong>Unidades Pedidas:</strong> {selectedProduct?.udsPedidas}
             </p>
             <p>
-              <strong>Unidades Compradas:</strong>
+              <strong>Unidades Compradas hasta ahora:</strong> {selectedProduct?.udsCompradas}
             </p>
             <input
               type="number"
@@ -964,7 +964,7 @@ const styles = {
     backgroundColor: "#f1f1f1",
   },
   buyButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#4169e1",
     color: "#fff",
     padding: "5px 10px",
     border: "none",
