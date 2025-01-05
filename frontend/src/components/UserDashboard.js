@@ -43,6 +43,8 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
+        sessionStorage.setItem("authToken", localStorage.getItem("authToken"));
+
         const userDetails = await userService.getUserDetails();
         setUser(userDetails);
 
@@ -51,8 +53,6 @@ const UserDashboard = () => {
 
         setSelectedList(null);
         setProducts([]);
-
-        sessionStorage.setItem("authToken", localStorage.getItem("authToken"));
       } catch (error) {
         console.error("Error fetching user info or lists:", error);
         navigate("/login"); // Redirige a la página de inicio de sesión si hay un error
