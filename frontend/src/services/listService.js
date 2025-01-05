@@ -9,7 +9,7 @@ let ws;
 
 // Crear una Lista
 const createList = async (listName) => {
-  const token = localStorage.getItem("authToken");
+  const token = sessionStorage.getItem("authToken");
   const data = { nombre: listName };
 
   try {
@@ -33,7 +33,7 @@ const createList = async (listName) => {
 };
 
 const deleteList = async (listId) => {
-  const token = localStorage.getItem("authToken");
+  const token = sessionStorage.getItem("authToken");
   try {
     await axios.delete(`${API_URL}/borrarLista`, {
       headers: {
@@ -57,7 +57,7 @@ const deleteList = async (listId) => {
 
 // Obtener Listas del Usuario
 const getUserLists = async () => {
-  const token = localStorage.getItem("authToken");
+  const token = sessionStorage.getItem("authToken");
   const response = await axios.get(`${API_URL}/getListas`, {
     withCredentials: true,
     headers: {
@@ -76,7 +76,7 @@ const shareList = async (listId, emailInvitado) => {
     headers: {
       "Content-Type": "application/json",
       idLista: listId,
-      token: localStorage.getItem("authToken"),
+      token: sessionStorage.getItem("authToken"),
     },
     body: JSON.stringify({ emailInvitado }), // Enviar email como JSON
   });
@@ -88,7 +88,7 @@ const shareList = async (listId, emailInvitado) => {
 
 // Añadir Producto a Lista
 const addProductToList = async (listId, product) => {
-  const token = localStorage.getItem("authToken");
+  const token = sessionStorage.getItem("authToken");
 
   const response = await axios.post(`${API_URL}/addProducto`, product, {
     headers: {
@@ -196,6 +196,17 @@ const buyProduct = async (productId, udsCompradas) => {
   }
 };
 
+const getMiembros = async (listId) => {
+  const response = await axios.get(`${API_URL}/miembros`, {
+    headers: {
+      idLista: listId,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response.data;
+};
+
 // Obtener Productos de una Lista
 const getProductsByListId = async (listId) => {
   if (!listId) {
@@ -204,6 +215,30 @@ const getProductsByListId = async (listId) => {
   const response = await axios.get(`${API_URL}/productos/${listId}`);
 
   return response.data;
+};
+
+const deleteMemberFromList = async (listId, email) => {
+  try {
+    const token = sessionStorage.getItem("authToken");
+    await axios.delete(`${API_URL}/borrarUsuarioDeLista`, {
+      headers: {
+        idLista: listId,
+        token: token,
+        "Content-Type": "application/json",
+      },
+      data: email,
+    });
+  } catch (err) {
+    if (
+      err.response.data.message ===
+        "No tienes permiso para borrar este miembro" &&
+      err.response.status === 403
+    ) {
+      throw new Error("Solo el propietario puede eliminar miembros.");
+    }
+
+    throw new Error("No pudo eliminar el miembro.");
+  }
 };
 
 // Conectar WebSocket
@@ -234,5 +269,7 @@ const listService = {
   editProductFromList,
   buyProduct,
   deleteList,
+  getMiembros,
+  deleteMemberFromList,
 };
 export default listService;

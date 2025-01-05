@@ -12,6 +12,7 @@ const UserDashboard = () => {
   const [user, setUser] = useState(null);
   const [lists, setLists] = useState([]);
   const [selectedList, setSelectedList] = useState(null);
+  const [miembrosList, setMiembrosList] = useState(null);
   const [newListName, setNewListName] = useState("");
   const [newProductName, setNewProductName] = useState("");
   const [newProductQuantity, setNewProductQuantity] = useState(1);
@@ -27,6 +28,7 @@ const UserDashboard = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showMiembrosModal, setShowMiembrosModal] = useState(false);
   const [buyProductUds, setBuyProductUds] = useState(0);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newPassword1, setNewPassword1] = useState("");
@@ -43,10 +45,10 @@ const UserDashboard = () => {
       try {
         const userDetails = await userService.getUserDetails();
         setUser(userDetails);
-  
+
         const userLists = await listService.getUserLists();
         setLists(userLists);
-  
+
         setSelectedList(null);
         setProducts([]);
 
@@ -72,7 +74,6 @@ const UserDashboard = () => {
     if (user && selectedList) {
       ws = listService.conectarWebSocket(selectedList, setProducts);
     }
-
   }, [user, selectedList, setProducts]);
 
   // Obtener los productos de la lista seleccionada
@@ -169,7 +170,9 @@ const UserDashboard = () => {
       alert("Lista eliminada con éxito.");
     } catch (err) {
       if (err.message === "Solo el propietario puede eliminar la lista.") {
-        setError("No tienes permiso para borrar esta lista. Solo el propietario de la lista puede hacerlo.");
+        setError(
+          "No tienes permiso para borrar esta lista. Solo el propietario de la lista puede hacerlo."
+        );
       } else {
         setError("No se pudo eliminar la lista.");
       }
@@ -240,6 +243,19 @@ const UserDashboard = () => {
     setShowBuyModal(true);
   };
 
+  const handleMiembros = async (listaId) => {
+    setSelectedList(listaId);
+
+    try {
+      setMiembrosList(await listService.getMiembros(listaId));
+      console.log("Miembros de la lista:", miembrosList);
+    } catch (err) {
+      console.error("Error obteniendo miembros de la lista:", err);
+      setError("No se pudieron obtener los miembros de la lista.");
+    }
+    setShowMiembrosModal(true);
+  };
+
   const handleSaveBuyProduct = async () => {
     try {
       const updatedProduct = await listService.buyProduct(
@@ -277,6 +293,28 @@ const UserDashboard = () => {
 
     // Conectar el WebSocket de la lista seleccionada
     listService.conectarWebSocket(listId, setProducts);
+  };
+
+  const handleDeleteMember = async (memberId) => {
+    const confirmDelete = window.confirm(
+      "¿Estás seguro de que quieres eliminar a este miembro?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      console.log("selectedList:", selectedList);
+      console.log("memberId:", memberId);
+      console.log("Token:", sessionStorage.getItem("authToken"));
+      await listService.deleteMemberFromList(selectedList, memberId);
+      alert("Miembro eliminado con éxito.");
+
+      setMiembrosList((prevMembers) =>
+        prevMembers.filter((m) => m.usuarioId !== memberId)
+      );
+    } catch (err) {
+      console.error("Error eliminando miembro:", err);
+      setError("No se pudo eliminar al miembro.");
+    }
   };
 
   // Pasarela de pago para hacer un usuario premium
@@ -335,9 +373,8 @@ const UserDashboard = () => {
 
   const handleSaveEditProduct = async (product) => {
     try {
-
       const updatedProduct = {
-        id: product.id, 
+        id: product.id,
         nombre: editProductName,
         udsPedidas: editProductUdsPedidas,
         udsCompradas: editProductUdsCompradas,
@@ -480,7 +517,9 @@ const UserDashboard = () => {
           placeholder="Nombre de la nueva lista"
           style={styles.input}
         />
-        <button onClick={handleCreateList} style={styles.createListButton}>Crear Lista</button>
+        <button onClick={handleCreateList} style={styles.createListButton}>
+          Crear Lista
+        </button>
       </div>
 
       <ul style={styles.list}>
@@ -500,8 +539,15 @@ const UserDashboard = () => {
             >
               Eliminar Lista
             </button>
-            {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-
+            <button
+              onClick={() => handleMiembros(list.id)}
+              style={styles.memberButton}
+            >
+              Miembros
+            </button>
+            {error && (
+              <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
+            )}
           </li>
         ))}
       </ul>
@@ -563,25 +609,25 @@ const UserDashboard = () => {
           <h3>Productos en la Lista</h3>
           <table style={styles.productTable}>
             <thead>
-          <tr>
-            <th style={styles.productTableHeader}>Nombre</th>
-            <th style={styles.productTableHeader}>Uds Pedidas</th>
-            <th style={styles.productTableHeader}>Uds Compradas</th>
-            <th style={styles.productTableHeader}>Uds Pendientes</th>
-            <th style={styles.productTableHeader}>Acciones</th>
-          </tr>
+              <tr>
+                <th style={styles.productTableHeader}>Nombre</th>
+                <th style={styles.productTableHeader}>Uds Pedidas</th>
+                <th style={styles.productTableHeader}>Uds Compradas</th>
+                <th style={styles.productTableHeader}>Uds Pendientes</th>
+                <th style={styles.productTableHeader}>Acciones</th>
+              </tr>
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr 
-                  key={product.id} 
-                  style={styles.productTableRow} 
-                >
+                <tr key={product.id} style={styles.productTableRow}>
                   <td style={styles.productTableCell}>{product.nombre}</td>
                   <td style={styles.productTableCell}>{product.udsPedidas}</td>
-                  <td style={styles.productTableCell}>{product.udsCompradas}</td>
                   <td style={styles.productTableCell}>
-                    {product.udsPendientes || product.udsPedidas - product.udsCompradas}
+                    {product.udsCompradas}
+                  </td>
+                  <td style={styles.productTableCell}>
+                    {product.udsPendientes ||
+                      product.udsPedidas - product.udsCompradas}
                   </td>
                   <td style={styles.productTableCell}>
                     <button
@@ -683,6 +729,39 @@ const UserDashboard = () => {
             >
               Cancelar
             </button>
+          </div>
+        </div>
+      )}
+
+      {showMiembrosModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3>Miembros de la Lista</h3>
+            <ul>
+              {miembrosList.map((miembro) => (
+                <li key={miembro.id} style={styles.memberItem}>
+                  {miembro.usuarioId}{" "}
+                  {miembro.esPropietario && (
+                    <span style={{ color: "green" }}>(Propietario)</span>
+                  )}
+                  {!miembro.esPropietario && (
+                    <button
+                      onClick={() => handleDeleteMember(miembro.usuarioId)}
+                      style={styles.deleteButton}
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setShowMiembrosModal(false)}
+              style={styles.cancelButton}
+            >
+              Cerrar
+            </button>
+            {error && <p style={styles.error}>{error}</p>}
           </div>
         </div>
       )}
@@ -910,7 +989,7 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
   },
-  '@media screen and (max-width: 400px)': {
+  "@media screen and (max-width: 400px)": {
     productTable: {
       width: "100%",
       fontSize: "10px",
@@ -984,6 +1063,21 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
     marginTop: "20px",
+  },
+  memberButton: {
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  memberItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "8px 0",
   },
 };
 

@@ -16,38 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @Service
 public class ListaService {
 
@@ -157,18 +125,17 @@ public class ListaService {
 
 		Producto producto = optProducto.get();
 		/*
-		if (udsCompradas > producto.getUdsPedidas()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes marcar más unidades de las pedidas");
-		}
-		*/
+		 * if (udsCompradas > producto.getUdsPedidas()) {
+		 * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+		 * "No puedes marcar más unidades de las pedidas");
+		 * }
+		 */
 
 		producto.setUdsCompradas(udsCompradas);
 		productoDao.save(producto);
 
 		// Notificar a los usuarios interesados
 		wsListas.notificarUpdateProduct(producto.getLista().getId(), producto);
-		
-
 
 		return producto;
 	}
@@ -272,6 +239,8 @@ public class ListaService {
 
 	public void borrarUsuarioDeLista(String idLista, String email) {
 		// Buscar la relación entre el usuario y la lista
+		System.out.println("Buscando relación entre " + email + " y " + idLista);
+		
 		UsuarioLista relacion = usuarioListaRepository.findByUsuarioIdAndListaId(email, idLista);
 		if (relacion == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la relación usuario-lista");
@@ -364,5 +333,9 @@ public class ListaService {
 		wsListas.notificarUpdateProduct(idLista, producto);
 		return productoGuardado;
 	}
-	
+
+	public List<UsuarioLista> getMiembros(String idLista) {
+		return usuarioListaRepository.findByListaId(idLista);
+	}
+
 }

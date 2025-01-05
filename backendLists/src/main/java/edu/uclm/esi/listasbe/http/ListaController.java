@@ -23,20 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -102,6 +88,8 @@ public class ListaController {
     @DeleteMapping("/borrarUsuarioDeLista")
     public void borrarUsuarioDeLista(@RequestHeader("idLista") String idLista, @RequestHeader("token") String token,
             @RequestBody String emailEliminar) {
+
+        emailEliminar = emailEliminar.replace("\"", "").trim();
         if (idLista == null || idLista.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se proporcionó el ID de la lista");
@@ -139,7 +127,8 @@ public class ListaController {
     }
 
     @PostMapping("/addProducto")
-    public String addProducto(HttpServletRequest request, @RequestBody Producto producto) throws org.json.JSONException {
+    public String addProducto(HttpServletRequest request, @RequestBody Producto producto)
+            throws org.json.JSONException {
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto no puede ser vacío");
         }
@@ -182,7 +171,7 @@ public class ListaController {
 
     @PutMapping("/editarProducto")
     public Producto editarProducto(@RequestBody Producto producto) throws org.json.JSONException {
-        
+
         if (producto.getId() == null || producto.getId().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID del producto");
         }
@@ -196,30 +185,6 @@ public class ListaController {
 
         return this.listaService.editarProducto(producto);
     }
-
-    /*
-     * @PutMapping("/comprar")
-     * public Producto comprar(@RequestBody Map<String, Object> compra) {
-     * if (!compra.containsKey("idProducto") || !compra.containsKey("udsCompradas"))
-     * {
-     * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-     * "La petición debe incluir idProducto y udsCompradas");
-     * }
-     * 
-     * String idProducto = compra.get("idProducto").toString();
-     * float udsCompradas;
-     * try {
-     * udsCompradas = Float.parseFloat(compra.get("udsCompradas").toString());
-     * } catch (NumberFormatException e) {
-     * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-     * "udsCompradas debe ser un número válido");
-     * }
-     * 
-     * // Solo pasamos `idProducto` y `udsCompradas`, ya que el token no se maneja
-     * aquí
-     * return this.listaService.comprar(idProducto, udsCompradas);
-     * }
-     */
 
     @PutMapping("/comprarProducto")
     public Producto comprar(@RequestBody Map<String, Object> body) throws org.json.JSONException {
@@ -287,4 +252,12 @@ public class ListaController {
         return urlCompartir;
     }
 
+    @GetMapping("/miembros")
+    public List<UsuarioLista> getMiembros(@RequestHeader("idLista") String idLista) {
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+        }
+
+        return this.listaService.getMiembros(idLista);
+    }
 }
