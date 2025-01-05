@@ -43,7 +43,11 @@ const deleteList = async (listId) => {
       },
     });
   } catch (err) {
-    if (err.response.data.message === "No tienes permiso para borrar esta lista" && err.response.status === 403) {
+    if (
+      err.response.data.message ===
+        "No tienes permiso para borrar esta lista" &&
+      err.response.status === 403
+    ) {
       throw new Error("Solo el propietario puede eliminar la lista.");
     }
 
@@ -115,7 +119,8 @@ const addProductToList = async (listId, product) => {
     },
   };
 
-  sendMessage(message);
+  // No mandar mensaje ya que ahora se encarga el Servidor de mandar la difusion
+  //sendMessage(message);
 
   return response.data;
 };
@@ -169,7 +174,7 @@ const editProductFromList = async (selectedList, product) => {
     },
   };
 
-  sendMessage(message);
+  //sendMessage(message);
 
   return product;
 };

@@ -22,26 +22,6 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @Component
 public class WSListas extends TextWebSocketHandler {
 
@@ -56,12 +36,13 @@ public class WSListas extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        //String email = this.getParameter(session, "email");
-        //System.out.println("Conexión establecida: " + session.getId() + " para el usuario " + email);
-        String token = this.getParameter(session, "token");
-        String email = proxy.obtenerEmailDesdeToken(token);
+        // String email = this.getParameter(session, "email");
+        // System.out.println("Conexión establecida: " + session.getId() + " para el
+        // usuario " + email);
+
+        String email = obtenerEmail(session);
         // Si el usuario ya tiene una conexión activa, retornamos y no creamos una nueva
-        
+
         if (activeSessions.containsKey(email)) {
             System.out.println("El usuario " + email + " ya tiene una conexión activa");
             session.close();
@@ -93,45 +74,51 @@ public class WSListas extends TextWebSocketHandler {
         }
     }
 
+    private String obtenerEmail(WebSocketSession session) {
+        String token = this.getParameter(session, "token");
+        String email = proxy.obtenerEmailDesdeToken(token);
+        return email;
+    }
+
     public void broadcastUpdate(String idLista, String action, Map<String, Object> payload) {
         // Obtener las sesiones interesadas en esta lista
         List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
-    
+
         if (interesados == null || interesados.isEmpty()) {
             System.out.println("No hay sesiones interesadas en la lista " + idLista);
             return;
         }
-    
+
         System.out.println("Enviando actualización a las sesiones interesadas en la lista " + idLista);
-    
+
         // Crear mensaje JSON con la acción y los datos del payload
         JSONObject json = new JSONObject();
         try {
             json.put("type", "actualizacionDeLista");
             json.put("action", action);
             json.put("idLista", idLista);
-    
+
             // Agregar todos los datos del payload al mensaje JSON
             for (Map.Entry<String, Object> entry : payload.entrySet()) {
                 json.put(entry.getKey(), entry.getValue());
             }
-    
+
             TextMessage message = new TextMessage(json.toString());
-    
+
             // Enviar el mensaje a todas las sesiones interesadas
             for (WebSocketSession session : interesados) {
                 try {
                     session.sendMessage(message);
                     System.out.println("Mensaje enviado a sesión " + session.getId());
                 } catch (IOException e) {
-                    System.err.println("Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
+                    System.err.println(
+                            "Error enviando mensaje WebSocket a sesión " + session.getId() + ": " + e.getMessage());
                 }
             }
         } catch (JSONException e) {
             System.err.println("Error creando el mensaje JSON para broadcastUpdate: " + e.getMessage());
         }
     }
-    
 
     public void notificarAddProduct(String idLista, Producto producto) throws JSONException {
         Map<String, Object> payload = new HashMap<>();
@@ -185,7 +172,6 @@ public class WSListas extends TextWebSocketHandler {
         }
         return interesados;
     }
-
 
     private String getParameter(WebSocketSession session, String parameter) {
         URI uri = session.getUri();
@@ -243,9 +229,11 @@ public class WSListas extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        String email = obtenerEmail(session);
         System.out.println("Conexión cerrada: " + session.getId());
         sessionsByIdLista.values().forEach(sessions -> sessions.remove(session));
         activeSessions.values().remove(session);
+        activeSessions.entrySet().removeIf(entry -> entry.getKey().equals(email));
         System.out.println("Conexiones activas: " + activeSessions.size());
         System.out.println("Conexiones por lista: " + sessionsByIdLista.size());
     }

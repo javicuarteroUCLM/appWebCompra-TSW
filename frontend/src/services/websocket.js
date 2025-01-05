@@ -158,16 +158,6 @@ export const getWebSocket = (email, selectedList, setProducts) => {
   return ws;
 };
 
-// Suscribirse a actualizaciones de una lista específica
-export const subscribeToListUpdates = (listId, callback) => {
-  subscriptions[listId] = callback;
-};
-
-// Cancelar suscripción a actualizaciones de una lista específica
-export const unsubscribeFromListUpdates = (listId) => {
-  delete subscriptions[listId];
-};
-
 // Enviar un mensaje a través del WebSocket (si es necesario para acciones específicas)
 export const sendMessage = (message) => {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -179,8 +169,6 @@ export const sendMessage = (message) => {
 };
 
 export default {
-  subscribeToListUpdates,
-  unsubscribeFromListUpdates,
   sendMessage,
   getWebSocket,
   connectWebSocket,
