@@ -1,16 +1,20 @@
 package edu.uclm.esi.fakeaccountsbe.services;
 
-import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
-import edu.uclm.esi.fakeaccountsbe.model.User;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
+import edu.uclm.esi.fakeaccountsbe.model.User;
+
+
 
 @Service
 public class UserService {
@@ -58,8 +62,13 @@ public class UserService {
 		this.userDao.save(user);
 
 		// Enviar correo de confirmación con token
-		this.emailService.sendConfimacionEmail(user.getEmail(), token);
+		try {
+			this.emailService.sendConfimacionEmail(user.getEmail(), token);
+		} catch (org.json.JSONException e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al enviar el correo de confirmación", e);
+		}
 	}
+
 
 	public void login(User tryingUser) {
 		this.find(tryingUser.getEmail(), tryingUser.getPwd());

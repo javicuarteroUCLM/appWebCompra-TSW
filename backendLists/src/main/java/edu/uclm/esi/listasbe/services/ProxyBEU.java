@@ -1,8 +1,8 @@
 package edu.uclm.esi.listasbe.services;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -10,6 +10,7 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.apache.hc.core5.http.protocol.HttpContext;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class ProxyBEU {
     /**
      * Validar un token con el backend de usuarios.
      */
-    public boolean validar(String token) {
+    public boolean validar(String token) throws JSONException {
         String url = this.manager.getConfiguration().getString("urlBESeguro")
                 + "tokens/validar";
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -46,7 +47,7 @@ public class ProxyBEU {
     /**
      * Obtener el email del usuario asociado a un token.
      */
-    public String obtenerEmailDesdeToken(String token) {
+    public String obtenerEmailDesdeToken(String token) throws JSONException {
         this.validar(token);
         String url = this.manager.getConfiguration().getString("urlBESeguro")
                 + "tokens/obtenerEmail?token=" + token;
@@ -71,7 +72,7 @@ public class ProxyBEU {
         return null;
     }
 
-    public boolean verificarUsuarioPagado(String email) {
+    public boolean verificarUsuarioPagado(String email) throws JSONException {
         String url = this.manager.getConfiguration().getString("urlBESeguro")
                 + "users/esPagado?email=" + email;
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -89,7 +90,7 @@ public class ProxyBEU {
         }
     }
 
-    public void enviarEmail(String email, String subject, String message) {
+    public void enviarEmail(String email, String subject, String message) throws JSONException {
         String url = this.manager.getConfiguration().getString("urlBESeguro")
                 + "email/sendEmail?email=" + email + "&subject=" + subject + "&message=" + message;
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {

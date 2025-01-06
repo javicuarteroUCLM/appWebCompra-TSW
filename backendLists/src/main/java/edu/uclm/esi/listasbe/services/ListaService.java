@@ -1,5 +1,15 @@
 package edu.uclm.esi.listasbe.services;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import edu.uclm.esi.listasbe.dao.InvitacionDao;
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
@@ -10,13 +20,13 @@ import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
+
+
+
+
+
+
 
 @Service
 public class ListaService {
@@ -64,7 +74,7 @@ public class ListaService {
 	/**
 	 * Crear una lista nueva y asociarla al usuario que la creó.
 	 */
-	public String crearLista(String nombre, String token) {
+	public String crearLista(String nombre, String token) throws org.json.JSONException {
 		// Validar el token y obtener el email
 		String email = this.proxy.obtenerEmailDesdeToken(token);
 
@@ -201,7 +211,7 @@ public class ListaService {
 	/**
 	 * Borrar una lista
 	 */
-	public void borrarLista(String idLista, String token) {
+	public void borrarLista(String idLista, String token) throws org.json.JSONException {
 		Optional<Lista> optLista = listaDao.findById(idLista);
 		if (optLista.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
@@ -245,7 +255,7 @@ public class ListaService {
 		return relacion;
 	}
 
-	public String generarUrlLista(String idLista) throws org.json.JSONException {
+	public String generarUrlLista(String idLista) throws JSONException {
 		UsuarioLista propietario = this.propietario(idLista);
 		String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
 				+ idLista;
@@ -271,7 +281,7 @@ public class ListaService {
 		return propietario;
 	}
 
-	public void crearInvitacion(String idLista, String emailInvitado, String urlCompartir) {
+	public void crearInvitacion(String idLista, String emailInvitado, String urlCompartir) throws org.json.JSONException {
 		// Obtener la lista
 		Optional<Lista> optLista = listaDao.findById(idLista);
 		if (optLista.isEmpty()) {

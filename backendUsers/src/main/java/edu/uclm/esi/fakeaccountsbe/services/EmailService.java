@@ -1,5 +1,10 @@
 package edu.uclm.esi.fakeaccountsbe.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import brevo.ApiClient;
 import brevo.ApiException;
 import brevo.Configuration;
@@ -9,10 +14,6 @@ import brevoModel.SendSmtpEmailSender;
 import brevoModel.SendSmtpEmailTo;
 import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
 import edu.uclm.esi.fakeaccountsbe.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class EmailService {
@@ -82,7 +83,7 @@ public class EmailService {
         SendSmtpEmail email = new SendSmtpEmail()
                 .to(java.util.List.of(new SendSmtpEmailTo().email(destinatario).name(destinatario))) // Destinatario
                 .sender(new SendSmtpEmailSender().email(sender).name(name)) // Remitente
-                .subject("Recuperar Credenciales de acceso")
+                .subject("Confirma tu cuenta")
                 .htmlContent("<p>¡Gracias por registrarse en nuestra aplicacion!</p>"
                         + "<p>Por favor, confirme su cuenta haciendo clic en el siguiente enlace: "
                         + "<a href='http://localhost:3000/confirmarCuenta?token=" + token
