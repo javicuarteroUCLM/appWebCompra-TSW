@@ -241,6 +241,18 @@ const deleteMemberFromList = async (listId, email) => {
   }
 };
 
+const getInvitations = async () => {
+  const token = sessionStorage.getItem("authToken");
+  const response = await axios.get(`${API_URL}/invitaciones`, {
+    headers: {
+      token: token,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response.data;
+};
+
 // Conectar WebSocket
 const conectarWebSocket = async (selectedList, setProducts) => {
   const userDetails = await getUserDetails();
@@ -271,5 +283,6 @@ const listService = {
   deleteList,
   getMiembros,
   deleteMemberFromList,
+  getInvitations,
 };
 export default listService;

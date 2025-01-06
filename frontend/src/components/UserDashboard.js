@@ -76,6 +76,29 @@ const UserDashboard = () => {
     }
   }, [user, selectedList, setProducts]);
 
+  useEffect(() => {
+    const checkInvitations = async () => {
+      try {
+        const invitations = await listService.getInvitations();
+        if (invitations.length > 0) {
+          const accept = window.confirm(
+            `Tienes ${invitations.length} invitaciones. ¿Quieres aceptarlas?`
+          );
+          if (accept) {
+            await listService.acceptInvitations(invitations);
+            alert("Invitaciones aceptadas con éxito.");
+            window.location.reload();
+          }
+        }
+      } catch (error) {
+        console.error("Error checking invitations:", error);
+        setError("No se pudieron comprobar las invitaciones.");
+      }
+    };
+
+    checkInvitations();
+  }, []);
+
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
     try {

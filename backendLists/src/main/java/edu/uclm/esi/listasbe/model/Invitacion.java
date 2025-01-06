@@ -1,15 +1,12 @@
 package edu.uclm.esi.listasbe.model;
 
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -18,11 +15,10 @@ import jakarta.persistence.Table;
 public class Invitacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @Column(length = 36)
+    private String id;
 
     @ManyToOne
-    @JoinColumn(name = "lista_id", nullable = false)
     private Lista lista;
 
     @Column(nullable = false)
@@ -33,22 +29,25 @@ public class Invitacion {
     private EstadoInvitacion estado;
 
     public Invitacion() {
+        this.id = java.util.UUID.randomUUID().toString();
     }
 
     public Invitacion(Lista lista, String emailInvitado, EstadoInvitacion estado) {
+        this.id = java.util.UUID.randomUUID().toString();
         this.lista = lista;
         this.emailInvitado = emailInvitado;
         this.estado = estado;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
+    @JsonIgnore
     public Lista getLista() {
         return lista;
     }

@@ -1,5 +1,6 @@
 package edu.uclm.esi.listasbe.http;
 
+import edu.uclm.esi.listasbe.model.Invitacion;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
@@ -236,7 +237,7 @@ public class ListaController {
         // Generar URL para compartir la lista
         String urlCompartir;
         try {
-            urlCompartir = this.listaService.compartirLista(idLista);
+            urlCompartir = this.listaService.generarUrlLista(idLista);
         } catch (org.json.JSONException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al compartir la lista", e);
         }
@@ -250,6 +251,33 @@ public class ListaController {
         // System.out.println("Mensaje enviado a Ana: " + mensaje);
 
         return urlCompartir;
+    }
+
+    @PostMapping("/aceptarInvitacion")
+    public void aceptarInvitacion(@RequestHeader("idInvitacion") String idInvitacion,
+            @RequestBody String estado) {
+        if (idInvitacion == null || idInvitacion.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la invitación");
+        }
+        if (estado == null || estado.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el estado de la invitación");
+        }
+
+        this.listaService.aceptarInvitacion(idInvitacion, estado);
+    }
+
+    @GetMapping("/invitaciones")
+    public List<Invitacion> getInvitaciones(@RequestHeader("token") String token) {
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+
+        String email = this.proxy.obtenerEmailDesdeToken(token);
+        if (email == null || email.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido, sin email");
+        }
+
+        return this.listaService.getInvitaciones(email);
     }
 
     @GetMapping("/miembros")

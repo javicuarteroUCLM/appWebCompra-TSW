@@ -1,9 +1,11 @@
 package edu.uclm.esi.listasbe.services;
 
+import edu.uclm.esi.listasbe.dao.InvitacionDao;
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
-import edu.uclm.esi.listasbe.dao.RestriccionUsuarioRepository;
 import edu.uclm.esi.listasbe.dao.UsuarioListaRepository;
+import edu.uclm.esi.listasbe.model.Invitacion;
+import edu.uclm.esi.listasbe.model.Invitacion.EstadoInvitacion;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
@@ -15,12 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-
-
-
-
-
 
 @Service
 public class ListaService {
@@ -35,7 +31,7 @@ public class ListaService {
 	private UsuarioListaRepository usuarioListaRepository;
 
 	@Autowired
-	private RestriccionUsuarioRepository restriccionUsuarioRepository;
+	private InvitacionDao invitacionDao;
 
 	@Autowired
 	private ProxyBEU proxy;
@@ -106,23 +102,6 @@ public class ListaService {
 		return lista.getId();
 	}
 
-	/**
-	 * Actualizar las unidades compradas de un producto
-	 * public Producto comprar(String idProducto, float udsCompradas) {
-	 * Optional<Producto> optProducto = productoDao.findById(idProducto);
-	 * if (optProducto.isEmpty()) {
-	 * throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-	 * "No se ha encontrado el producto con id " + idProducto);
-	 * }
-	 * 
-	 * Producto producto = optProducto.get();
-	 * producto.setUdsCompradas(udsCompradas);
-	 * productoDao.save(producto);
-	 * 
-	 * return producto;
-	 * }
-	 */
-
 	public Producto comprar(String idProducto, int udsCompradas) throws org.json.JSONException {
 		Optional<Producto> optProducto = productoDao.findById(idProducto);
 		if (optProducto.isEmpty()) {
@@ -138,7 +117,7 @@ public class ListaService {
 		 * }
 		 */
 
-		producto.setUdsCompradas(udsCompradas+cantidadAntes);
+		producto.setUdsCompradas(udsCompradas + cantidadAntes);
 		productoDao.save(producto);
 
 		// Notificar a los usuarios interesados
@@ -247,7 +226,7 @@ public class ListaService {
 	public void borrarUsuarioDeLista(String idLista, String email) {
 		// Buscar la relación entre el usuario y la lista
 		System.out.println("Buscando relación entre " + email + " y " + idLista);
-		
+
 		UsuarioLista relacion = usuarioListaRepository.findByUsuarioIdAndListaId(email, idLista);
 		if (relacion == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la relación usuario-lista");
@@ -266,7 +245,7 @@ public class ListaService {
 		return relacion;
 	}
 
-	public String compartirLista(String idLista) throws org.json.JSONException {
+	public String generarUrlLista(String idLista) throws org.json.JSONException {
 		UsuarioLista propietario = this.propietario(idLista);
 		String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
 				+ idLista;
@@ -312,12 +291,51 @@ public class ListaService {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La lista está llena");
 		}
 
+		// Crear la invitación
+		Invitacion invitacion = new Invitacion(lista, emailInvitado, EstadoInvitacion.PENDIENTE);
+		this.invitacionDao.save(invitacion);
+
 		// Crear la relación
-		UsuarioLista usuarioLista = new UsuarioLista(emailInvitado, lista, false);
-		usuarioListaRepository.save(usuarioLista);
+		// UsuarioLista usuarioLista = new UsuarioLista(emailInvitado, lista, false);
+		// usuarioListaRepository.save(usuarioLista);
 
 		// Si es por WebSocket, notificar al usuario y propietario aqui
 
+	}
+
+	public void aceptarInvitacion(String idInvitacion, String estado) {
+		estado = estado.toLowerCase();
+
+		// Obtener la invitación
+		Optional<Invitacion> optInvitacion = invitacionDao.findById(idInvitacion);
+		if (optInvitacion.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"No se ha encontrado la invitación con id " + idInvitacion);
+		}
+
+		Invitacion invitacion = optInvitacion.get();
+		if (invitacion.getEstado() != EstadoInvitacion.PENDIENTE) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La invitación ya ha sido aceptada o rechazada");
+		}
+
+		if (!estado.equals("aceptado") && !estado.equals("rechazado")) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado de invitación no válido");
+		}
+
+		if (estado.equals("rechazado")) {
+			invitacion.setEstado(EstadoInvitacion.RECHAZADA);
+			invitacionDao.save(invitacion);
+			// Notificar al propietario de la lista por WebSocket ?
+			return;
+		}
+
+		// Cambiar el estado de la invitación
+		invitacion.setEstado(EstadoInvitacion.ACEPTADA);
+		invitacionDao.save(invitacion);
+
+		// Crear la relación
+		UsuarioLista usuarioLista = new UsuarioLista(invitacion.getEmailInvitado(), invitacion.getLista(), false);
+		usuarioListaRepository.save(usuarioLista);
 	}
 
 	// Método para editar un producto dado el objeto Producto entero
@@ -343,6 +361,10 @@ public class ListaService {
 
 	public List<UsuarioLista> getMiembros(String idLista) {
 		return usuarioListaRepository.findByListaId(idLista);
+	}
+
+	public List<Invitacion> getInvitaciones(String email) {
+		return invitacionDao.findByEmailInvitado(email);
 	}
 
 }
