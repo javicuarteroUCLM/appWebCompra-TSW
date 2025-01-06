@@ -23,7 +23,9 @@ public class EmailController {
     }
 
     @PostMapping("/sendEmail")
-    public void sendEmail(@RequestBody JSONObject emailRequest) {
+    public void sendEmail(@RequestBody String emailRequestString) {
+        System.out.println("Email request: " + emailRequestString);
+        JSONObject emailRequest = new JSONObject(emailRequestString);
         String email = emailRequest.getString("email");
         String subject = emailRequest.getString("subject");
         String message = emailRequest.getString("message");

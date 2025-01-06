@@ -102,13 +102,12 @@ public class ProxyBEU {
             json.put("message", message);
 
             httpPost.setEntity(new StringEntity(json.toString()));
-
-            System.out.println("ProxyBEU.enviarEmail: " + json.toString());
+            
 
             try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-                if (response.getCode() != 200) {
-                    System.err.println("Error al enviar el correo: " + response.getCode());
-                }
+            if (response.getCode() != 200) {
+                System.err.println("Error al enviar el correo: " + response.getCode());
+            }
             }
 
         } catch (Exception e) {
