@@ -271,7 +271,7 @@ public class ListaService {
 		return propietario;
 	}
 
-	public void crearInvitacion(String idLista, String emailInvitado) {
+	public void crearInvitacion(String idLista, String emailInvitado, String urlCompartir) {
 		// Obtener la lista
 		Optional<Lista> optLista = listaDao.findById(idLista);
 		if (optLista.isEmpty()) {
@@ -295,12 +295,20 @@ public class ListaService {
 		Invitacion invitacion = new Invitacion(lista, emailInvitado, EstadoInvitacion.PENDIENTE);
 		this.invitacionDao.save(invitacion);
 
-		// Crear la relación
-		// UsuarioLista usuarioLista = new UsuarioLista(emailInvitado, lista, false);
-		// usuarioListaRepository.save(usuarioLista);
+		// Notificar al usuario por Correo
 
-		// Si es por WebSocket, notificar al usuario y propietario aqui
+		// Crear contenido HTML por mensaje String para enviarlo al email
+		String mensaje = "<h1>¡Hola!</h1><p>Has sido invitado a la lista " + lista.getNombre()
+				+ "</p><p>Para aceptar la invitación, haz clic en el siguiente enlace: <a href=\""
+				+ urlCompartir + "\">Aceptar invitación</a></p>";
+		System.out.println("Mensaje: " + mensaje);
+		this.proxy.enviarEmail(emailInvitado, lista.getNombre(), mensaje);
 
+		try {
+			this.proxy.enviarEmail(emailInvitado, "Invitacion:" + lista.getNombre(), urlCompartir);
+		} catch (org.json.JSONException e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al enviar el email", e);
+		}
 	}
 
 	public void aceptarInvitacion(String idInvitacion, String estado) {

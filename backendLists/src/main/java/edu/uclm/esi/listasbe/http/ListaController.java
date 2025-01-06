@@ -243,7 +243,7 @@ public class ListaController {
         }
 
         // Crear Invitacion
-        this.listaService.crearInvitacion(idLista, emailInvitado);
+        this.listaService.crearInvitacion(idLista, emailInvitado, urlCompartir);
 
         // Enviar mensaje con la URL a la amiga Ana (simulación)
         // String mensaje = "Hola Ana, puedes ver la lista compartida en el siguiente

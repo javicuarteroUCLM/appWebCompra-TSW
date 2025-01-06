@@ -23,12 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
-
-
-
-
 @RestController
 @RequestMapping("users")
 // @CrossOrigin("*")
@@ -47,6 +41,22 @@ public class UserController {
 		user.setPwd(cr.getPwd1());
 
 		this.userService.registrar(req.getRemoteAddr(), user);
+	}
+
+	// Confirmar cuenta con token
+	@PostMapping("/confirmarCuenta")
+	public void confirmarCuenta(@RequestParam String token) {
+		User user = userDao.findByToken(token);
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token de confirmación no encontrado");
+		}
+
+		if (user.getToken().equals(token)) {
+			user.setConfirmado(true);
+			userDao.save(user);
+		} else {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Token de confirmación inválido");
+		}
 	}
 
 	// Este metodo no se utilizara
@@ -84,6 +94,11 @@ public class UserController {
 		User existingUser = this.userService.find(user.getEmail(), user.getPwd());
 		if (existingUser == null) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
+		}
+
+		// Comprobar si el usuario esta confirmado
+		if (!existingUser.isConfirmado()) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario no confirmado");
 		}
 
 		// Buscar la cookie
@@ -224,7 +239,6 @@ public class UserController {
 	public void actualizarPwd(@RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
 		this.userService.actualizarPwd(email, pwd1, pwd2);
 	}
-
 
 	private boolean isPrime(int n) {
 		if (n <= 1)

@@ -2,6 +2,7 @@ package edu.uclm.esi.listasbe.services;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -85,6 +86,33 @@ public class ProxyBEU {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void enviarEmail(String email, String subject, String message) {
+        String url = this.manager.getConfiguration().getString("urlBESeguro")
+                + "email/sendEmail?email=" + email + "&subject=" + subject + "&message=" + message;
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.setHeader("Content-type", "application/json");
+
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("email", email);
+            json.put("subject", subject);
+            json.put("message", message);
+
+            httpPost.setEntity(new StringEntity(json.toString()));
+
+            System.out.println("ProxyBEU.enviarEmail: " + json.toString());
+
+            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                if (response.getCode() != 200) {
+                    System.err.println("Error al enviar el correo: " + response.getCode());
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

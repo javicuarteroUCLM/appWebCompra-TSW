@@ -1,6 +1,8 @@
 package edu.uclm.esi.fakeaccountsbe.http;
 
 import edu.uclm.esi.fakeaccountsbe.services.EmailService;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,5 +20,15 @@ public class EmailController {
     @PostMapping("/recoverEmail")
     public void recoverCredentialsByEmail(@RequestBody String email) {
         this.emailService.sendCredentialsEmail(email);
+    }
+
+    @PostMapping("/sendEmail")
+    public void sendEmail(@RequestBody JSONObject emailRequest) {
+        String email = emailRequest.getString("email");
+        String subject = emailRequest.getString("subject");
+        String message = emailRequest.getString("message");
+
+        System.out.println("Email: " + email + " Subject: " + subject + " Message: " + message);
+        this.emailService.sendEmail(email, subject, message);
     }
 }

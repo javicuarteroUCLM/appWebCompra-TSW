@@ -37,10 +37,6 @@ public class EmailService {
                     "No existe un usuario con ese correo electrónico");
         }
 
-        // Desencriptar la contraseña no es posible ya que se utiliza un hash SHA-512
-        // En su lugar, se puede generar una nueva contraseña temporal y enviarla por
-        // correo
-
         // Generar una nueva contraseña temporal
         String tempPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
 
@@ -60,7 +56,7 @@ public class EmailService {
 
         // Configurar el correo
         SendSmtpEmail email = new SendSmtpEmail()
-                .to(java.util.List.of(new SendSmtpEmailTo().email(destinatario).name("Javier"))) // Destinatario
+                .to(java.util.List.of(new SendSmtpEmailTo().email(destinatario).name(destinatario))) // Destinatario
                 .sender(new SendSmtpEmailSender().email(sender).name(name)) // Remitente
                 .subject("Recuperar Credenciales de acceso")
                 .htmlContent("<p>Sus credenciales temporales ahora son: " + credentials + "</p>"
@@ -73,4 +69,53 @@ public class EmailService {
             System.err.println("Error al enviar el correo: " + e.getResponseBody());
         }
     }
+
+    public void sendConfimacionEmail(String destinatario, String token) throws org.json.JSONException {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setApiKey(this.manager.getConfiguration().getJSONObject("brevo").getString("apiKey"));
+        String sender = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender")
+                .getString("email");
+        String name = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender").getString("name");
+        TransactionalEmailsApi apiInstance = new TransactionalEmailsApi(defaultClient);
+
+        // Configurar el correo
+        SendSmtpEmail email = new SendSmtpEmail()
+                .to(java.util.List.of(new SendSmtpEmailTo().email(destinatario).name(destinatario))) // Destinatario
+                .sender(new SendSmtpEmailSender().email(sender).name(name)) // Remitente
+                .subject("Recuperar Credenciales de acceso")
+                .htmlContent("<p>¡Gracias por registrarse en nuestra aplicacion!</p>"
+                        + "<p>Por favor, confirme su cuenta haciendo clic en el siguiente enlace: "
+                        + "<a href='http://localhost:3000/confirmarCuenta?token=" + token
+                        + "'>Confirmar Cuenta</a></p>");
+
+        try {
+            apiInstance.sendTransacEmail(email);
+            System.out.println("Correo de prueba enviado correctamente a " + destinatario);
+        } catch (ApiException e) {
+            System.err.println("Error al enviar el correo: " + e.getResponseBody());
+        }
+    }
+
+    public void sendEmail(String email, String subject, String message) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setApiKey(this.manager.getConfiguration().getJSONObject("brevo").getString("apiKey"));
+        String sender = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender")
+                .getString("email");
+        String name = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender").getString("name");
+        TransactionalEmailsApi apiInstance = new TransactionalEmailsApi(defaultClient);
+
+        // Configurar el correo
+        SendSmtpEmail emailToSend = new SendSmtpEmail()
+                .to(java.util.List.of(new SendSmtpEmailTo().email(email).name(email))) // Destinatario
+                .sender(new SendSmtpEmailSender().email(sender).name(name)) // Remitente
+                .subject(subject).htmlContent(message);
+
+        try {
+            apiInstance.sendTransacEmail(emailToSend);
+            System.out.println("Correo de prueba enviado correctamente a " + email);
+        } catch (ApiException e) {
+            System.err.println("Error al enviar el correo: " + e.getResponseBody());
+        }
+    }
+
 }

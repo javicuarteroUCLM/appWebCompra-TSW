@@ -8,8 +8,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
 
-
-
 @Entity
 @Table(name = "usuario")
 public class User {
@@ -26,6 +24,9 @@ public class User {
 	@JsonIgnore
 	@Transient
 	private long creationTime;
+
+	@Column(nullable = false)
+	private boolean confirmado;
 
 	// @JsonIgnore
 	// @Transient
@@ -94,6 +95,14 @@ public class User {
 
 	public void setEsPagado(boolean esPagado) {
 		this.esPagado = esPagado;
+	}
+
+	public boolean isConfirmado() {
+		return confirmado;
+	}
+
+	public void setConfirmado(boolean confirmado) {
+		this.confirmado = confirmado;
 	}
 
 	public LocalDateTime getFechaPago() {

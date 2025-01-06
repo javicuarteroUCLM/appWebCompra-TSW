@@ -80,6 +80,23 @@ const recoverPassword = async (email) => {
   return response.data;
 };
 
+// Confirmar cuenta
+const confirmAccount = async (token) => {
+  try {
+    const response = await axios.post(`${API_URL}/confirmarCuenta`, null, {
+      params: { token },
+    });
+    if (response.status === 200) {
+      return response.status;
+    } else {
+      throw new Error("Error al confirmar la cuenta");
+    }
+  } catch (error) {
+    console.error("Error en confirmAccount:", error);
+    throw error;
+  }
+};
+
 const updatePassword = async (email, pwd1, pwd2) => {
   const response = await axios.put(
     `${API_URL}/actualizarPwd`,
@@ -100,4 +117,5 @@ export default {
   logout,
   recoverPassword,
   updatePassword,
+  confirmAccount,
 };

@@ -12,13 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
-
 @Service
 public class UserService {
-
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private EmailService emailService;
 
 	private Map<String, User> users = new ConcurrentHashMap<>();
 	private Map<String, List<User>> usersByIp = new ConcurrentHashMap<>();
@@ -34,19 +34,31 @@ public class UserService {
 		if (users == null)
 			users = new ArrayList<>();
 
-		if (users.size() > 10) {
-			System.out.println("No puedes crear más de 10 usuarios");
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes crear más de 10 usuarios");
-		}
+		System.out.println("users = " + users);
+		/*
+		 * if (users.size() > 10) {
+		 * System.out.println("No puedes crear más de 10 usuarios");
+		 * throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+		 * "No puedes crear más de 10 usuarios");
+		 * }
+		 */
+
 		user.setIp(ip);
+		user.setConfirmado(false);
 		user.setEsPagado(false);
 		user.setFechaPago(null);
+		// Crear token de confirmación
+		String token = java.util.UUID.randomUUID().toString();
+		user.setToken(token);
 		users.add(user);
 
 		this.usersByIp.put(ip, users);
 		this.users.put(user.getEmail(), user);
 		user.setCreationTime(System.currentTimeMillis());
 		this.userDao.save(user);
+
+		// Enviar correo de confirmación con token
+		this.emailService.sendConfimacionEmail(user.getEmail(), token);
 	}
 
 	public void login(User tryingUser) {
@@ -104,7 +116,7 @@ public class UserService {
 		// Verificar que el usuario existe
 		User user = userDao.findById(email)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-	
+
 		// Verificar que las contraseñas coincidan y cumplan los requisitos
 		if (!pwd1.equals(pwd2)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Las contraseñas no coinciden");
@@ -112,13 +124,12 @@ public class UserService {
 		if (pwd1.length() < 4) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 4 caracteres");
 		}
-	
+
 		// Actualizar la contraseña y guardar
 		user.setPwd(pwd1); // El hash se aplica automáticamente en el método `setPwd` del modelo `User`
 		userDao.save(user);
 	}
 
-	
 	/*
 	 * public synchronized void clearOld() {
 	 * long time = System.currentTimeMillis();
