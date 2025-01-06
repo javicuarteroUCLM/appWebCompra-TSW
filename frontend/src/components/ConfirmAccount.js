@@ -41,7 +41,7 @@ const ConfirmAccount = () => {
       {token ? (
         <div>
           <p style={styles.textoFeed}>
-            ¡Gracias por registrarse en nuestra aplicación!
+            ¡Gracias por registrarse en nuestra aplicación! Redirigiendo al login...
           </p>
           <svg
             xmlns="http://www.w3.org/2000/svg"

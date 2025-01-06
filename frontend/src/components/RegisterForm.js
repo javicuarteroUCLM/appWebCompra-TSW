@@ -27,12 +27,9 @@ const RegisterForm = () => {
       // Realiza el registro y obtén el token
       const token = await userService.register(email, password1, password2);
       setMessageColor("#4CAF50");
-      setMessage("Registro exitoso.\nRedirigiendo a inicio de sesión...");
+      setMessage("Te hemos enviado un correo de confirmación. Por favor, verifica tu bandeja de entrada.");
        // Cambia el color del mensaje a verde (exito)
       localStorage.setItem("authToken", token); // Almacena el token en el almacenamiento local
-      setTimeout(() => {
-        navigate("/login");
-      }, 2500);
       //navigate('/dashboard'); // Redirige al dashboard
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || "Algo salió mal"}`);
