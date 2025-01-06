@@ -46,6 +46,8 @@ const ResetPassword = () => {
 const styles = {
   container: {
     display: "flex",
+    justifyContent: "center", // Centra el contenido horizontalmente
+    alignItems: "center", // Centra el contenido verticalmente
     minHeight: "100vh",
     backgroundColor: "#f7f9fb",
     padding: "20px",
@@ -63,12 +65,7 @@ const styles = {
     fontSize: "24px",
     fontWeight: "bold",
     color: "#000",
-  },
-  form: {
-    width: "80%",
-    marginTop: 30,
     marginBottom: "20px",
-    color: "#4CAF50",
   },
   inputGroup: {
     display: "flex",
@@ -76,14 +73,14 @@ const styles = {
     backgroundColor: "#f0f0f0",
     borderRadius: "5px",
     padding: "10px",
-    position: "relative",
-    marginBottom: "15px", // added margin for spacing
+    marginBottom: "15px",
   },
   icon: {
     marginRight: "10px",
     color: "#4CAF50",
   },
   input: {
+    flex: 1, // Ajusta el tamaño del input automáticamente
     border: "none",
     outline: "none",
     backgroundColor: "transparent",

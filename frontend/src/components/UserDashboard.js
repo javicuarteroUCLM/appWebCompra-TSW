@@ -34,6 +34,11 @@ const UserDashboard = () => {
   const [newPassword1, setNewPassword1] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
   const [passwordError, setPasswordError] = useState(null);
+  const [listError, setListError] = useState(null);
+  const [productError, setProductError] = useState(null);
+  const [memberError, setMemberError] = useState(null);
+  const [shareListError, setShareListError] = useState(null);
+
 
   const stripe = useStripe();
   const elements = useElements();
@@ -158,46 +163,49 @@ const UserDashboard = () => {
   const handleCreateList = async () => {
     const trimmedName = newListName.trim();
     if (!trimmedName) {
-      setError("El nombre de la lista no puede estar vacío.");
+      setListError("El nombre de la lista no puede estar vacío.");
       return;
     }
-
+  
     try {
       const createdList = await listService.createList(trimmedName);
       const userLists = await listService.getUserLists();
-
+  
       setLists(userLists);
       setNewListName("");
+      setListError(null); // Limpiar el error si la operación fue exitosa
     } catch (error) {
       console.error("Error creando lista:", error);
       if (error.message === "Debes pagar para crear más de 2 listas.") {
-        setError(
+        setListError(
           "Solo puedes crear 2 listas con tu plan actual. Hazte Premium para crear listas ilimitadas."
         );
       } else {
-        setError("No se pudo crear la lista.");
+        setListError("No se pudo crear la lista.");
       }
     }
-  };
+  };  
 
   const handleDeleteList = async (listId) => {
     const confirmDelete = window.confirm(
       "¿Estás seguro de que quieres eliminar esta lista?"
     );
     if (!confirmDelete) return;
-
+  
     try {
       await listService.deleteList(listId);
       setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
       setSelectedList(null);
       alert("Lista eliminada con éxito.");
-    } catch (err) {
-      if (err.message === "Solo el propietario puede eliminar la lista.") {
-        setError(
+      setListError(null); // Limpiar el error si la operación fue exitosa
+    } catch (error) {
+      console.error("Error eliminando lista:", error);
+      if (error.message === "Solo el propietario puede eliminar la lista.") {
+        setListError(
           "No tienes permiso para borrar esta lista. Solo el propietario de la lista puede hacerlo."
         );
       } else {
-        setError("No se pudo eliminar la lista.");
+        setListError("No se pudo eliminar la lista.");
       }
     }
   };
@@ -205,53 +213,53 @@ const UserDashboard = () => {
   // Añadir producto a la lista seleccionada
   const handleAddProduct = async () => {
     if (!selectedList) {
-      setError("Por favor, selecciona una lista.");
+      setProductError("Por favor, selecciona una lista.");
       return;
     }
-
+  
     if (!newProductName.trim()) {
-      setError("El nombre del producto no puede estar vacío.");
+      setProductError("El nombre del producto no puede estar vacío.");
       return;
     }
-
+  
     if (newProductQuantity <= 0) {
-      setError("La cantidad debe ser mayor que 0.");
+      setProductError("La cantidad debe ser mayor que 0.");
       return;
     }
-
+  
     try {
       const product = {
         nombre: newProductName,
         udsPedidas: newProductQuantity,
         udsCompradas: 0,
       };
-
+  
       await listService.addProductToList(selectedList, product);
       setNewProductName("");
       setNewProductQuantity(1);
-      setError(null);
+      setProductError(null); // Limpiar error al éxito
     } catch (err) {
       console.error("Error añadiendo producto:", err);
-      setError("No se pudo añadir el producto.");
+      setProductError("No se pudo añadir el producto.");
     }
-  };
+  };  
 
   const handleDeleteProduct = async (product) => {
     const confirm = window.confirm(
       `¿Estás seguro que quieres eliminar el producto "${product.nombre}" de la lista?`
     );
-
+  
     if (!confirm) return;
-
+  
     try {
-      await listService.deleteProductFromList(product.id); // Llama al servicio
+      await listService.deleteProductFromList(product.id);
       setProducts((prevProducts) =>
         prevProducts.filter((p) => p.id !== product.id)
-      ); // Actualiza el estado local
-      setError(null);
+      );
+      setProductError(null); // Limpiar error al éxito
     } catch (err) {
       console.error("Error eliminando producto:", err);
-      setError("No se pudo eliminar el producto.");
+      setProductError("No se pudo eliminar el producto.");
     }
   };
 
@@ -268,16 +276,19 @@ const UserDashboard = () => {
 
   const handleMiembros = async (listaId) => {
     setSelectedList(listaId);
-
+    
     try {
-      setMiembrosList(await listService.getMiembros(listaId));
-      console.log("Miembros de la lista:", miembrosList);
+      const miembros = await listService.getMiembros(listaId);
+      setMiembrosList(miembros);
+      console.log("Miembros de la lista:", miembros);
+      setMemberError(null); // Limpiar error en caso de éxito
     } catch (err) {
       console.error("Error obteniendo miembros de la lista:", err);
-      setError("No se pudieron obtener los miembros de la lista.");
+      setMemberError("No se pudieron obtener los miembros de la lista.");
     }
+  
     setShowMiembrosModal(true);
-  };
+  };  
 
   const handleSaveBuyProduct = async () => {
     try {
@@ -285,7 +296,7 @@ const UserDashboard = () => {
         selectedProduct.id,
         buyProductUds
       );
-
+  
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
           p.id === updatedProduct.id
@@ -298,10 +309,10 @@ const UserDashboard = () => {
         )
       );
       setShowBuyModal(false);
-      setError(null);
+      setProductError(null); // Limpiar error al éxito
     } catch (err) {
       console.error("Error marcando producto como comprado:", err);
-      setError("No se pudo marcar el producto como comprado.");
+      setProductError("No se pudo marcar el producto como comprado.");
     }
   };
 
@@ -322,23 +333,22 @@ const UserDashboard = () => {
     const confirmDelete = window.confirm(
       "¿Estás seguro de que quieres eliminar a este miembro?"
     );
+    
     if (!confirmDelete) return;
-
+  
     try {
-      console.log("selectedList:", selectedList);
-      console.log("memberId:", memberId);
-      console.log("Token:", sessionStorage.getItem("authToken"));
       await listService.deleteMemberFromList(selectedList, memberId);
       alert("Miembro eliminado con éxito.");
-
+  
       setMiembrosList((prevMembers) =>
         prevMembers.filter((m) => m.usuarioId !== memberId)
       );
+      setMemberError(null); // Limpiar error en caso de éxito
     } catch (err) {
       console.error("Error eliminando miembro:", err);
-      setError("No se pudo eliminar al miembro.");
+      setMemberError("No se pudo eliminar al miembro.");
     }
-  };
+  };  
 
   // Pasarela de pago para hacer un usuario premium
   const handleGoPremium = () => {
@@ -403,21 +413,19 @@ const UserDashboard = () => {
         udsCompradas: editProductUdsCompradas,
         lista: { id: selectedList },
       };
-      console.log("selectedList:", selectedList);
-
+  
       await listService.editProductFromList(selectedList, updatedProduct);
-
+  
       setEditProductName("");
       setEditProductUdsPedidas(0);
       setEditProductUdsCompradas(0);
       setShowEditModal(false);
-
-      setError(null);
+      setProductError(null); // Limpiar error al éxito
     } catch (err) {
       console.error("Error editando producto:", err);
-      setError("No se pudo editar el producto.");
+      setProductError("No se pudo editar el producto.");
     }
-  };
+  };  
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
@@ -425,25 +433,26 @@ const UserDashboard = () => {
 
   // Compartir lista
   const handleShareList = async () => {
-    if (!selectedList) {
-      setError("Por favor, selecciona una lista antes de compartir.");
-      return;
-    }
+  if (!selectedList) {
+    setShareListError("Por favor, selecciona una lista antes de compartir.");
+    return;
+  }
 
-    if (!inviteEmail.trim()) {
-      setError("Por favor, introduce un email para compartir la lista.");
-      return;
-    }
+  if (!inviteEmail.trim()) {
+    setShareListError("Por favor, introduce un email para compartir la lista.");
+    return;
+  }
 
-    try {
-      const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
-      setShareUrl(url); // Guardar la URL generada
-      setError(null);
-    } catch (err) {
-      console.error("Error compartiendo lista:", err);
-      setError("No se pudo compartir la lista.");
-    }
+  try {
+    const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
+    setShareUrl(url); // Guardar la URL generada
+    setShareListError(null); // Limpiar error en caso de éxito
+  } catch (err) {
+    console.error("Error compartiendo lista:", err);
+    setShareListError("No se pudo compartir la lista.");
+  }
   };
+
 
   if (!user) {
     return <p>Cargando datos del usuario...</p>;
@@ -543,6 +552,7 @@ const UserDashboard = () => {
         <button onClick={handleCreateList} style={styles.createListButton}>
           Crear Lista
         </button>
+        {listError && <p style={styles.error}>{listError}</p>}
       </div>
 
       <ul style={styles.list}>
@@ -568,9 +578,6 @@ const UserDashboard = () => {
             >
               Miembros
             </button>
-            {error && (
-              <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
-            )}
           </li>
         ))}
       </ul>
@@ -596,7 +603,7 @@ const UserDashboard = () => {
                   URL generada: <a href={shareUrl}>{shareUrl}</a>
                 </p>
               )}
-              {error && <p style={{ color: "red" }}>{error}</p>}
+              {shareListError && <p style={styles.error}>{shareListError}</p>}
             </div>
           </div>
 
@@ -629,6 +636,7 @@ const UserDashboard = () => {
           <button onClick={handleAddProduct} style={styles.button}>
             Añadir Producto
           </button>
+          {productError && <p style={styles.error}>{productError}</p>}
           <h3>Productos en la Lista</h3>
           <table style={styles.productTable}>
             <thead>
@@ -784,7 +792,7 @@ const UserDashboard = () => {
             >
               Cerrar
             </button>
-            {error && <p style={styles.error}>{error}</p>}
+            {memberError && <p style={styles.error}>{memberError}</p>}
           </div>
         </div>
       )}
