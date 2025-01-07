@@ -40,6 +40,16 @@ import edu.uclm.esi.listasbe.ws.WSListas;
 
 
 
+
+
+
+
+
+
+
+
+
+
 @Service
 public class ListaService {
 
@@ -402,7 +412,25 @@ public class ListaService {
 	}
 
 	public List<Invitacion> getInvitaciones(String email) {
-		return invitacionDao.findByEmailInvitado(email);
+		System.out.println("Buscando invitaciones para " + email);
+		
+		//Lista de invitaciones del usuario
+		List<Invitacion> invitaciones = invitacionDao.findByEmailInvitado(email);
+
+		/*
+		for (Invitacion invitacion : invitaciones) {
+			System.out.println("Invitación: " + invitacion.getLista().getNombre());
+		}
+		*/
+
+		//Invitacion invitacion = invitacionDao.findByEmailInvitado(email).get(0);
+		
+		//System.out.println("Invitaciones: " + invitacionDao.findByEmailInvitado(email));
+		//System.out.println("Invitacion name: " + invitacion.getLista().getNombre());
+		//return invitacionDao.findByEmailInvitado(email);
+
+		//Devolver lista de invitaciones pendientes
+		return invitaciones;
 	}
 	public Optional<Invitacion> getInvitacionPendiente(String email, String idLista) {
 		return invitacionDao.findByEmailInvitadoAndLista_IdAndEstado(email, idLista, Invitacion.EstadoInvitacion.PENDIENTE);

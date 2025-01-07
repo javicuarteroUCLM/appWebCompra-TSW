@@ -14,6 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 
+
+
 @Entity
 @Table(name = "invitaciones")
 public class Invitacion {
@@ -60,6 +62,10 @@ public class Invitacion {
     public void setLista(Lista lista) {
         this.lista = lista;
     }
+
+    public String getNombreLista() {
+        return lista != null ? lista.getNombre() : null;
+    }    
 
     public String getEmailInvitado() {
         return emailInvitado;

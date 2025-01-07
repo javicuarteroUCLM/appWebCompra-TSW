@@ -626,40 +626,38 @@ const UserDashboard = () => {
       )}
       <div>
       {pendingInvitations.length > 0 && (
-    <div style={styles.invitationsContainer}>
-      <h2>Invitaciones Pendientes</h2>
-      <table style={styles.invitationTable}>
-        <thead>
-          <tr>
-            <th style={styles.invitationHeader}>Lista</th>
-            <th style={styles.invitationHeader}>Enviada por</th>
-            <th style={styles.invitationHeader}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pendingInvitations.map((invitation) => (
-            <tr key={invitation.id} style={styles.invitationRow}>
-              <td style={styles.invitationCell}>{invitation.listaNombre}</td>
-              <td style={styles.invitationCell}>{invitation.emailRemitente}</td>
-              <td style={styles.invitationCell}>
-                <button
-                  style={styles.acceptButton}
-                  onClick={() => handleAcceptInvitation(invitation.id)}
-                >
-                  Aceptar
-                </button>
-                <button
-                  style={styles.rejectButton}
-                  onClick={() => handleRejectInvitation(invitation.id)}
-                >
-                  Rechazar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        <div style={styles.invitationsContainer}>
+          <h2>Invitaciones Pendientes</h2>
+          <table style={styles.invitationTable}>
+            <thead>
+              <tr>
+                <th style={styles.invitationHeader}>Lista</th>
+                <th style={styles.invitationHeader}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingInvitations.map((invitation) => (
+                <tr key={invitation.id} style={styles.invitationRow}>
+                  <td style={styles.invitationCell}>{invitation.nombreLista || "Sin nombre"}</td>
+                  <td style={styles.invitationCell}>
+                    <button
+                      style={styles.acceptButton}
+                      onClick={() => handleAcceptInvitation(invitation.id)}
+                    >
+                      Aceptar
+                    </button>
+                    <button
+                      style={styles.rejectButton}
+                      onClick={() => handleRejectInvitation(invitation.id)}
+                    >
+                      Rechazar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
   )}
       </div>
       

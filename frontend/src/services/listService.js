@@ -264,7 +264,7 @@ const getInvitations = async () => {
       "Content-Type": "application/json",
     },
   });
-
+  
   return response.data;
 };
 
