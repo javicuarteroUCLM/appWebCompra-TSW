@@ -38,6 +38,8 @@ const UserDashboard = () => {
   const [productError, setProductError] = useState(null);
   const [memberError, setMemberError] = useState(null);
   const [shareListError, setShareListError] = useState(null);
+  const [pendingInvitations, setPendingInvitations] = useState([]); 
+
 
 
   const stripe = useStripe();
@@ -81,6 +83,7 @@ const UserDashboard = () => {
     }
   }, [user, selectedList, setProducts]);
 
+  /*
   useEffect(() => {
     const checkInvitations = async () => {
       try {
@@ -103,6 +106,29 @@ const UserDashboard = () => {
 
     checkInvitations();
   }, []);
+  */
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const invitations = await listService.getInvitations();
+        const pending = invitations.filter((inv) => inv.estado === "PENDIENTE");
+        setPendingInvitations(pending); // Actualiza el estado con las invitaciones pendientes
+        if (pending.length > 0) {
+          setError(`Tienes ${pending.length} invitación(es) pendiente(s).`);
+        } else {
+          setError(null); // Limpia el error si no hay invitaciones
+        }
+      } catch (err) {
+        console.error("Error al verificar invitaciones pendientes:", err);
+      }
+    }, 3000);
+  
+    return () => clearInterval(interval);
+  }, []);
+  
+  
+
+
 
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
@@ -431,6 +457,19 @@ const UserDashboard = () => {
     setShowEditModal(false);
   };
 
+  const handleShareListOption = (option) => {
+    if (option === "link") {
+      navigator.clipboard.writeText(shareUrl);
+      alert("Enlace copiado al portapapeles.");
+    } else if (option === "email") {
+      if (!inviteEmail.trim()) {
+        setShareListError("Por favor, introduce un email para enviar la invitación.");
+        return;
+      }
+      handleShareList(); // Enviar la invitación por correo
+    }
+  };
+
   // Compartir lista
   const handleShareList = async () => {
   if (!selectedList) {
@@ -451,6 +490,30 @@ const UserDashboard = () => {
     console.error("Error compartiendo lista:", err);
     setShareListError("No se pudo compartir la lista.");
   }
+  };
+
+  const handleAcceptInvitation = async (invitationId) => {
+    try {
+      await listService.acceptInvitation(invitationId, "aceptado");
+      alert("Invitación aceptada.");
+      setError(null); // Limpia notificaciones
+      window.location.reload();
+    } catch (err) {
+      console.error("Error aceptando invitación:", err);
+      setError("No se pudo aceptar la invitación.");
+    }
+  };
+  
+  const handleRejectInvitation = async (invitationId) => {
+    try {
+      await listService.acceptInvitation(invitationId, "rechazado");
+      alert("Invitación rechazada.");
+      setError(null); // Limpia notificaciones
+      window.location.reload();
+    } catch (err) {
+      console.error("Error rechazando invitación:", err);
+      setError("No se pudo rechazar la invitación.");
+    }
   };
 
 
@@ -501,6 +564,7 @@ const UserDashboard = () => {
             Cancelar
           </button>
         </div>
+        
       ) : (
         <button
           onClick={() => setShowChangePasswordForm(true)}
@@ -538,6 +602,45 @@ const UserDashboard = () => {
           )}
         </>
       )}
+      <div>
+      {pendingInvitations.length > 0 && (
+    <div style={styles.invitationsContainer}>
+      <h2>Invitaciones Pendientes</h2>
+      <table style={styles.invitationTable}>
+        <thead>
+          <tr>
+            <th style={styles.invitationHeader}>Lista</th>
+            <th style={styles.invitationHeader}>Enviada por</th>
+            <th style={styles.invitationHeader}>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pendingInvitations.map((invitation) => (
+            <tr key={invitation.id} style={styles.invitationRow}>
+              <td style={styles.invitationCell}>{invitation.listaNombre}</td>
+              <td style={styles.invitationCell}>{invitation.emailRemitente}</td>
+              <td style={styles.invitationCell}>
+                <button
+                  style={styles.acceptButton}
+                  onClick={() => handleAcceptInvitation(invitation.id)}
+                >
+                  Aceptar
+                </button>
+                <button
+                  style={styles.rejectButton}
+                  onClick={() => handleRejectInvitation(invitation.id)}
+                >
+                  Rechazar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+      </div>
+      
 
       <h2>Mis listas de la compra</h2>
       {error && <p style={styles.error}>{error}</p>}
@@ -585,24 +688,30 @@ const UserDashboard = () => {
         <div style={styles.selectedListContainer}>
           <h3>Opciones para la Lista Seleccionada</h3>
           <div>
-            <div style={styles.shareContainer}>
+          <div style={styles.shareContainer}>
               <h3>Compartir Lista</h3>
               <input
                 type="email"
-                placeholder="Introduce el email para compartir"
+                placeholder="Introduce el email para invitar"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 style={styles.input}
               />
-              <button onClick={handleShareList} style={styles.shareButton}>
-                <FaShareAlt /> Compartir Lista
-              </button>
-
-              {shareUrl && (
-                <p>
-                  URL generada: <a href={shareUrl}>{shareUrl}</a>
-                </p>
-              )}
+              <div style={styles.shareOptions}>
+                <button
+                  onClick={() => handleShareListOption("link")}
+                  style={styles.shareButton}
+                >
+                  Copiar Enlace
+                </button>
+                <button
+                  onClick={() => handleShareListOption("email")}
+                  style={styles.shareButton}
+                >
+                  Enviar Invitación por Correo
+                </button>
+              </div>
+              {shareUrl && <p>Enlace: <a href={shareUrl}>{shareUrl}</a></p>}
               {shareListError && <p style={styles.error}>{shareListError}</p>}
             </div>
           </div>
@@ -797,6 +906,7 @@ const UserDashboard = () => {
         </div>
       )}
     </div>
+    
   );
 };
 
@@ -1110,6 +1220,43 @@ const styles = {
     alignItems: "center",
     padding: "8px 0",
   },
+  invitationTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginBottom: "20px",
+  },
+  invitationHeader: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    textAlign: "left",
+    padding: "12px 15px",
+  },
+  invitationRow: {
+    borderBottom: "1px solid #ddd",
+  },
+  invitationCell: {
+    padding: "12px 15px",
+    textAlign: "left",
+  },
+  acceptButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "5px",
+  },
+  rejectButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    padding: "5px 10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  
+  
 };
 
 export default UserDashboard;

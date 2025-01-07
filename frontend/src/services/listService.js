@@ -253,6 +253,22 @@ const getInvitations = async () => {
   return response.data;
 };
 
+const acceptInvitation = async (invitationId, status) => {
+      const response = await fetch(`http://localhost:8383/listas/aceptarInvitacion`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              idInvitacion: invitationId, // ID de la invitación
+          },
+          body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
+      });
+      if (!response.ok) {
+          throw new Error("Error aceptando/rechazando invitación");
+      }
+      return await response.json();
+};
+
+
 // Conectar WebSocket
 const conectarWebSocket = async (selectedList, setProducts) => {
   const userDetails = await getUserDetails();
@@ -284,5 +300,6 @@ const listService = {
   getMiembros,
   deleteMemberFromList,
   getInvitations,
+  acceptInvitation,
 };
 export default listService;

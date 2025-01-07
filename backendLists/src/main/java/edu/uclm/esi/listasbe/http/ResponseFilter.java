@@ -1,12 +1,14 @@
 package edu.uclm.esi.listasbe.http;
 
+import java.io.IOException;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 
 
@@ -21,7 +23,7 @@ public class ResponseFilter extends OncePerRequestFilter {
 
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, token, idLista, idProducto");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, token, idLista, idProducto, idinvitacion");
         }
         filterChain.doFilter(request, response);
     }

@@ -1,14 +1,8 @@
 package edu.uclm.esi.listasbe.http;
 
-import edu.uclm.esi.listasbe.model.Invitacion;
-import edu.uclm.esi.listasbe.model.Lista;
-import edu.uclm.esi.listasbe.model.Producto;
-import edu.uclm.esi.listasbe.model.UsuarioLista;
-import edu.uclm.esi.listasbe.services.ListaService;
-import edu.uclm.esi.listasbe.services.ProxyBEU;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,6 +17,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import edu.uclm.esi.listasbe.model.Invitacion;
+import edu.uclm.esi.listasbe.model.Lista;
+import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.model.UsuarioLista;
+import edu.uclm.esi.listasbe.services.ListaService;
+import edu.uclm.esi.listasbe.services.ProxyBEU;
+import jakarta.servlet.http.HttpServletRequest;
+
+
+
+
+
+
 
 @RestController
 @RequestMapping("listas")
@@ -263,6 +271,8 @@ public class ListaController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el estado de la invitación");
         }
 
+        estado = estado.replace("\"", "").trim();
+
         this.listaService.aceptarInvitacion(idInvitacion, estado);
     }
 
@@ -288,4 +298,5 @@ public class ListaController {
 
         return this.listaService.getMiembros(idLista);
     }
+
 }

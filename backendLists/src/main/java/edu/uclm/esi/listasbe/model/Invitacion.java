@@ -1,5 +1,8 @@
 package edu.uclm.esi.listasbe.model;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -10,15 +13,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+
 @Entity
 @Table(name = "invitaciones")
 public class Invitacion {
 
     @Id
-    @Column(length = 36)
+    @Column(length = 100)
     private String id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Lista lista;
 
     @Column(nullable = false)
