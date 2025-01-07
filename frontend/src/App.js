@@ -10,6 +10,7 @@ import LoginForm from "./components/LoginForm";
 import UserDashboard from "./components/UserDashboard";
 import ResetPassword from "./components/ResetPassword";
 import ConfirmAccount from "./components/ConfirmAccount";
+import InvitationHandler from "./components/InvitationHandler";
 
 const fetchStripeKey = async () => {
   const response = await fetch("http://localhost:9000/pagos/stripeKey");
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confirmarCuenta" element={<ConfirmAccount />} />
+          <Route path="/invitacion/:idLista" element={<InvitationHandler />} />
         </Routes>
       </Elements>
     </Router>

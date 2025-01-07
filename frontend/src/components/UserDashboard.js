@@ -38,7 +38,8 @@ const UserDashboard = () => {
   const [productError, setProductError] = useState(null);
   const [memberError, setMemberError] = useState(null);
   const [shareListError, setShareListError] = useState(null);
-  const [pendingInvitations, setPendingInvitations] = useState([]); 
+  const [pendingInvitations, setPendingInvitations] = useState([]);
+   
 
 
 

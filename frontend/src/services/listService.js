@@ -262,10 +262,14 @@ const acceptInvitation = async (invitationId, status) => {
           },
           body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
       });
+      console.log(response);
       if (!response.ok) {
           throw new Error("Error aceptando/rechazando invitación");
       }
-      return await response.json();
+      if (response.headers.get("content-length") !== "0" && response.headers.get("content-type")?.includes("application/json")) {
+        return await response.json();
+    }
+    return { message: "Operación realizada correctamente" };
 };
 
 

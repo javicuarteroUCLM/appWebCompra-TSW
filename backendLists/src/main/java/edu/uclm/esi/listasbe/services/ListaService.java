@@ -28,6 +28,18 @@ import edu.uclm.esi.listasbe.ws.WSListas;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 @Service
 public class ListaService {
 
@@ -255,10 +267,11 @@ public class ListaService {
 		return relacion;
 	}
 
-	public String generarUrlLista(String idLista) throws JSONException {
+	public String generarUrlLista(String idLista) throws JSONException { 
 		UsuarioLista propietario = this.propietario(idLista);
-		String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
-				+ idLista;
+		//String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
+		//		+ idLista;
+		String urlCompartir = "http://localhost:3000/invitacion/" + idLista;
 		listaDao.findById(idLista).ifPresent(lista -> {
 			lista.setCompartida(true);
 			lista.setUrlInvitacion(urlCompartir);
@@ -273,7 +286,7 @@ public class ListaService {
 		return urlCompartir;
 	}
 
-	public UsuarioLista propietario(String idLista) {
+	public UsuarioLista propietario(String idLista)  {
 		UsuarioLista propietario = usuarioListaRepository.findByListaIdAndEsPropietario(idLista, true);
 		if (propietario == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado el propietario de la lista");
@@ -309,16 +322,20 @@ public class ListaService {
 
 		// Crear contenido HTML por mensaje String para enviarlo al email
 		String mensaje = "<h1>¡Hola!</h1><p>Has sido invitado a la lista " + lista.getNombre()
-				+ "</p><p>Para aceptar la invitación, haz clic en el siguiente enlace: <a href=\""
-				+ urlCompartir + "\">Aceptar invitación</a></p>";
-		System.out.println("Mensaje: " + mensaje);
+				+ "</p><p>Para aceptar o rechazar la invitación, haz clic en el siguiente enlace: <a href=\""
+				+ "http://localhost:3000/invitacion/" + lista.getId()
+				+ "\">Ver invitación</a></p>";
 		this.proxy.enviarEmail(emailInvitado, lista.getNombre(), mensaje);
 
+		System.out.println("Mensaje: " + mensaje);
+
+		/*
 		try {
 			this.proxy.enviarEmail(emailInvitado, "Invitacion:" + lista.getNombre(), urlCompartir);
 		} catch (org.json.JSONException e) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al enviar el email", e);
 		}
+		*/
 	}
 
 	public void aceptarInvitacion(String idInvitacion, String estado) {
@@ -335,6 +352,9 @@ public class ListaService {
 		if (invitacion.getEstado() != EstadoInvitacion.PENDIENTE) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La invitación ya ha sido aceptada o rechazada");
 		}
+
+		// Verificar el estado
+		System.err.println("Estado recibido: " + estado);
 
 		if (!estado.equals("aceptado") && !estado.equals("rechazado")) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado de invitación no válido");
@@ -384,5 +404,9 @@ public class ListaService {
 	public List<Invitacion> getInvitaciones(String email) {
 		return invitacionDao.findByEmailInvitado(email);
 	}
+	public Optional<Invitacion> getInvitacionPendiente(String email, String idLista) {
+		return invitacionDao.findByEmailInvitadoAndLista_IdAndEstado(email, idLista, Invitacion.EstadoInvitacion.PENDIENTE);
+	}
+	
 
 }

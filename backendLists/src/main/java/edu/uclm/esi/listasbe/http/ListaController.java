@@ -1,7 +1,9 @@
 package edu.uclm.esi.listasbe.http;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,20 @@ import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.services.ListaService;
 import edu.uclm.esi.listasbe.services.ProxyBEU;
 import jakarta.servlet.http.HttpServletRequest;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -261,20 +277,44 @@ public class ListaController {
         return urlCompartir;
     }
 
-    @PostMapping("/aceptarInvitacion")
-    public void aceptarInvitacion(@RequestHeader("idInvitacion") String idInvitacion,
-            @RequestBody String estado) {
-        if (idInvitacion == null || idInvitacion.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la invitación");
-        }
-        if (estado == null || estado.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el estado de la invitación");
-        }
 
-        estado = estado.replace("\"", "").trim();
-
-        this.listaService.aceptarInvitacion(idInvitacion, estado);
+    @GetMapping("/invitacion/{idLista}")
+public Map<String, String> manejarInvitacion(@PathVariable String idLista, @RequestHeader("token") String token) {
+    String email = this.proxy.obtenerEmailDesdeToken(token);
+    if (email == null || email.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no válido");
     }
+
+    Optional<Invitacion> invitacion = this.listaService.getInvitacionPendiente(email, idLista);
+    if (invitacion.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró una invitación pendiente para esta lista");
+    }
+
+    Invitacion inv = invitacion.get();
+    Map<String, String> respuesta = new HashMap<>();
+    respuesta.put("idLista", inv.getLista().getId());
+    respuesta.put("nombreLista", inv.getLista().getNombre());
+    respuesta.put("idInvitacion", inv.getId());
+
+    return respuesta;
+}
+
+@PostMapping("/aceptarInvitacion")
+public void aceptarInvitacion(@RequestHeader("idInvitacion") String idInvitacion,
+        @RequestBody String estado) {
+    if (idInvitacion == null || idInvitacion.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la invitación");
+    }
+    if (estado == null || estado.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el estado de la invitación");
+    }
+
+    estado = estado.replace("\"", "").trim();
+
+    this.listaService.aceptarInvitacion(idInvitacion, estado);
+}
+
+
 
     @GetMapping("/invitaciones")
     public List<Invitacion> getInvitaciones(@RequestHeader("token") String token) {
