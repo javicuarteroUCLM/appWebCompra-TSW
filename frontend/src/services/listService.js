@@ -86,6 +86,21 @@ const shareList = async (listId, emailInvitado) => {
   return await response.text(); // La respuesta contiene la URL generada
 };
 
+const generateURL = async (listId) => {
+  const response = await fetch(`http://localhost:8383/listas/generarURL`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      idLista: listId,
+      token: sessionStorage.getItem("authToken"),
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error generando URL");
+  }
+  return await response.text(); // La respuesta contiene la URL generada
+};
+
 // Añadir Producto a Lista
 const addProductToList = async (listId, product) => {
   const token = sessionStorage.getItem("authToken");
@@ -305,5 +320,6 @@ const listService = {
   deleteMemberFromList,
   getInvitations,
   acceptInvitation,
+  generateURL,
 };
 export default listService;

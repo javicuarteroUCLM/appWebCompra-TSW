@@ -48,6 +48,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 
 
+
+
 @RestController
 @RequestMapping("listas")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true", methods = {
@@ -276,6 +278,33 @@ public class ListaController {
 
         return urlCompartir;
     }
+    
+    @PostMapping("/generarURL")
+    public String generarUrlLista (@RequestHeader("idLista") String idLista, @RequestHeader("token") String token) {
+        if (idLista == null || idLista.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se proporcionó el ID de la lista");
+        }
+
+        if (token == null || token.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token no proporcionado");
+        }
+
+        // Comprobar si la lista existe
+        if (this.listaService.getListaById(idLista).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado la lista con id " + idLista);
+        }
+
+        // Generar URL para compartir la lista
+        String urlCompartir;
+        try {
+            urlCompartir = this.listaService.generarUrlLista(idLista);
+        } catch (org.json.JSONException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al compartir la lista", e);
+        }
+
+        return urlCompartir;
+    }
+    
 
 
     @GetMapping("/invitacion/{idLista}")

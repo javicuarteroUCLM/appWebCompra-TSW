@@ -39,9 +39,8 @@ const UserDashboard = () => {
   const [memberError, setMemberError] = useState(null);
   const [shareListError, setShareListError] = useState(null);
   const [pendingInvitations, setPendingInvitations] = useState([]);
-   
-
-
+  const [showShareModal, setShowShareModal] = useState(false);
+  
 
   const stripe = useStripe();
   const elements = useElements();
@@ -458,9 +457,12 @@ const UserDashboard = () => {
     setShowEditModal(false);
   };
 
-  const handleShareListOption = (option) => {
+  const handleShareListOption = async (option) => {
     if (option === "link") {
-      navigator.clipboard.writeText(shareUrl);
+      //navigator.clipboard.writeText(shareUrl);
+      const url = await listService.generateURL(selectedList);
+      setShareUrl(url);
+      navigator.clipboard.writeText(url);
       alert("Enlace copiado al portapapeles.");
     } else if (option === "email") {
       if (!inviteEmail.trim()) {
@@ -515,6 +517,25 @@ const UserDashboard = () => {
       console.error("Error rechazando invitación:", err);
       setError("No se pudo rechazar la invitación.");
     }
+  };
+
+  const handleOpenShareModal = async (listId) => {
+    setSelectedList(listId);
+    setInviteEmail("");
+    setShareListError(null);
+    try {
+      const url = await listService.shareList(listId);
+      setShareUrl(url);
+    } catch (err) {
+      console.error("Error generando enlace de la lista:", err);
+      setShareListError("No se pudo generar el enlace de la lista.");
+    }
+    setShowShareModal(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShowShareModal(false);
+    setShareUrl("");
   };
 
 
@@ -686,116 +707,130 @@ const UserDashboard = () => {
         ))}
       </ul>
       {selectedList && (
-        <div style={styles.selectedListContainer}>
-          <h3>Opciones para la Lista Seleccionada</h3>
-          <div>
-          <div style={styles.shareContainer}>
-              <h3>Compartir Lista</h3>
-              <input
-                type="email"
-                placeholder="Introduce el email para invitar"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                style={styles.input}
-              />
-              <div style={styles.shareOptions}>
-                <button
-                  onClick={() => handleShareListOption("link")}
-                  style={styles.shareButton}
-                >
-                  Copiar Enlace
-                </button>
-                <button
-                  onClick={() => handleShareListOption("email")}
-                  style={styles.shareButton}
-                >
-                  Enviar Invitación por Correo
-                </button>
-              </div>
-              {shareUrl && <p>Enlace: <a href={shareUrl}>{shareUrl}</a></p>}
-              {shareListError && <p style={styles.error}>{shareListError}</p>}
-            </div>
-          </div>
+  <div style={styles.selectedListContainer}>
+    <h3>Opciones para la Lista Seleccionada</h3>
+    <div>
+      <div style={styles.shareOptions}>
+        <h3>Compartir Lista</h3>
 
-          {shareUrl && (
-            <div style={styles.shareUrlContainer}>
-              <p>Comparte esta URL con tus amigos:</p>
-              <input
-                type="text"
-                value={shareUrl}
-                readOnly
-                style={styles.shareUrlInput}
-              />
-            </div>
-          )}
-          <h3>Añadir Producto a la Lista Seleccionada</h3>
-          <input
-            type="text"
-            value={newProductName}
-            onChange={(e) => setNewProductName(e.target.value)}
-            placeholder="Nombre del producto"
-            style={styles.input}
-          />
-          <input
-            type="number"
-            value={newProductQuantity}
-            onChange={(e) => setNewProductQuantity(Number(e.target.value))}
-            placeholder="Cantidad"
-            style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
-          />
-          <button onClick={handleAddProduct} style={styles.button}>
-            Añadir Producto
-          </button>
-          {productError && <p style={styles.error}>{productError}</p>}
-          <h3>Productos en la Lista</h3>
-          <table style={styles.productTable}>
-            <thead>
-              <tr>
-                <th style={styles.productTableHeader}>Nombre</th>
-                <th style={styles.productTableHeader}>Uds Pedidas</th>
-                <th style={styles.productTableHeader}>Uds Compradas</th>
-                <th style={styles.productTableHeader}>Uds Pendientes</th>
-                <th style={styles.productTableHeader}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id} style={styles.productTableRow}>
-                  <td style={styles.productTableCell}>{product.nombre}</td>
-                  <td style={styles.productTableCell}>{product.udsPedidas}</td>
-                  <td style={styles.productTableCell}>
-                    {product.udsCompradas}
-                  </td>
-                  <td style={styles.productTableCell}>
-                    {product.udsPendientes ||
-                      product.udsPedidas - product.udsCompradas}
-                  </td>
-                  <td style={styles.productTableCell}>
-                    <button
-                      style={styles.buyButton}
-                      onClick={() => handleBuyProduct(product)}
-                    >
-                      Comprar
-                    </button>
-                    <button
-                      style={styles.editButton}
-                      onClick={() => handleEditProduct(product)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      style={styles.deleteButton}
-                      onClick={() => handleDeleteProduct(product)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Botón para copiar enlace */}
+        <button
+          onClick={() => handleShareListOption("link")}
+          style={styles.shareButton}
+        >
+          <i className="fas fa-copy" style={{ marginRight: "5px" }}></i>
+          <span>Copiar Enlace</span>
+        </button>
+
+        {/* Botón e input para enviar invitación */}
+        <div style={styles.shareOptions}>
+          <button
+            onClick={() => handleShareListOption("email")}
+            style={{
+              ...styles.shareButton,
+              ...styles.wideButton,
+              opacity: inviteEmail.trim() ? 1 : 0.5,
+              cursor: inviteEmail.trim() ? "pointer" : "not-allowed",
+            }}
+            disabled={!inviteEmail.trim()}
+          >
+            <i className="fas fa-envelope" style={{ marginRight: "5px" }}></i>
+              <span>Enviar Invitación por Correo</span>
+            </button>
+            <input
+              type="email"
+              placeholder="Introduce el email para invitar"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              style={styles.emailInput}
+            />
         </div>
-      )}
+
+        {/* Mensaje de error si lo hay */}
+        {shareListError && <p style={styles.error}>{shareListError}</p>}
+      </div>
+    </div>
+
+    {shareUrl && (
+      <div style={styles.shareUrlContainer}>
+        <p>Comparte esta URL con tus amigos:</p>
+        <input
+          type="text"
+          value={shareUrl}
+          readOnly
+          style={styles.shareUrlInput}
+        />
+      </div>
+    )}
+    <h3>Añadir Producto a la Lista Seleccionada</h3>
+    <input
+      type="text"
+      value={newProductName}
+      onChange={(e) => setNewProductName(e.target.value)}
+      placeholder="Nombre del producto"
+      style={styles.input}
+    />
+    <input
+      type="number"
+      value={newProductQuantity}
+      onChange={(e) => setNewProductQuantity(Number(e.target.value))}
+      placeholder="Cantidad"
+      style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
+    />
+    <button onClick={handleAddProduct} style={styles.button}>
+      Añadir Producto
+    </button>
+    {productError && <p style={styles.error}>{productError}</p>}
+    <h3>Productos en la Lista</h3>
+    <table style={styles.productTable}>
+      <thead>
+        <tr>
+          <th style={styles.productTableHeader}>Nombre</th>
+          <th style={styles.productTableHeader}>Uds Pedidas</th>
+          <th style={styles.productTableHeader}>Uds Compradas</th>
+          <th style={styles.productTableHeader}>Uds Pendientes</th>
+          <th style={styles.productTableHeader}>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {products.map((product) => (
+          <tr key={product.id} style={styles.productTableRow}>
+            <td style={styles.productTableCell}>{product.nombre}</td>
+            <td style={styles.productTableCell}>{product.udsPedidas}</td>
+            <td style={styles.productTableCell}>
+              {product.udsCompradas}
+            </td>
+            <td style={styles.productTableCell}>
+              {product.udsPendientes ||
+                product.udsPedidas - product.udsCompradas}
+            </td>
+            <td style={styles.productTableCell}>
+              <button
+                style={styles.buyButton}
+                onClick={() => handleBuyProduct(product)}
+              >
+                Comprar
+              </button>
+              <button
+                style={styles.editButton}
+                onClick={() => handleEditProduct(product)}
+              >
+                Editar
+              </button>
+              <button
+                style={styles.deleteButton}
+                onClick={() => handleDeleteProduct(product)}
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
       {showEditModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -1047,28 +1082,40 @@ const styles = {
   shareContainer: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center", // Alinea todo al centro
+    alignItems: "center",
     marginTop: "20px",
   },
-  input: {
-    marginBottom: "10px",
+  shareOptions: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center", 
+    gap: "10px", 
+    marginTop: "10px",
+    textAlign: "center",
+  },
+  wideButton: {
+    width: "400px", 
+    padding: "5px 10px", 
+    height: "35px",
+  },
+  emailInput: {
     padding: "8px",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "300px", 
     border: "1px solid #ccc",
     borderRadius: "5px",
   },
   shareButton: {
+    display: "flex",
+    alignItems: "center", 
     backgroundColor: "#FFC107",
     color: "#000",
     padding: "10px 20px",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
+    gap: "5px", 
+  },  
   shareUrlContainer: {
     marginTop: "10px",
     textAlign: "center",
