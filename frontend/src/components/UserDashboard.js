@@ -40,6 +40,9 @@ const UserDashboard = () => {
   const [shareListError, setShareListError] = useState(null);
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showListModal, setShowListModal] = useState(false);
+  const [addProductMessage, setAddProductMessage] = useState("");
+
   
 
   const stripe = useStripe();
@@ -125,11 +128,15 @@ const UserDashboard = () => {
   
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (showListModal) {
+      document.body.style.overflow = "hidden"; // Deshabilita scroll en el fondo
+    } else {
+      document.body.style.overflow = "auto"; // Habilita scroll cuando el modal se cierra
+    }
+  }, [showListModal]);
   
-  
-
-
-
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
     try {
@@ -264,6 +271,8 @@ const UserDashboard = () => {
       setNewProductName("");
       setNewProductQuantity(1);
       setProductError(null); // Limpiar error al éxito
+      setAddProductMessage("Producto añadido correctamente.");
+      setTimeout(() => setAddProductMessage(""), 3000);
     } catch (err) {
       console.error("Error añadiendo producto:", err);
       setProductError("No se pudo añadir el producto.");
@@ -340,19 +349,6 @@ const UserDashboard = () => {
       console.error("Error marcando producto como comprado:", err);
       setProductError("No se pudo marcar el producto como comprado.");
     }
-  };
-
-  const handleSelectList = async (listId) => {
-    ws = listService.desconectarWebSocket(); // Desconectar el WebSocket de la lista anterior
-
-    setSelectedList(listId);
-    setProducts([]);
-    setShareUrl(""); // Limpiar la URL al cambiar de lista
-
-    await fetchProducts(listId); // Carga los productos de la lista seleccionada
-
-    // Conectar el WebSocket de la lista seleccionada
-    listService.conectarWebSocket(listId, setProducts);
   };
 
   const handleDeleteMember = async (memberId) => {
@@ -538,6 +534,27 @@ const UserDashboard = () => {
     setShareUrl("");
   };
 
+  const handleSelectList = async (listId) => {
+    ws = listService.desconectarWebSocket(); // Desconectar el WebSocket de la lista anterior
+
+    setSelectedList(listId);
+    setProducts([]);
+    setShareUrl(""); // Limpiar la URL al cambiar de lista
+    document.getElementById("productsSection").scrollIntoView({ behavior: "smooth" });
+
+    await fetchProducts(listId); // Carga los productos de la lista seleccionada
+
+    // Conectar el WebSocket de la lista seleccionada
+    listService.conectarWebSocket(listId, setProducts);
+
+      // Desplazamiento automático
+      const productsSection = document.getElementById("productsSection");
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: "smooth" });
+      } else {
+        console.error("El elemento con ID 'productsSection' no existe.");
+      }
+  };
 
   if (!user) {
     return <p>Cargando datos del usuario...</p>;
@@ -701,133 +718,157 @@ const UserDashboard = () => {
             >
               Miembros
             </button>
+            <button
+              onClick={() => handleOpenShareModal(list.id)} 
+              style={styles.buttonModalCompartir}
+            >
+              Compartir
+            </button>
           </li>
         ))}
       </ul>
-      {selectedList && (
-  <div style={styles.selectedListContainer}>
-    <h3>Opciones para la Lista Seleccionada</h3>
-    <div>
-      <div style={styles.shareOptions}>
-        <h3>Compartir Lista</h3>
+      <div id="productsSection"  style={styles.productSection}>
+        {/* Mostrar lista seleccionada y productos */}
+        {selectedList && (
+          <>
+            <h3 style={styles.productTitle}>Productos de la Lista: {selectedList.name}</h3>
 
-        {/* Botón para copiar enlace */}
-        <button
-          onClick={() => handleShareListOption("link")}
-          style={styles.shareButton}
-        >
-          <i className="fas fa-copy" style={{ marginRight: "5px" }}></i>
-          <span>Copiar Enlace</span>
-        </button>
+            {/* Añadir Producto */}
+            <div style={styles.addProductContainer}>
+              <h4 style={styles.addProductTitle}>Añadir Producto</h4>
+              <div style={styles.inputGroup}>
+                <input
+                  type="text"
+                  placeholder="Nombre del producto"
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  style={styles.input}
+                />
+              </div>
+              <div style={styles.inputGroup}>
+                <input
+                  type="number"
+                  placeholder="Cantidad pedida"
+                  value={newProductQuantity}
+                  onChange={(e) => setNewProductQuantity(Number(e.target.value))}
+                  style={styles.input}
+                />
+              </div>
+              <button onClick={handleAddProduct} style={styles.addProductButton}>
+                Añadir Producto
+              </button>
 
-        {/* Botón e input para enviar invitación */}
-        <div style={styles.shareOptions}>
-          <button
-            onClick={() => handleShareListOption("email")}
-            style={{
-              ...styles.shareButton,
-              ...styles.wideButton,
-              opacity: inviteEmail.trim() ? 1 : 0.5,
-              cursor: inviteEmail.trim() ? "pointer" : "not-allowed",
-            }}
-            disabled={!inviteEmail.trim()}
-          >
-            <i className="fas fa-envelope" style={{ marginRight: "5px" }}></i>
-              <span>Enviar Invitación por Correo</span>
+              {addProductMessage && (
+                <p style={styles.successMessage}>{addProductMessage}</p>
+              )}
+            </div>
+
+            {/* Tabla de Productos */}
+            <table style={styles.productTable}>
+              <thead>
+                <tr>
+                  <th style={styles.productTableHeader}>Nombre</th>
+                  <th style={styles.productTableHeader}>Uds Pedidas</th>
+                  <th style={styles.productTableHeader}>Uds Compradas</th>
+                  <th style={styles.productTableHeader}>Uds Pendientes</th>
+                  <th style={styles.productTableHeader}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.id} style={styles.productTableRow}>
+                    <td style={styles.productTableCell}>{product.nombre}</td>
+                    <td style={styles.productTableCell}>{product.udsPedidas}</td>
+                    <td style={styles.productTableCell}>{product.udsCompradas}</td>
+                    <td style={styles.productTableCell}>
+                      {product.udsPedidas - product.udsCompradas}
+                    </td>
+                    <td style={styles.productTableCell}>
+                      <button
+                        style={styles.buyButton}
+                        onClick={() => handleBuyProduct(product)}
+                      >
+                        Comprar
+                      </button>
+                      <button
+                        style={styles.editButton}
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        style={styles.deleteButton}
+                        onClick={() => handleDeleteProduct(product)}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
+
+      {showShareModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            {/* Botón para cerrar el modal */}
+            <button onClick={handleCloseShareModal} style={styles.closeButton}>
+              ×
             </button>
-            <input
-              type="email"
-              placeholder="Introduce el email para invitar"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              style={styles.emailInput}
-            />
+
+            {/* Título del modal */}
+            <h3 style={styles.modalTitle}>Opciones para Compartir</h3>
+
+            {/* Compartir por email */}
+            <div style={styles.shareContainer}>
+              <h4 style={styles.sectionTitle}>Invitar por Email</h4>
+              <div style={styles.inputGroup}>
+                <input
+                  type="email"
+                  placeholder="Introduce el email para invitar"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  style={styles.input}
+                />
+                <button onClick={() => handleShareListOption("email")} style={styles.shareButton}>
+                  Invitar
+                </button>
+              </div>
+            </div>
+
+            {/* Generar enlace */}
+            <div style={styles.shareContainer}>
+              <h4 style={styles.sectionTitle}>Generar Enlace de Compartir</h4>
+              <div style={styles.inputGroup}>
+                <button onClick={() => handleShareListOption("link")} style={styles.generateButton}>
+                  Generar y Copiar Enlace
+                </button>
+              </div>
+
+              {/* Mostrar enlace generado */}
+              {shareUrl && (
+                <div style={styles.shareUrlContainer}>
+                  <p>URL generada:</p>
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={styles.shareUrl}
+                  >
+                    {shareUrl}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Mostrar errores */}
+            {shareListError && <p style={styles.error}>{shareListError}</p>}
+          </div>
         </div>
-
-        {/* Mensaje de error si lo hay */}
-        {shareListError && <p style={styles.error}>{shareListError}</p>}
-      </div>
-    </div>
-
-    {shareUrl && (
-      <div style={styles.shareUrlContainer}>
-        <p>Comparte esta URL con tus amigos:</p>
-        <input
-          type="text"
-          value={shareUrl}
-          readOnly
-          style={styles.shareUrlInput}
-        />
-      </div>
-    )}
-    <h3>Añadir Producto a la Lista Seleccionada</h3>
-    <input
-      type="text"
-      value={newProductName}
-      onChange={(e) => setNewProductName(e.target.value)}
-      placeholder="Nombre del producto"
-      style={styles.input}
-    />
-    <input
-      type="number"
-      value={newProductQuantity}
-      onChange={(e) => setNewProductQuantity(Number(e.target.value))}
-      placeholder="Cantidad"
-      style={{ ...styles.input, width: "80px", marginLeft: "10px" }}
-    />
-    <button onClick={handleAddProduct} style={styles.button}>
-      Añadir Producto
-    </button>
-    {productError && <p style={styles.error}>{productError}</p>}
-    <h3>Productos en la Lista</h3>
-    <table style={styles.productTable}>
-      <thead>
-        <tr>
-          <th style={styles.productTableHeader}>Nombre</th>
-          <th style={styles.productTableHeader}>Uds Pedidas</th>
-          <th style={styles.productTableHeader}>Uds Compradas</th>
-          <th style={styles.productTableHeader}>Uds Pendientes</th>
-          <th style={styles.productTableHeader}>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.map((product) => (
-          <tr key={product.id} style={styles.productTableRow}>
-            <td style={styles.productTableCell}>{product.nombre}</td>
-            <td style={styles.productTableCell}>{product.udsPedidas}</td>
-            <td style={styles.productTableCell}>
-              {product.udsCompradas}
-            </td>
-            <td style={styles.productTableCell}>
-              {product.udsPendientes ||
-                product.udsPedidas - product.udsCompradas}
-            </td>
-            <td style={styles.productTableCell}>
-              <button
-                style={styles.buyButton}
-                onClick={() => handleBuyProduct(product)}
-              >
-                Comprar
-              </button>
-              <button
-                style={styles.editButton}
-                onClick={() => handleEditProduct(product)}
-              >
-                Editar
-              </button>
-              <button
-                style={styles.deleteButton}
-                onClick={() => handleDeleteProduct(product)}
-              >
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+      )}
 
       {showEditModal && (
         <div style={styles.modalOverlay}>
@@ -1301,8 +1342,91 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
   },
-  
-  
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    position: "relative",
+    width: "90%",
+    maxWidth: "600px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+  },
+  closeButton: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "none",
+    border: "none",
+    fontSize: "24px",
+    cursor: "pointer",
+  },
+  modalTitle: {
+    marginBottom: "20px",
+    textAlign: "center",
+  },
+  shareUrl: {
+    color: "#007BFF",
+    textDecoration: "underline",
+    wordBreak: "break-word",
+  },
+  inputGroup: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "15px",
+  },
+  input: {
+    width: "70%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+  },
+  shareButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  generateButton: {
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  error: {
+    color: "red",
+    marginTop: "10px",
+    fontSize: "14px",
+  },
+  addProductButton: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  buttonModalCompartir: {
+    marginLeft: "10px",
+    padding: "8px 16px",
+    backgroundColor: "#007BFF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  successMessage: {
+    color: "green",
+    marginTop: "10px",
+    fontWeight: "bold",
+  },  
 };
 
 export default UserDashboard;
