@@ -43,8 +43,6 @@ const UserDashboard = () => {
   const [showListModal, setShowListModal] = useState(false);
   const [addProductMessage, setAddProductMessage] = useState("");
 
-  
-
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -86,7 +84,6 @@ const UserDashboard = () => {
     }
   }, [user, selectedList, setProducts]);
 
-  
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -99,10 +96,10 @@ const UserDashboard = () => {
           setError(null); // Limpia el error si no hay invitaciones
         }
       } catch (err) {
-        console.error("Error al verificar invitaciones pendientes:", err);
+        console.log("Error al verificar invitaciones pendientes:", err);
       }
     }, 3000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
@@ -113,7 +110,7 @@ const UserDashboard = () => {
       document.body.style.overflow = "auto"; // Habilita scroll cuando el modal se cierra
     }
   }, [showListModal]);
-  
+
   // Obtener los productos de la lista seleccionada
   const fetchProducts = async (listId) => {
     try {
@@ -176,11 +173,11 @@ const UserDashboard = () => {
       setListError("El nombre de la lista no puede estar vacío.");
       return;
     }
-  
+
     try {
       const createdList = await listService.createList(trimmedName);
       const userLists = await listService.getUserLists();
-  
+
       setLists(userLists);
       setNewListName("");
       setListError(null); // Limpiar el error si la operación fue exitosa
@@ -194,14 +191,14 @@ const UserDashboard = () => {
         setListError("No se pudo crear la lista.");
       }
     }
-  };  
+  };
 
   const handleDeleteList = async (listId) => {
     const confirmDelete = window.confirm(
       "¿Estás seguro de que quieres eliminar esta lista?"
     );
     if (!confirmDelete) return;
-  
+
     try {
       await listService.deleteList(listId);
       setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
@@ -226,24 +223,24 @@ const UserDashboard = () => {
       setProductError("Por favor, selecciona una lista.");
       return;
     }
-  
+
     if (!newProductName.trim()) {
       setProductError("El nombre del producto no puede estar vacío.");
       return;
     }
-  
+
     if (newProductQuantity <= 0) {
       setProductError("La cantidad debe ser mayor que 0.");
       return;
     }
-  
+
     try {
       const product = {
         nombre: newProductName,
         udsPedidas: newProductQuantity,
         udsCompradas: 0,
       };
-  
+
       await listService.addProductToList(selectedList, product);
       setNewProductName("");
       setNewProductQuantity(1);
@@ -254,15 +251,15 @@ const UserDashboard = () => {
       console.error("Error añadiendo producto:", err);
       setProductError("No se pudo añadir el producto.");
     }
-  };  
+  };
 
   const handleDeleteProduct = async (product) => {
     const confirm = window.confirm(
       `¿Estás seguro que quieres eliminar el producto "${product.nombre}" de la lista?`
     );
-  
+
     if (!confirm) return;
-  
+
     try {
       await listService.deleteProductFromList(product.id);
       setProducts((prevProducts) =>
@@ -288,7 +285,7 @@ const UserDashboard = () => {
 
   const handleMiembros = async (listaId) => {
     setSelectedList(listaId);
-    
+
     try {
       const miembros = await listService.getMiembros(listaId);
       setMiembrosList(miembros);
@@ -298,9 +295,9 @@ const UserDashboard = () => {
       console.error("Error obteniendo miembros de la lista:", err);
       setMemberError("No se pudieron obtener los miembros de la lista.");
     }
-  
+
     setShowMiembrosModal(true);
-  };  
+  };
 
   const handleSaveBuyProduct = async () => {
     try {
@@ -308,7 +305,7 @@ const UserDashboard = () => {
         selectedProduct.id,
         buyProductUds
       );
-  
+
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
           p.id === updatedProduct.id
@@ -332,13 +329,13 @@ const UserDashboard = () => {
     const confirmDelete = window.confirm(
       "¿Estás seguro de que quieres eliminar a este miembro?"
     );
-    
+
     if (!confirmDelete) return;
-  
+
     try {
       await listService.deleteMemberFromList(selectedList, memberId);
       alert("Miembro eliminado con éxito.");
-  
+
       setMiembrosList((prevMembers) =>
         prevMembers.filter((m) => m.usuarioId !== memberId)
       );
@@ -347,7 +344,7 @@ const UserDashboard = () => {
       console.error("Error eliminando miembro:", err);
       setMemberError("No se pudo eliminar al miembro.");
     }
-  };  
+  };
 
   // Pasarela de pago para hacer un usuario premium
   const handleGoPremium = () => {
@@ -412,9 +409,9 @@ const UserDashboard = () => {
         udsCompradas: editProductUdsCompradas,
         lista: { id: selectedList },
       };
-  
+
       await listService.editProductFromList(selectedList, updatedProduct);
-  
+
       setEditProductName("");
       setEditProductUdsPedidas(0);
       setEditProductUdsCompradas(0);
@@ -424,7 +421,7 @@ const UserDashboard = () => {
       console.error("Error editando producto:", err);
       setProductError("No se pudo editar el producto.");
     }
-  };  
+  };
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
@@ -439,7 +436,9 @@ const UserDashboard = () => {
       alert("Enlace copiado al portapapeles.");
     } else if (option === "email") {
       if (!inviteEmail.trim()) {
-        setShareListError("Por favor, introduce un email para enviar la invitación.");
+        setShareListError(
+          "Por favor, introduce un email para enviar la invitación."
+        );
         return;
       }
       handleShareList(); // Enviar la invitación por correo
@@ -448,24 +447,26 @@ const UserDashboard = () => {
 
   // Compartir lista
   const handleShareList = async () => {
-  if (!selectedList) {
-    setShareListError("Por favor, selecciona una lista antes de compartir.");
-    return;
-  }
+    if (!selectedList) {
+      setShareListError("Por favor, selecciona una lista antes de compartir.");
+      return;
+    }
 
-  if (!inviteEmail.trim()) {
-    setShareListError("Por favor, introduce un email para compartir la lista.");
-    return;
-  }
+    if (!inviteEmail.trim()) {
+      setShareListError(
+        "Por favor, introduce un email para compartir la lista."
+      );
+      return;
+    }
 
-  try {
-    const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
-    setShareUrl(url); // Guardar la URL generada
-    setShareListError(null); // Limpiar error en caso de éxito
-  } catch (err) {
-    console.error("Error compartiendo lista:", err);
-    setShareListError("No se pudo compartir la lista.");
-  }
+    try {
+      const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
+      setShareUrl(url); // Guardar la URL generada
+      setShareListError(null); // Limpiar error en caso de éxito
+    } catch (err) {
+      console.error("Error compartiendo lista:", err);
+      setShareListError("No se pudo compartir la lista.");
+    }
   };
 
   const handleAcceptInvitation = async (invitationId) => {
@@ -479,7 +480,7 @@ const UserDashboard = () => {
       setError("No se pudo aceptar la invitación.");
     }
   };
-  
+
   const handleRejectInvitation = async (invitationId) => {
     try {
       await listService.acceptInvitation(invitationId, "rechazado");
@@ -517,20 +518,22 @@ const UserDashboard = () => {
     setSelectedList(listId);
     setProducts([]);
     setShareUrl(""); // Limpiar la URL al cambiar de lista
-    document.getElementById("productsSection").scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("productsSection")
+      .scrollIntoView({ behavior: "smooth" });
 
     await fetchProducts(listId); // Carga los productos de la lista seleccionada
 
     // Conectar el WebSocket de la lista seleccionada
     listService.conectarWebSocket(listId, setProducts);
 
-      // Desplazamiento automático
-      const productsSection = document.getElementById("productsSection");
-      if (productsSection) {
-        productsSection.scrollIntoView({ behavior: "smooth" });
-      } else {
-        console.error("El elemento con ID 'productsSection' no existe.");
-      }
+    // Desplazamiento automático
+    const productsSection = document.getElementById("productsSection");
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: "smooth" });
+    } else {
+      console.error("El elemento con ID 'productsSection' no existe.");
+    }
   };
 
   if (!user) {
@@ -580,7 +583,6 @@ const UserDashboard = () => {
             Cancelar
           </button>
         </div>
-        
       ) : (
         <button
           onClick={() => setShowChangePasswordForm(true)}
@@ -619,42 +621,43 @@ const UserDashboard = () => {
         </>
       )}
       <div>
-      {pendingInvitations.length > 0 && (
-        <div style={styles.invitationsContainer}>
-          <h2>Invitaciones Pendientes</h2>
-          <table style={styles.invitationTable}>
-            <thead>
-              <tr>
-                <th style={styles.invitationHeader}>Lista</th>
-                <th style={styles.invitationHeader}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingInvitations.map((invitation) => (
-                <tr key={invitation.id} style={styles.invitationRow}>
-                  <td style={styles.invitationCell}>{invitation.nombreLista || "Sin nombre"}</td>
-                  <td style={styles.invitationCell}>
-                    <button
-                      style={styles.acceptButton}
-                      onClick={() => handleAcceptInvitation(invitation.id)}
-                    >
-                      Aceptar
-                    </button>
-                    <button
-                      style={styles.rejectButton}
-                      onClick={() => handleRejectInvitation(invitation.id)}
-                    >
-                      Rechazar
-                    </button>
-                  </td>
+        {pendingInvitations.length > 0 && (
+          <div style={styles.invitationsContainer}>
+            <h2>Invitaciones Pendientes</h2>
+            <table style={styles.invitationTable}>
+              <thead>
+                <tr>
+                  <th style={styles.invitationHeader}>Lista</th>
+                  <th style={styles.invitationHeader}>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-  )}
+              </thead>
+              <tbody>
+                {pendingInvitations.map((invitation) => (
+                  <tr key={invitation.id} style={styles.invitationRow}>
+                    <td style={styles.invitationCell}>
+                      {invitation.nombreLista || "Sin nombre"}
+                    </td>
+                    <td style={styles.invitationCell}>
+                      <button
+                        style={styles.acceptButton}
+                        onClick={() => handleAcceptInvitation(invitation.id)}
+                      >
+                        Aceptar
+                      </button>
+                      <button
+                        style={styles.rejectButton}
+                        onClick={() => handleRejectInvitation(invitation.id)}
+                      >
+                        Rechazar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      
 
       <h2>Mis listas de la compra</h2>
       {error && <p style={styles.error}>{error}</p>}
@@ -696,7 +699,7 @@ const UserDashboard = () => {
               Miembros
             </button>
             <button
-              onClick={() => handleOpenShareModal(list.id)} 
+              onClick={() => handleOpenShareModal(list.id)}
               style={styles.buttonModalCompartir}
             >
               Compartir
@@ -704,11 +707,13 @@ const UserDashboard = () => {
           </li>
         ))}
       </ul>
-      <div id="productsSection"  style={styles.productSection}>
+      <div id="productsSection" style={styles.productSection}>
         {/* Mostrar lista seleccionada y productos */}
         {selectedList && (
           <>
-            <h3 style={styles.productTitle}>Productos de la Lista: {selectedList.name}</h3>
+            <h3 style={styles.productTitle}>
+              Productos de la Lista: {selectedList.name}
+            </h3>
 
             {/* Añadir Producto */}
             <div style={styles.addProductContainer}>
@@ -727,11 +732,16 @@ const UserDashboard = () => {
                   type="number"
                   placeholder="Cantidad pedida"
                   value={newProductQuantity}
-                  onChange={(e) => setNewProductQuantity(Number(e.target.value))}
+                  onChange={(e) =>
+                    setNewProductQuantity(Number(e.target.value))
+                  }
                   style={styles.input}
                 />
               </div>
-              <button onClick={handleAddProduct} style={styles.addProductButton}>
+              <button
+                onClick={handleAddProduct}
+                style={styles.addProductButton}
+              >
                 Añadir Producto
               </button>
 
@@ -755,8 +765,12 @@ const UserDashboard = () => {
                 {products.map((product) => (
                   <tr key={product.id} style={styles.productTableRow}>
                     <td style={styles.productTableCell}>{product.nombre}</td>
-                    <td style={styles.productTableCell}>{product.udsPedidas}</td>
-                    <td style={styles.productTableCell}>{product.udsCompradas}</td>
+                    <td style={styles.productTableCell}>
+                      {product.udsPedidas}
+                    </td>
+                    <td style={styles.productTableCell}>
+                      {product.udsCompradas}
+                    </td>
                     <td style={styles.productTableCell}>
                       {product.udsPedidas - product.udsCompradas}
                     </td>
@@ -810,7 +824,10 @@ const UserDashboard = () => {
                   onChange={(e) => setInviteEmail(e.target.value)}
                   style={styles.input}
                 />
-                <button onClick={() => handleShareListOption("email")} style={styles.shareButton}>
+                <button
+                  onClick={() => handleShareListOption("email")}
+                  style={styles.shareButton}
+                >
                   Invitar
                 </button>
               </div>
@@ -820,7 +837,10 @@ const UserDashboard = () => {
             <div style={styles.shareContainer}>
               <h4 style={styles.sectionTitle}>Generar Enlace de Compartir</h4>
               <div style={styles.inputGroup}>
-                <button onClick={() => handleShareListOption("link")} style={styles.generateButton}>
+                <button
+                  onClick={() => handleShareListOption("link")}
+                  style={styles.generateButton}
+                >
                   Generar y Copiar Enlace
                 </button>
               </div>
@@ -902,7 +922,8 @@ const UserDashboard = () => {
               <strong>Unidades Pedidas:</strong> {selectedProduct?.udsPedidas}
             </p>
             <p>
-              <strong>Unidades Compradas hasta ahora:</strong> {selectedProduct?.udsCompradas}
+              <strong>Unidades Compradas hasta ahora:</strong>{" "}
+              {selectedProduct?.udsCompradas}
             </p>
             <input
               type="number"
@@ -958,7 +979,6 @@ const UserDashboard = () => {
         </div>
       )}
     </div>
-    
   );
 };
 
@@ -1104,34 +1124,34 @@ const styles = {
   shareOptions: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "center", 
-    gap: "10px", 
+    alignItems: "center",
+    gap: "10px",
     marginTop: "10px",
     textAlign: "center",
   },
   wideButton: {
-    width: "400px", 
-    padding: "5px 10px", 
+    width: "400px",
+    padding: "5px 10px",
     height: "35px",
   },
   emailInput: {
     padding: "8px",
     width: "100%",
-    maxWidth: "300px", 
+    maxWidth: "300px",
     border: "1px solid #ccc",
     borderRadius: "5px",
   },
   shareButton: {
     display: "flex",
-    alignItems: "center", 
+    alignItems: "center",
     backgroundColor: "#FFC107",
     color: "#000",
     padding: "10px 20px",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    gap: "5px", 
-  },  
+    gap: "5px",
+  },
   shareUrlContainer: {
     marginTop: "10px",
     textAlign: "center",
@@ -1403,7 +1423,7 @@ const styles = {
     color: "green",
     marginTop: "10px",
     fontWeight: "bold",
-  },  
+  },
 };
 
 export default UserDashboard;

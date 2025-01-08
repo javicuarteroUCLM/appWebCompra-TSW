@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { sendMessage, getWebSocket } from "./websocket";
-import { API_URL_LISTAS_LISTAS } from "../environments/commonst";
+import { API_URL_LISTAS } from "../environments/commonst";
 
 let ws;
 
@@ -113,15 +113,15 @@ const addProductToList = async (listId, product) => {
   });
 
   // Mandar difusion por Websocket
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
+  /* if (!ws || ws.readyState !== WebSocket.OPEN) {
     console.log("WebSocket no conectado. No se enviará mensaje.");
     conectarWebSocket();
     await new Promise((resolve) => setTimeout(resolve, 1000));
   } else {
     console.log("WebSocket conectado.");
-  }
+  } */
 
-  const message = {
+  /* const message = {
     type: "actualizacionDeLista",
     action: "addProduct",
     idLista: listId,
@@ -131,7 +131,7 @@ const addProductToList = async (listId, product) => {
       udsPedidas: product.udsPedidas,
       udsCompradas: product.udsCompradas,
     },
-  };
+  }; */
 
   // No mandar mensaje ya que ahora se encarga el Servidor de mandar la difusion
   //sendMessage(message);
@@ -168,7 +168,7 @@ const editProductFromList = async (selectedList, product) => {
   }
 
   // Mandar difusion por Websocket
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
+  /* if (!ws || ws.readyState !== WebSocket.OPEN) {
     console.log("WebSocket no conectado. No se enviará mensaje.");
     conectarWebSocket();
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -186,7 +186,7 @@ const editProductFromList = async (selectedList, product) => {
       udsPedidas: product.udsPedidas,
       udsCompradas: product.udsCompradas,
     },
-  };
+  }; */
 
   //sendMessage(message);
 
