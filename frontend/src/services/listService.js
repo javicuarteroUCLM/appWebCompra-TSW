@@ -2,7 +2,6 @@
 
 import axios from "axios";
 import { sendMessage, getWebSocket } from "./websocket";
-import { getUserDetails } from "./userService";
 
 const API_URL = "http://localhost:8383/listas";
 let ws;
@@ -264,36 +263,38 @@ const getInvitations = async () => {
       "Content-Type": "application/json",
     },
   });
-  
+
   return response.data;
 };
 
 const acceptInvitation = async (invitationId, status) => {
-      const response = await fetch(`http://localhost:8383/listas/aceptarInvitacion`, {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json",
-              idInvitacion: invitationId, // ID de la invitación
-          },
-          body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
-      });
-      console.log(response);
-      if (!response.ok) {
-          throw new Error("Error aceptando/rechazando invitación");
-      }
-      if (response.headers.get("content-length") !== "0" && response.headers.get("content-type")?.includes("application/json")) {
-        return await response.json();
+  const response = await fetch(
+    `http://localhost:8383/listas/aceptarInvitacion`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        idInvitacion: invitationId, // ID de la invitación
+      },
+      body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
     }
-    return { message: "Operación realizada correctamente" };
+  );
+  console.log(response);
+  if (!response.ok) {
+    throw new Error("Error aceptando/rechazando invitación");
+  }
+  if (
+    response.headers.get("content-length") !== "0" &&
+    response.headers.get("content-type")?.includes("application/json")
+  ) {
+    return await response.json();
+  }
+  return { message: "Operación realizada correctamente" };
 };
-
 
 // Conectar WebSocket
 const conectarWebSocket = async (selectedList, setProducts) => {
-  const userDetails = await getUserDetails();
-  const email = userDetails.email;
-
-  ws = getWebSocket(email, selectedList, setProducts);
+  ws = getWebSocket(selectedList, setProducts);
   return ws;
 };
 

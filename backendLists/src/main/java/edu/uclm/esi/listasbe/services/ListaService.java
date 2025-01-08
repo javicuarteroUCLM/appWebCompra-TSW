@@ -21,35 +21,6 @@ import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @Service
 public class ListaService {
 
@@ -142,12 +113,6 @@ public class ListaService {
 
 		Producto producto = optProducto.get();
 		float cantidadAntes = producto.getUdsCompradas();
-		/*
-		 * if (udsCompradas > producto.getUdsPedidas()) {
-		 * throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-		 * "No puedes marcar más unidades de las pedidas");
-		 * }
-		 */
 
 		producto.setUdsCompradas(udsCompradas + cantidadAntes);
 		productoDao.save(producto);
@@ -189,16 +154,6 @@ public class ListaService {
 		this.productoDao.save(producto);
 
 		wsListas.notificarAddProduct(idLista, producto);
-
-		/*
-		 * // Notificar a otros usuarios de la lista mediante WebSocket
-		 * try {
-		 * this.wsListas.notificar(idLista, producto);
-		 * } catch (org.json.JSONException e) {
-		 * throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-		 * "Error al notificar a los usuarios", e);
-		 * }
-		 */
 
 		return producto.getId();
 	}
@@ -277,11 +232,11 @@ public class ListaService {
 		return relacion;
 	}
 
-	public String generarUrlLista(String idLista) throws JSONException { 
+	public String generarUrlLista(String idLista) throws JSONException {
 		UsuarioLista propietario = this.propietario(idLista);
-		//String urlCompartir = this.manager.getConfiguration().getString("urlCompartirLista")
-		//		+ idLista;
-		String urlCompartir = "http://localhost:3000/invitacion/" + idLista;
+		String urlCompartir = this.manager.getConfiguration().getString("urlFrontend")
+				+ idLista;
+
 		listaDao.findById(idLista).ifPresent(lista -> {
 			lista.setCompartida(true);
 			lista.setUrlInvitacion(urlCompartir);
@@ -296,7 +251,7 @@ public class ListaService {
 		return urlCompartir;
 	}
 
-	public UsuarioLista propietario(String idLista)  {
+	public UsuarioLista propietario(String idLista) {
 		UsuarioLista propietario = usuarioListaRepository.findByListaIdAndEsPropietario(idLista, true);
 		if (propietario == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado el propietario de la lista");
@@ -304,7 +259,8 @@ public class ListaService {
 		return propietario;
 	}
 
-	public void crearInvitacion(String idLista, String emailInvitado, String urlCompartir) throws org.json.JSONException {
+	public void crearInvitacion(String idLista, String emailInvitado, String urlCompartir)
+			throws org.json.JSONException {
 		// Obtener la lista
 		Optional<Lista> optLista = listaDao.findById(idLista);
 		if (optLista.isEmpty()) {
@@ -331,21 +287,16 @@ public class ListaService {
 		// Notificar al usuario por Correo
 
 		// Crear contenido HTML por mensaje String para enviarlo al email
+		String urlFrontend = this.manager.getConfiguration().getString("urlFrontend");
+
 		String mensaje = "<h1>¡Hola!</h1><p>Has sido invitado a la lista " + lista.getNombre()
 				+ "</p><p>Para aceptar o rechazar la invitación, haz clic en el siguiente enlace: <a href=\""
-				+ "http://localhost:3000/invitacion/" + lista.getId()
+				+ urlFrontend + "invitacion/" + lista.getId()
 				+ "\">Ver invitación</a></p>";
 		this.proxy.enviarEmail(emailInvitado, lista.getNombre(), mensaje);
 
 		System.out.println("Mensaje: " + mensaje);
 
-		/*
-		try {
-			this.proxy.enviarEmail(emailInvitado, "Invitacion:" + lista.getNombre(), urlCompartir);
-		} catch (org.json.JSONException e) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al enviar el email", e);
-		}
-		*/
 	}
 
 	public void aceptarInvitacion(String idInvitacion, String estado) {
@@ -412,29 +363,12 @@ public class ListaService {
 	}
 
 	public List<Invitacion> getInvitaciones(String email) {
-		System.out.println("Buscando invitaciones para " + email);
-		
-		//Lista de invitaciones del usuario
-		List<Invitacion> invitaciones = invitacionDao.findByEmailInvitado(email);
-
-		/*
-		for (Invitacion invitacion : invitaciones) {
-			System.out.println("Invitación: " + invitacion.getLista().getNombre());
-		}
-		*/
-
-		//Invitacion invitacion = invitacionDao.findByEmailInvitado(email).get(0);
-		
-		//System.out.println("Invitaciones: " + invitacionDao.findByEmailInvitado(email));
-		//System.out.println("Invitacion name: " + invitacion.getLista().getNombre());
-		//return invitacionDao.findByEmailInvitado(email);
-
-		//Devolver lista de invitaciones pendientes
-		return invitaciones;
+		return invitacionDao.findByEmailInvitado(email);
 	}
+
 	public Optional<Invitacion> getInvitacionPendiente(String email, String idLista) {
-		return invitacionDao.findByEmailInvitadoAndLista_IdAndEstado(email, idLista, Invitacion.EstadoInvitacion.PENDIENTE);
+		return invitacionDao.findByEmailInvitadoAndLista_IdAndEstado(email, idLista,
+				Invitacion.EstadoInvitacion.PENDIENTE);
 	}
-	
 
 }

@@ -26,7 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("users")
 // @CrossOrigin("*")
-@CrossOrigin(origins = { "https://localhost:3000", "https://localhost:80" }, allowCredentials = "true")
+@CrossOrigin(origins = { "https://localhost:3000", "https://localhost:8383" }, allowCredentials = "true")
 public class UserController {
 	@Autowired
 	private UserService userService;

@@ -3,7 +3,7 @@
   "desarrollo": {
     "urlBase": "http://localhost:8383/",
     "urlBESeguro": "http://localhost:9000/",
-    "urlCompartirLista": "http://localhost:8383/listas/compartir/"
+    "urlFrontend": "http://localhost:3000/"
   },
   "produccion": {
     "urlBase": "https://listabase.com/",

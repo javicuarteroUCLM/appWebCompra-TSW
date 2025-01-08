@@ -17,7 +17,6 @@ import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class ProxyBEU {
 
@@ -94,70 +93,45 @@ public class ProxyBEU {
         }
     }
 
-    /* public void enviarEmail(String email, String subject, String message) throws JSONException {
-        String url = this.manager.getConfiguration().getString("urlBESeguro")
-                + "email/sendEmail?email=" + email + "&subject=" + subject + "&message=" + message;
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(url);
-            httpPost.setHeader("Content-type", "application/json");
-
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("email", email);
-            json.put("subject", subject);
-            json.put("message", message);
-
-            httpPost.setEntity(new StringEntity(json.toString()));
-            
-
-            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            if (response.getCode() != 200) {
-                System.err.println("Error al enviar el correo: " + response.getCode());
-            }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    } */
-
     public void enviarEmail(String email, String subject, String message) throws JSONException {
-    try {
-        // Codificar los parámetros para evitar caracteres no válidos en la URL
-        String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
-        String encodedSubject = URLEncoder.encode(subject, StandardCharsets.UTF_8.toString());
-        String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8.toString());
+        try {
+            // Codificar los parámetros para evitar caracteres no válidos en la URL
+            String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
+            String encodedSubject = URLEncoder.encode(subject, StandardCharsets.UTF_8.toString());
+            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8.toString());
 
-        // Construir la URL base
-        String urlBase = this.manager.getConfiguration().getString("urlBESeguro");
-        String url = urlBase + "email/sendEmail?email=" + encodedEmail + "&subject=" + encodedSubject + "&message=" + encodedMessage;
+            // Construir la URL base
+            String urlBase = this.manager.getConfiguration().getString("urlBESeguro");
+            String url = urlBase + "email/sendEmail?email=" + encodedEmail + "&subject=" + encodedSubject + "&message="
+                    + encodedMessage;
 
-        // Crear el cliente HTTP
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(url);
+            // Crear el cliente HTTP
+            try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+                HttpPost httpPost = new HttpPost(url);
 
-            // Crear el cuerpo de la solicitud en formato JSON
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("email", email);
-            json.put("subject", subject);
-            json.put("message", message);
+                // Crear el cuerpo de la solicitud en formato JSON
+                org.json.JSONObject json = new org.json.JSONObject();
+                json.put("email", email);
+                json.put("subject", subject);
+                json.put("message", message);
 
-            // Configurar los headers y la entidad JSON
-            httpPost.setHeader("Content-type", "application/json");
-            httpPost.setEntity(new StringEntity(json.toString()));
+                // Configurar los headers y la entidad JSON
+                httpPost.setHeader("Content-type", "application/json");
+                httpPost.setEntity(new StringEntity(json.toString()));
 
-            // Ejecutar la solicitud HTTP
-            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-                if (response.getCode() != 200) {
-                    System.err.println("Error al enviar el correo: Código de respuesta " + response.getCode());
-                } else {
-                    System.out.println("Correo enviado exitosamente.");
+                // Ejecutar la solicitud HTTP
+                try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                    if (response.getCode() != 200) {
+                        System.err.println("Error al enviar el correo: Código de respuesta " + response.getCode());
+                    } else {
+                        System.out.println("Correo enviado exitosamente.");
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al enviar el correo.", e);
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        throw new RuntimeException("Error al enviar el correo.", e);
     }
-}
 
 }

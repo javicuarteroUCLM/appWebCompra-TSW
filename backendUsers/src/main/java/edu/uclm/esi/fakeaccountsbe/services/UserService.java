@@ -14,8 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
 import edu.uclm.esi.fakeaccountsbe.model.User;
 
-
-
 @Service
 public class UserService {
 	@Autowired
@@ -38,15 +36,6 @@ public class UserService {
 		if (users == null)
 			users = new ArrayList<>();
 
-		System.out.println("users = " + users);
-		/*
-		 * if (users.size() > 10) {
-		 * System.out.println("No puedes crear más de 10 usuarios");
-		 * throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-		 * "No puedes crear más de 10 usuarios");
-		 * }
-		 */
-
 		user.setIp(ip);
 		user.setConfirmado(false);
 		user.setEsPagado(false);
@@ -65,10 +54,10 @@ public class UserService {
 		try {
 			this.emailService.sendConfimacionEmail(user.getEmail(), token);
 		} catch (org.json.JSONException e) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al enviar el correo de confirmación", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Error al enviar el correo de confirmación", e);
 		}
 	}
-
 
 	public void login(User tryingUser) {
 		this.find(tryingUser.getEmail(), tryingUser.getPwd());
@@ -139,12 +128,15 @@ public class UserService {
 		userDao.save(user);
 	}
 
-	/*
-	 * public synchronized void clearOld() {
-	 * long time = System.currentTimeMillis();
-	 * for (User user : this.users.values())
-	 * if (time > 600_000 + user.getCreationTime())
-	 * this.delete(user.getEmail());
-	 * }
-	 */
+	public void clearExpiredUsers() {
+		long currentTime = System.currentTimeMillis();
+		List<User> allUsers = this.userDao.findAll();
+		// Eliminar si han pasado 10 minutos sin confirmar cuenta
+		for (User user : allUsers) {
+			if (!user.isConfirmado() && (currentTime - user.getCreationTime()) > 10 * 60 * 1000) {
+				System.out.println("Eliminando usuario no confirmado: " + user.getEmail());
+				this.delete(user.getEmail());
+			}
+		}
+	}
 }
