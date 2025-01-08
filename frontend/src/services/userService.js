@@ -1,8 +1,9 @@
 /** @format */
 
 import axios from "axios";
+import { API_URL_USERS } from "../environments/commonst";
 
-const API_URL = "http://localhost:9000/users"; // URL de la API de usuarios (backend)
+const API_URL = API_URL_USERS + "users"; // URL de la API de usuarios (backend)
 
 // Registrar un nuevo usuario
 const register = async (email, pwd1, pwd2) => {
@@ -38,18 +39,15 @@ export const getUserDetails = async () => {
   if (!token) {
     throw new Error("Token no encontrado");
   }
-  const response = await axios.get(
-    `http://localhost:9000/tokens/obtenerEmail`,
-    {
-      params: { token },
-    }
-  );
+  const response = await axios.get(`${API_URL_USERS}tokens/obtenerEmail`, {
+    params: { token },
+  });
   return response.data;
 };
 
 const prepararTransaccion = async (importe) => {
   const response = await axios.put(
-    `http://localhost:9000/pagos/prepararTransaccion`,
+    `${API_URL_USERS}pagos/prepararTransaccion`,
     importe,
     {
       headers: { "Content-Type": "application/json" },
@@ -69,7 +67,7 @@ const marcarUsuarioComoPagado = async (email) => {
 // Recuperar Contraseña de Cuenta
 const recoverPassword = async (email) => {
   const response = await axios.post(
-    `http://localhost:9000/email/recoverEmail`,
+    `${API_URL_USERS}email/recoverEmail`,
     {
       email: email, // Aquí también mandas el email en el cuerpo de la solicitud
     },

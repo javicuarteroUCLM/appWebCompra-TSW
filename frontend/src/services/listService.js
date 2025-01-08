@@ -2,8 +2,8 @@
 
 import axios from "axios";
 import { sendMessage, getWebSocket } from "./websocket";
+import { API_URL_LISTAS_LISTAS } from "../environments/commonst";
 
-const API_URL = "http://localhost:8383/listas";
 let ws;
 
 // Crear una Lista
@@ -12,7 +12,7 @@ const createList = async (listName) => {
   const data = { nombre: listName };
 
   try {
-    const response = await axios.post(`${API_URL}/crearLista`, data, {
+    const response = await axios.post(`${API_URL_LISTAS}/crearLista`, data, {
       headers: {
         token,
         "Content-Type": "application/json",
@@ -34,7 +34,7 @@ const createList = async (listName) => {
 const deleteList = async (listId) => {
   const token = sessionStorage.getItem("authToken");
   try {
-    await axios.delete(`${API_URL}/borrarLista`, {
+    await axios.delete(`${API_URL_LISTAS}/borrarLista`, {
       headers: {
         token: token,
         idLista: listId,
@@ -57,7 +57,7 @@ const deleteList = async (listId) => {
 // Obtener Listas del Usuario
 const getUserLists = async () => {
   const token = sessionStorage.getItem("authToken");
-  const response = await axios.get(`${API_URL}/getListas`, {
+  const response = await axios.get(`${API_URL_LISTAS}/getListas`, {
     withCredentials: true,
     headers: {
       token: token,
@@ -70,7 +70,7 @@ const getUserLists = async () => {
 
 // Compartir Lista
 const shareList = async (listId, emailInvitado) => {
-  const response = await fetch(`http://localhost:8383/listas/compartirLista`, {
+  const response = await fetch(`${API_URL_LISTAS}/compartirLista`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -86,7 +86,7 @@ const shareList = async (listId, emailInvitado) => {
 };
 
 const generateURL = async (listId) => {
-  const response = await fetch(`http://localhost:8383/listas/generarURL`, {
+  const response = await fetch(`${API_URL_LISTAS}/generarURL`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -104,7 +104,7 @@ const generateURL = async (listId) => {
 const addProductToList = async (listId, product) => {
   const token = sessionStorage.getItem("authToken");
 
-  const response = await axios.post(`${API_URL}/addProducto`, product, {
+  const response = await axios.post(`${API_URL_LISTAS}/addProducto`, product, {
     headers: {
       token,
       idLista: listId,
@@ -142,7 +142,7 @@ const addProductToList = async (listId, product) => {
 // Eliminar Producto de Lista
 const deleteProductFromList = async (productId) => {
   try {
-    await axios.delete(`${API_URL}/eliminarProducto`, {
+    await axios.delete(`${API_URL_LISTAS}/eliminarProducto`, {
       headers: {
         idProducto: productId,
         "Content-Type": "application/json",
@@ -157,7 +157,7 @@ const deleteProductFromList = async (productId) => {
 // Editar Producto de Lista
 const editProductFromList = async (selectedList, product) => {
   try {
-    await axios.put(`${API_URL}/editarProducto`, product, {
+    await axios.put(`${API_URL_LISTAS}/editarProducto`, product, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -196,7 +196,7 @@ const editProductFromList = async (selectedList, product) => {
 const buyProduct = async (productId, udsCompradas) => {
   try {
     const response = await axios.put(
-      `${API_URL}/comprarProducto`,
+      `${API_URL_LISTAS}/comprarProducto`,
       { idProducto: productId, udsCompradas },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -211,7 +211,7 @@ const buyProduct = async (productId, udsCompradas) => {
 };
 
 const getMiembros = async (listId) => {
-  const response = await axios.get(`${API_URL}/miembros`, {
+  const response = await axios.get(`${API_URL_LISTAS}/miembros`, {
     headers: {
       idLista: listId,
       "Content-Type": "application/json",
@@ -226,7 +226,7 @@ const getProductsByListId = async (listId) => {
   if (!listId) {
     throw new Error("No se ha proporcionado un ID de lista.");
   }
-  const response = await axios.get(`${API_URL}/productos/${listId}`);
+  const response = await axios.get(`${API_URL_LISTAS}/productos/${listId}`);
 
   return response.data;
 };
@@ -234,7 +234,7 @@ const getProductsByListId = async (listId) => {
 const deleteMemberFromList = async (listId, email) => {
   try {
     const token = sessionStorage.getItem("authToken");
-    await axios.delete(`${API_URL}/borrarUsuarioDeLista`, {
+    await axios.delete(`${API_URL_LISTAS}/borrarUsuarioDeLista`, {
       headers: {
         idLista: listId,
         token: token,
@@ -257,7 +257,7 @@ const deleteMemberFromList = async (listId, email) => {
 
 const getInvitations = async () => {
   const token = sessionStorage.getItem("authToken");
-  const response = await axios.get(`${API_URL}/invitaciones`, {
+  const response = await axios.get(`${API_URL_LISTAS}/invitaciones`, {
     headers: {
       token: token,
       "Content-Type": "application/json",
@@ -268,17 +268,14 @@ const getInvitations = async () => {
 };
 
 const acceptInvitation = async (invitationId, status) => {
-  const response = await fetch(
-    `http://localhost:8383/listas/aceptarInvitacion`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        idInvitacion: invitationId, // ID de la invitación
-      },
-      body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
-    }
-  );
+  const response = await fetch(`${API_URL_LISTAS}/aceptarInvitacion`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      idInvitacion: invitationId, // ID de la invitación
+    },
+    body: JSON.stringify(status.toLowerCase()), // Convertir estado a minúsculas
+  });
   console.log(response);
   if (!response.ok) {
     throw new Error("Error aceptando/rechazando invitación");

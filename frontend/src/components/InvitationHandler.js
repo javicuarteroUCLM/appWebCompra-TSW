@@ -1,6 +1,9 @@
+/** @format */
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL_LISTAS } from "../environments/commonst";
 
 const InvitationHandler = () => {
   const { idLista } = useParams();
@@ -15,12 +18,14 @@ const InvitationHandler = () => {
       try {
         const token = localStorage.getItem("authToken");
         if (!token) {
-          setError("Inicia sesión primero o regístrate para poder aceptar la invitación.");
+          setError(
+            "Inicia sesión primero o regístrate para poder aceptar la invitación."
+          );
           return;
         }
 
         const response = await axios.get(
-          `http://localhost:8383/listas/invitacion/${idLista}`,
+          `${API_URL_LISTAS}/invitacion/${idLista}`,
           {
             headers: { token },
           }
@@ -47,7 +52,7 @@ const InvitationHandler = () => {
       const status = aceptar ? "aceptado" : "rechazado";
 
       await axios.post(
-        `http://localhost:8383/listas/aceptarInvitacion`,
+        `${API_URL_LISTAS}/aceptarInvitacion`,
         JSON.stringify(status),
         {
           headers: {
@@ -72,7 +77,10 @@ const InvitationHandler = () => {
           <h1 style={styles.title}>¡Aún no eres de los nuestros!</h1>
           <p style={styles.text}>{error}</p>
           {!localStorage.getItem("authToken") && (
-            <button style={styles.loginButton} onClick={() => navigate("/login")}>
+            <button
+              style={styles.loginButton}
+              onClick={() => navigate("/login")}
+            >
               Iniciar Sesión
             </button>
           )}

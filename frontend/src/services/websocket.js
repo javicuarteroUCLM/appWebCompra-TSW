@@ -1,6 +1,7 @@
 /** @format */
 
 import { w3cwebsocket as WebSocket } from "websocket";
+import { API_URL_LISTAS_WS } from "../environments/commonst";
 
 let ws; // Variable para mantener la conexión WebSocket
 
@@ -12,7 +13,7 @@ export const connectWebSocket = (selectedList, setProducts) => {
   }
 
   const token = sessionStorage.getItem("authToken");
-  const wsUrl = `ws://localhost:8383/wsListas?token=${token}`;
+  const wsUrl = `${API_URL_LISTAS_WS}?token=${token}`;
 
   ws = new WebSocket(wsUrl);
 

@@ -11,9 +11,10 @@ import UserDashboard from "./components/UserDashboard";
 import ResetPassword from "./components/ResetPassword";
 import ConfirmAccount from "./components/ConfirmAccount";
 import InvitationHandler from "./components/InvitationHandler";
+import { API_URL_USERS } from "./environments/commonst";
 
 const fetchStripeKey = async () => {
-  const response = await fetch("http://localhost:9000/pagos/stripeKey");
+  const response = await fetch(`${API_URL_USERS}pagos/stripeKey`);
   const stripeKey = await response.text();
   return loadStripe(stripeKey);
 };
