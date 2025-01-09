@@ -133,7 +133,7 @@ public class UserService {
 		List<User> allUsers = this.userDao.findAll();
 		// Eliminar si han pasado 10 minutos sin confirmar cuenta
 		for (User user : allUsers) {
-			if (!user.isConfirmado() && (currentTime - user.getCreationTime()) > 10 * 60 * 1000) {
+			if (!user.isConfirmado() && (currentTime - user.getCreationTime()) > 10 * 60000) {
 				System.out.println("Eliminando usuario no confirmado: " + user.getEmail());
 				this.delete(user.getEmail());
 			}

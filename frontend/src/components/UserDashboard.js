@@ -9,9 +9,11 @@ import {
   FaExchangeAlt,
   FaUserAlt,
 } from "react-icons/fa";
+import { MdWorkspacePremium } from "react-icons/md";
 import { CiLogout } from "react-icons/ci";
 import userService from "../services/userService";
 import listService from "../services/listService";
+import { router } from "websocket";
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
@@ -550,8 +552,43 @@ const UserDashboard = () => {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Bienvenido a tu Dashboard</h1>
-      <div style={styles.userInfo}>
+      <h1 style={styles.title}></h1>
+
+      <div style={styles.rowHeader}>
+        <span
+          style={{ color: "#4CAF50", fontWeight: "bold", marginRight: "auto" }}
+        >
+          {user.email}
+        </span>
+
+        <div style={{ marginLeft: "auto" }}>
+          <button
+            onClick={handleLogout}
+            style={styles.logoutButton}
+            aria-label="Cerrar Sesión"
+          >
+            Cerrar Sesión <span>&nbsp;</span> <CiLogout />
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.rowHeader}>
+        <span
+          style={{ color: "#f45000", fontWeight: "bold", marginRight: "auto" }}
+        >
+          {user.esPagado ? "Premium" : "Gratuito"} <MdWorkspacePremium />
+        </span>
+        <div style={{ marginLeft: "auto" }}>
+          <button
+            onClick={() => setShowChangePasswordForm(true)}
+            style={styles.changePasswordButton}
+          >
+            Cambiar Contraseña <span>&nbsp;</span> <FaExchangeAlt />
+          </button>
+        </div>
+      </div>
+
+      {/* <div style={styles.userInfo}>
         <p>
           <strong>Email:</strong> {user.email}
         </p>
@@ -562,11 +599,8 @@ const UserDashboard = () => {
         >
           Cerrar Sesión <span>&nbsp;</span> <CiLogout />
         </button>
-      </div>
-      <p>
-        <strong>Tipo de usuario:</strong>{" "}
-        {user.esPagado ? "Premium" : "Gratuito"}
-      </p>
+      </div> */}
+
       {showChangePasswordForm ? (
         <div style={styles.changePasswordForm}>
           <h3>Cambiar Contraseña</h3>
@@ -595,14 +629,8 @@ const UserDashboard = () => {
             Cancelar
           </button>
         </div>
-      ) : (
-        <button
-          onClick={() => setShowChangePasswordForm(true)}
-          style={styles.changePasswordButton}
-        >
-          Cambiar Contraseña <span>&nbsp;</span> <FaExchangeAlt />
-        </button>
-      )}
+      ) : null}
+
       {!user.esPagado && (
         <>
           {!showPaymentForm ? (
@@ -863,9 +891,9 @@ const UserDashboard = () => {
               </div>
               {inviteSent && (
                 <p style={styles.confirmationMessage}>
-                Invitación enviada correctamente a {inviteEmail}.
-              </p>
-            )}
+                  Invitación enviada correctamente a {inviteEmail}.
+                </p>
+              )}
             </div>
 
             {/* Generar enlace */}
@@ -1340,7 +1368,9 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    marginTop: "20px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   memberButton: {
     marginLeft: "12px",
@@ -1485,8 +1515,17 @@ const styles = {
     fontWeight: "bold",
   },
   confirmationMessage: {
-     color: "green",
-    marginTop: "10px"
+    color: "green",
+    marginTop: "10px",
+  },
+  rowHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: "600px",
+    marginBottom: "20px",
+    backgroundColor: "#f9f9f9",
   },
 };
 

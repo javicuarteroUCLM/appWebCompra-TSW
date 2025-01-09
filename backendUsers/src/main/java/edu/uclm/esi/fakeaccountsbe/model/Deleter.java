@@ -11,7 +11,7 @@ public class Deleter {
     @Autowired
     private UserService userService;
 
-    @Scheduled(fixedRate = 60000) // Ejecutar cada minuto
+    @Scheduled(fixedRate = 5 * 60000) // Ejecutar cada minuto
     public void clearExpiredUsers() {
         this.userService.clearExpiredUsers();
     }
