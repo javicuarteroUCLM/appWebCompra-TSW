@@ -552,31 +552,39 @@ const UserDashboard = () => {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}></h1>
+    <header style={styles.header}>
+      <h1 style={styles.title}>Tu gestor de listas de la compra</h1>
+    </header>
 
-      <div style={styles.rowHeader}>
-        <span
-          style={{ color: "#4CAF50", fontWeight: "bold", marginRight: "auto" }}
+    <div style={styles.rowHeader}>
+      <span
+        style={{ color: "#4CAF50", fontWeight: "bold", marginRight: "auto" }}
+      >
+        {user.email}
+      </span>
+
+      <div style={{ marginLeft: "auto" }}>
+        <button
+          onClick={handleLogout}
+          style={styles.logoutButton}
+          aria-label="Cerrar Sesión"
         >
-          {user.email}
-        </span>
-
-        <div style={{ marginLeft: "auto" }}>
-          <button
-            onClick={handleLogout}
-            style={styles.logoutButton}
-            aria-label="Cerrar Sesión"
-          >
-            Cerrar Sesión <span>&nbsp;</span> <CiLogout />
-          </button>
-        </div>
+          Cerrar Sesión <span>&nbsp;</span> <CiLogout />
+        </button>
       </div>
+    </div>
 
       <div style={styles.rowHeader}>
         <span
           style={{ color: "#f45000", fontWeight: "bold", marginRight: "auto" }}
         >
-          {user.esPagado ? "Premium" : "Gratuito"} <MdWorkspacePremium />
+          {user.esPagado ? (
+            <>
+              Premium <MdWorkspacePremium />
+            </>
+          ) : (
+            "Gratuito"
+          )}
         </span>
         <div style={{ marginLeft: "auto" }}>
           <button
