@@ -3,10 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { FaShareAlt } from "react-icons/fa"; // Importar ícono de estrella y de compartir
+import {
+  FaShareAlt,
+  FaTrashAlt,
+  FaExchangeAlt,
+  FaUserAlt,
+} from "react-icons/fa";
+import { CiLogout } from "react-icons/ci";
 import userService from "../services/userService";
 import listService from "../services/listService";
-import websocket from "../services/websocket";
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
@@ -547,8 +552,12 @@ const UserDashboard = () => {
         <p>
           <strong>Email:</strong> {user.email}
         </p>
-        <button onClick={handleLogout} style={styles.logoutButton}>
-          Cerrar Sesión
+        <button
+          onClick={handleLogout}
+          style={styles.logoutButton}
+          aria-label="Cerrar Sesión"
+        >
+          Cerrar Sesión <span>&nbsp;</span> <CiLogout />
         </button>
       </div>
       <p>
@@ -574,7 +583,7 @@ const UserDashboard = () => {
           />
           {passwordError && <p style={styles.error}>{passwordError}</p>}
           <button onClick={handleChangePassword} style={styles.button}>
-            Cambiar Contraseña
+            Cambiar Contraseña <span>&nbsp;</span> <FaExchangeAlt />
           </button>
           <button
             onClick={() => setShowChangePasswordForm(false)}
@@ -588,7 +597,7 @@ const UserDashboard = () => {
           onClick={() => setShowChangePasswordForm(true)}
           style={styles.changePasswordButton}
         >
-          Cambiar Contraseña
+          Cambiar Contraseña <span>&nbsp;</span> <FaExchangeAlt />
         </button>
       )}
       {!user.esPagado && (
@@ -678,31 +687,46 @@ const UserDashboard = () => {
       <ul style={styles.list}>
         {lists.map((list) => (
           <li key={list.id} style={styles.listItem}>
-            {list.nombre}
+            <span style={styles.listName}>{list.nombre}</span>
 
             <button
               onClick={() => handleSelectList(list.id)}
               style={styles.selectButton}
+              aria-label={`Seleccionar lista ${list.nombre}`}
             >
               Seleccionar
             </button>
-            <button
-              onClick={() => handleDeleteList(list.id)}
-              style={styles.deleteButton}
-            >
-              Eliminar Lista
-            </button>
+
             <button
               onClick={() => handleMiembros(list.id)}
               style={styles.memberButton}
+              aria-label={`Ver miembros de la lista ${list.nombre}`}
             >
-              Miembros
+              Miembros <span>&nbsp;</span> <FaUserAlt />
             </button>
+
+            <button
+              onClick={() => handleDeleteList(list.id)}
+              style={styles.deleteButton}
+              aria-label={`Eliminar lista ${list.nombre}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <FaTrashAlt />
+              </div>
+            </button>
+
             <button
               onClick={() => handleOpenShareModal(list.id)}
               style={styles.buttonModalCompartir}
+              aria-label={`Compartir lista ${list.nombre}`}
             >
-              Compartir
+              Compartir <span>&nbsp;</span> <FaShareAlt />
             </button>
           </li>
         ))}
@@ -778,20 +802,23 @@ const UserDashboard = () => {
                       <button
                         style={styles.buyButton}
                         onClick={() => handleBuyProduct(product)}
+                        aria-label={`Comprar producto ${product.nombre}`}
                       >
                         Comprar
                       </button>
                       <button
                         style={styles.editButton}
                         onClick={() => handleEditProduct(product)}
+                        aria-label={`Editar producto ${product.nombre}`}
                       >
                         Editar
                       </button>
                       <button
                         style={styles.deleteButton}
                         onClick={() => handleDeleteProduct(product)}
+                        aria-label={`Eliminar producto ${product.nombre}`}
                       >
-                        Eliminar
+                        <FaTrashAlt />
                       </button>
                     </td>
                   </tr>
@@ -991,6 +1018,7 @@ const styles = {
     padding: "20px",
     minHeight: "100vh",
     backgroundColor: "#f7f9fb",
+    justifyContent: "center", // Center content vertically
   },
   header: {
     marginBottom: "30px",
@@ -1007,6 +1035,9 @@ const styles = {
     marginBottom: "10px",
   },
   logoutButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
     backgroundColor: "#f44336",
     color: "#fff",
     padding: "10px 20px",
@@ -1035,7 +1066,7 @@ const styles = {
     marginBottom: "20px",
   },
   createListButton: {
-    backgroundColor: "#ff9800", // Naranja para crear lista
+    backgroundColor: "#363537", // Naranja para crear lista
     color: "#fff",
     fontSize: "16px",
     padding: "12px 24px",
@@ -1078,6 +1109,8 @@ const styles = {
     cursor: "pointer",
     margin: "10px 0",
     transition: "background-color 0.3s",
+    justifyContent: "center",
+    alignItems: "center",
   },
   error: {
     color: "red",
@@ -1095,14 +1128,22 @@ const styles = {
     borderRadius: "5px",
   },
   list: {
-    listStyleType: "none",
+    listStyle: "none",
     padding: "0",
+    margin: "0",
+    width: "100%",
+    maxWidth: "550px",
   },
   listItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "8px 0",
+    padding: "10px",
+    borderBottom: "1px solid #ddd",
+  },
+  listName: {
+    flex: "1",
+    marginRight: "auto",
   },
   selectButton: {
     backgroundColor: "#4CAF50",
@@ -1111,6 +1152,7 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+    marginRight: "10px",
   },
   selectedListContainer: {
     marginTop: "20px",
@@ -1207,6 +1249,9 @@ const styles = {
     marginRight: "10px",
   },
   deleteButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
     backgroundColor: "#f44336",
     color: "#fff",
     padding: "5px 10px",
@@ -1290,7 +1335,11 @@ const styles = {
     marginTop: "20px",
   },
   memberButton: {
-    backgroundColor: "#2196F3",
+    marginLeft: "12px",
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
+    backgroundColor: "#363537",
     color: "#fff",
     padding: "5px 10px",
     border: "none",
@@ -1403,7 +1452,7 @@ const styles = {
     fontSize: "14px",
   },
   addProductButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#363537",
     color: "#fff",
     padding: "10px 20px",
     border: "none",
@@ -1418,6 +1467,9 @@ const styles = {
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
   },
   successMessage: {
     color: "green",
