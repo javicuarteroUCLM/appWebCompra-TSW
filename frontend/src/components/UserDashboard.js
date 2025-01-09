@@ -559,7 +559,7 @@ const UserDashboard = () => {
     <div style={styles.rowHeader}>
       <span
         style={{ color: "#4CAF50", fontWeight: "bold", marginRight: "auto" }}
-      >
+      > Usuario: {""}
         {user.email}
       </span>
 
@@ -578,6 +578,7 @@ const UserDashboard = () => {
         <span
           style={{ color: "#f45000", fontWeight: "bold", marginRight: "auto" }}
         >
+          Tipo de usuario: {" "}
           {user.esPagado ? (
             <>
               Premium <MdWorkspacePremium />
