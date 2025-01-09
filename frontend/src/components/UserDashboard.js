@@ -31,6 +31,7 @@ const UserDashboard = () => {
   const [editProductUdsPedidas, setEditProductUdsPedidas] = useState(0);
   const [editProductUdsCompradas, setEditProductUdsCompradas] = useState(0);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteSent, setInviteSent] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showMiembrosModal, setShowMiembrosModal] = useState(false);
@@ -467,6 +468,8 @@ const UserDashboard = () => {
     try {
       const url = await listService.shareList(selectedList, inviteEmail); // Pasar emailInvitado
       setShareUrl(url); // Guardar la URL generada
+      setInviteSent(true);
+      setTimeout(() => setInviteSent(false), 4000);
       setShareListError(null); // Limpiar error en caso de éxito
     } catch (err) {
       console.error("Error compartiendo lista:", err);
@@ -503,7 +506,7 @@ const UserDashboard = () => {
     setInviteEmail("");
     setShareListError(null);
     try {
-      const url = await listService.shareList(listId);
+      const url = await listService.generateURL(listId);
       setShareUrl(url);
     } catch (err) {
       console.error("Error generando enlace de la lista:", err);
@@ -858,6 +861,11 @@ const UserDashboard = () => {
                   Invitar
                 </button>
               </div>
+              {inviteSent && (
+                <p style={styles.confirmationMessage}>
+                Invitación enviada correctamente a {inviteEmail}.
+              </p>
+            )}
             </div>
 
             {/* Generar enlace */}
@@ -1475,6 +1483,10 @@ const styles = {
     color: "green",
     marginTop: "10px",
     fontWeight: "bold",
+  },
+  confirmationMessage: {
+     color: "green",
+    marginTop: "10px"
   },
 };
 
