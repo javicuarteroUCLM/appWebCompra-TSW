@@ -133,6 +133,7 @@ const UserDashboard = () => {
   // Cerrar sesión y borrar Cookies
   const handleLogout = async () => {
     await userService.logout();
+    ws = listService.desconectarWebSocket(); // Desconectar el WebSocket
     // Eliminar la cookie al cerrar sesión fakeUserID
     document.cookie =
       "fakeUserID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

@@ -41,7 +41,7 @@ public class UserService {
 		user.setEsPagado(false);
 		user.setFechaPago(null);
 		// Crear token de confirmación
-		String token = java.util.UUID.randomUUID().toString();
+		String token = "1234".toString(); // No es aleatorio, para hacer los test de Selenium
 		user.setToken(token);
 		users.add(user);
 
