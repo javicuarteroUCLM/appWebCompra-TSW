@@ -31,7 +31,7 @@ const login = async (email, password) => {
 
 const logout = async () => {
   localStorage.removeItem("authToken");
-  ws = null;
+    //ws = null;
 };
 
 // Obtener detalles del usuario logueado

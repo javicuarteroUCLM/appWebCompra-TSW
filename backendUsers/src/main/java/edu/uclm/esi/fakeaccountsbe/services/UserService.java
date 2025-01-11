@@ -14,6 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
 import edu.uclm.esi.fakeaccountsbe.model.User;
 
+
+
+
+
+
+
 @Service
 public class UserService {
 	@Autowired
@@ -41,7 +47,8 @@ public class UserService {
 		user.setEsPagado(false);
 		user.setFechaPago(null);
 		// Crear token de confirmación
-		String token = "1234".toString(); // No es aleatorio, para hacer los test de Selenium
+		//String token = java.util.UUID.randomUUID().toString(); //Tokenn para flujo normal de la aplicación
+		String token = "1234".toString(); //Token no aleatorio, para hacer los test de Selenium
 		user.setToken(token);
 		users.add(user);
 

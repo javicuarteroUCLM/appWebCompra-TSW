@@ -1,5 +1,6 @@
 package edu.uclm.esi.fakeaccountsbe.tests;
-import java.time.Duration;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +13,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 
 
 
@@ -118,6 +115,47 @@ public class SeleniumTests {
 
         pausa(5000);
 
+        jsExecutorPepe.executeScript("window.open()");
+        tabs = new ArrayList<String>(driverPepe.getWindowHandles());
+        driverPepe.switchTo().window(tabs.get(2));
+
+        //Pepe confirma su cuenta
+        driverPepe.get("http://localhost:3000/confirmarCuenta?token=1234");
+
+        pausa(2000);
+
+        driverPepe.switchTo().window(tabs.get(0));
+        pausa(1000);
+
+        //Pepe hace click en el botón que redirige a Iniciar Sesión
+        driverPepe.findElement(By.xpath("/html/body/div/div/div/p[2]/button")).click();
+
+        pausa(1000);
+        
+        //Pepe mete las credenciales
+        driverPepe.findElement(By.xpath("/html/body/div/div/div/form/div[1]/input")).sendKeys(emailCopiado);
+        driverPepe.findElement(By.xpath("/html/body/div/div/div/form/div[2]/input")).sendKeys("pepe1234");
+        pausa(1000);
+
+        //Pepe da click en Iniciar Sesión
+        driverPepe.findElement(By.xpath("/html/body/div/div/div/form/button")).click();
+
+        //ORÁCULO comprobar en la base de datos que Pepe ha confirmado su cuenta.
+        try {
+            boolean confirmado = Oraculo.isUserConfirmed(emailCopiado);
+            assertTrue(confirmado, "El usuario no ha confirmado su cuenta");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AssertionError("Error al verificar si Pepe ha confirmado su cuenta");
+        }
+
+
+
+
+
+
+        /*
+
         
         driverPepe.switchTo().window(tabs.get(1)); 
 
@@ -145,7 +183,7 @@ public class SeleniumTests {
 
         // Haz clic en el enlace de confirmar cuenta
         confirmarCuentaLink.click();
-
+        */
         pausa(5000);
 
     }
