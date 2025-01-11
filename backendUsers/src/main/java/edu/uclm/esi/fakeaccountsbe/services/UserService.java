@@ -146,4 +146,31 @@ public class UserService {
 			}
 		}
 	}
+
+	public void registrarMuchos(String ip, User user) {
+		this.getAllUsers();
+
+		if (this.users.get(user.getEmail()) != null) {
+			System.out.println("Ya existe un usuario con ese correo electrónico");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ya existe un usuario con ese correo electrónico");
+		}
+		List<User> users = this.usersByIp.get(ip);
+		if (users == null)
+			users = new ArrayList<>();
+
+		user.setIp(ip);
+		user.setConfirmado(true); // Para no tener que confirmar la cuenta en los test de jMeter
+		user.setEsPagado(false);
+		user.setFechaPago(null);
+		// Crear token de confirmación
+		String token = "1234".toString(); // No es aleatorio, para hacer los test de Selenium
+		user.setToken(token);
+		users.add(user);
+
+		this.usersByIp.put(ip, users);
+		this.users.put(user.getEmail(), user);
+		user.setCreationTime(System.currentTimeMillis());
+		this.userDao.save(user);
+
+	}
 }

@@ -77,8 +77,17 @@ public class UserController {
 
 	@GetMapping("/registrarMuchos")
 	public void registrarMuchos(HttpServletRequest req, @RequestParam String name, @RequestParam Integer n) {
-		for (int i = 0; i < n; i++)
-			this.registrar2(req, name + i + "@pepe.com", "Pepe1234", "Pepe1234");
+		for (int i = 0; i < n; i++) {
+			CredencialesRegistro cr = new CredencialesRegistro();
+			cr.setEmail(name + i + "@correo.com");
+			cr.setPwd1("1234");
+			cr.setPwd2("1234");
+			cr.comprobar();
+			User user = new User();
+			user.setEmail(cr.getEmail());
+			user.setPwd(cr.getPwd1());
+			this.userService.registrarMuchos(req.getRemoteAddr(), user);
+		}
 	}
 
 	@PutMapping("/login1")
