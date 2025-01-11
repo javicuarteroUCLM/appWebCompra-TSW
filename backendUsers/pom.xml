@@ -108,9 +108,14 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<version>4.0.0-alpha-6</version>
-			<scope>test</scope> <!-- This dependency is only for testing -->
+			<version>4.18.1</version>
+			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
 		
 	</dependencies>
 </project>

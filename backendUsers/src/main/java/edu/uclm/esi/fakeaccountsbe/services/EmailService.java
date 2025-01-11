@@ -1,10 +1,5 @@
 package edu.uclm.esi.fakeaccountsbe.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import brevo.ApiClient;
 import brevo.ApiException;
 import brevo.Configuration;
@@ -14,6 +9,11 @@ import brevoModel.SendSmtpEmailSender;
 import brevoModel.SendSmtpEmailTo;
 import edu.uclm.esi.fakeaccountsbe.dao.UserDao;
 import edu.uclm.esi.fakeaccountsbe.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
 public class EmailService {
@@ -97,7 +97,7 @@ public class EmailService {
         }
     }
 
-    public void sendEmail(String email, String subject, String message) {
+    public void sendEmail(String email, String subject, String message) throws org.json.JSONException {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setApiKey(this.manager.getConfiguration().getJSONObject("brevo").getString("apiKey"));
         String sender = this.manager.getConfiguration().getJSONObject("brevo").getJSONObject("sender")
