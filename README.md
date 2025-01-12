@@ -1,6 +1,8 @@
 # appWebCompra-TSW
 Aplicación web para poder realizar una lista de la compra con la posibilidad de hacerla colaborativa. Proyecto para la asignatura Tecnologías y Sistemas Web , 4º curso de Ingeniería Informática en UCLM (Ciudad Real).
 
+**Nota*: antes de ejecutar las siguientes instrucciones, debe haberse asegurado de crear y configurar previamente la base de datos
+
 ---
 
 ## Instrucciones
@@ -8,12 +10,13 @@ Aplicación web para poder realizar una lista de la compra con la posibilidad de
   ```bash
 git clone git@github.com:javicuarteroUCLM/appWebCompra-TSW.git
   ```
+  ```bash
+  cd appWebCompra-TSW
+  ```
   Con el comando 'ls' podrás ver el contenido del directorio raíz
   ```bash
-ls
+  ls
   ```
-  
-   
     
   Los directorios que nos interesan son _backendUsers_, _backendLists_ y _frontend_.
   
@@ -24,19 +27,8 @@ ls
 cd backendUsers
   ```
 ```bash
-cd src/main/resources
-```
-Insertar en este directorio el archivo _config.json_ que deberá pedir a los estudiantes vía email (Javier.Cuartero.@alu.uclm.es).
-
-Una vez añadido el archivo, ejecutar 3 veces:
-```bash
-cd ..
-```
-Luego:
-
-```bash
 mvn spring-boot:run
-  ```
+```
 
 
   4. En el terminal 2 ejecuta:
