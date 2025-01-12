@@ -1,7 +1,7 @@
 # appWebCompra-TSW
 Aplicación web para poder realizar una lista de la compra con la posibilidad de hacerla colaborativa. Proyecto para la asignatura Tecnologías y Sistemas Web , 4º curso de Ingeniería Informática en UCLM (Ciudad Real).
 
-**Nota*: antes de ejecutar las siguientes instrucciones, debe haberse asegurado de crear y configurar previamente la base de datos
+**Nota*: antes de ejecutar las siguientes instrucciones, debe haberse asegurado de crear y configurar previamente la base de datos e insertar en la ruta _backendUsers/src/resources_ el archivo _config.json_ que le ha proporcionado el alumno en la entrega. 
 
 ---
 
