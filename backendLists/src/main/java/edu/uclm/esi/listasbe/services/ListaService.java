@@ -1,15 +1,5 @@
 package edu.uclm.esi.listasbe.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.json.JSONException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import edu.uclm.esi.listasbe.dao.InvitacionDao;
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
@@ -20,6 +10,16 @@ import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.model.UsuarioLista;
 import edu.uclm.esi.listasbe.ws.WSListas;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+
 
 @Service
 public class ListaService {
@@ -234,7 +234,7 @@ public class ListaService {
 
 	public String generarUrlLista(String idLista) throws JSONException {
 		UsuarioLista propietario = this.propietario(idLista);
-		String urlCompartir = this.manager.getConfiguration().getString("urlFrontend")
+		String urlCompartir = this.manager.getConfiguration().getString("urlFrontend") + "invitacion/"
 				+ idLista;
 
 		listaDao.findById(idLista).ifPresent(lista -> {
